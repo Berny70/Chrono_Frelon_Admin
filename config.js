@@ -2,7 +2,6 @@ const CONFIG = {
   APP_VERSION:   '1.0.0',
   APP_DATE:      '2026-04',
   SUPABASE_URL:  'https://pqozgsgytzntrqscevrt.supabase.co',
-  // Remplace par ta clé anon : Supabase → Settings → API → anon public
-  SUPABASE_KEY = "sb_publishable_lPacACUx-QTq_-mV7DDc_g_xUQHDCsK",
+  SUPABASE_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBxb3pnc2d5dHpudHJxc2NldnJ0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk0Mjk2NzgsImV4cCI6MjA4NTAwNTY3OH0.yi3FOdkBTi6eZsiAtKMqDyKpzVRnfs_nEJsbjCAgy8A',
   MAX_SIGNALS:   500,
 };
