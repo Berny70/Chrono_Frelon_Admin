@@ -40,7 +40,7 @@ const App = (() => {
   async function _loadAll() {
     setLoading('signals-list');
     setLoading('users-list');
-    allSignals    = await signalsGetAll();
+    allSignals = await signalsGetAll(currentProfile.lat, currentProfile.lon);
     blockedPhones = await blockedGetAll();
     _buildUsers();
     _refresh();

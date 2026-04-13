@@ -43,7 +43,14 @@ async function profileCreate(userId, { email, nom, prenom, canton, departement }
 
 // ── SIGNALEMENTS ──────────────────────────────────────────────
 
-async function signalsGetAll() {
+async function signalsGetAll(lat, lon) {
+  if (lat && lon) {
+    const { data } = await sb.rpc('signals_within_50km', {
+      admin_lat: lat,
+      admin_lon: lon
+    });
+    return data || [];
+  }
   const { data } = await sb
     .from('chrono_frelon_geo')
     .select('*')
