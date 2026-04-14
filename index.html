@@ -48,10 +48,35 @@
         <label data-i18n="lbl_email">Email</label>
         <input type="email" id="login-email" placeholder="admin@commune.fr">
       </div>
-      <button class="btn-primary" id="btn-magic" onclick="App.sendMagicLink()">
-        <span data-i18n="btn_send_link">Envoyer le lien magique</span>
+      <div class="form-group">
+        <label data-i18n="lbl_password">Mot de passe</label>
+        <input type="password" id="login-password" placeholder="••••••••"
+          onkeydown="if(event.key==='Enter') App.signInWithPassword()">
+      </div>
+      <button class="btn-primary" id="btn-login" onclick="App.signInWithPassword()">
+        <span data-i18n="btn_login">Se connecter</span>
       </button>
+      <div style="text-align:center;margin-top:12px">
+        <a href="#" onclick="App.showResetForm()" style="font-size:13px;color:var(--text-muted);text-decoration:none"
+          data-i18n="btn_forgot">Mot de passe oublié ?</a>
+      </div>
       <div class="auth-message" id="login-msg"></div>
+    </div>
+
+    <!-- Reset mot de passe -->
+    <div id="form-reset" style="display:none">
+      <div class="form-group">
+        <label data-i18n="lbl_email">Email</label>
+        <input type="email" id="reset-email" placeholder="admin@commune.fr">
+      </div>
+      <button class="btn-primary" id="btn-reset" onclick="App.sendPasswordReset()">
+        <span data-i18n="btn_send_reset">Envoyer le lien de reset</span>
+      </button>
+      <div style="text-align:center;margin-top:12px">
+        <a href="#" onclick="App.showLoginForm()" style="font-size:13px;color:var(--text-muted);text-decoration:none"
+          data-i18n="btn_back_login">← Retour connexion</a>
+      </div>
+      <div class="auth-message" id="reset-msg"></div>
     </div>
 
     <!-- Inscription -->
@@ -79,6 +104,14 @@
           <label data-i18n="lbl_canton">Canton</label>
           <input type="text" id="reg-canton" placeholder="Baume-les-Dames">
         </div>
+      </div>
+      <div class="form-group">
+        <label data-i18n="lbl_password">Mot de passe</label>
+        <input type="password" id="reg-password" placeholder="••••••••">
+      </div>
+      <div class="form-group">
+        <label data-i18n="lbl_password_confirm">Confirmer le mot de passe</label>
+        <input type="password" id="reg-password2" placeholder="••••••••">
       </div>
       <button class="btn-primary" id="btn-register" onclick="App.registerAdmin()">
         <span data-i18n="btn_request">Demander l'accès</span>

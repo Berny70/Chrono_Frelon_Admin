@@ -83,31 +83,65 @@ const App = (() => {
 
   // ── AUTH ─────────────────────────────────────────────────────
 
-  async function sendMagicLink() {
-    const email = document.getElementById('login-email').value.trim();
-    if (!email) return;
-    const btn = document.getElementById('btn-magic');
+  async function signInWithPassword() {
+    const email    = document.getElementById('login-email').value.trim();
+    const password = document.getElementById('login-password').value;
+    if (!email || !password) return;
+    const btn = document.getElementById('btn-login');
     btn.disabled = true;
-    const { error } = await authSendMagicLink(email);
+    const { error } = await authSignInWithPassword(email, password);
     btn.disabled = false;
-    showAuthMsg('login-msg', error ? 'error' : 'success',
-      error ? error.message : t('msg_link_sent'));
+    if (error) showAuthMsg('login-msg', 'error', error.message);
+  }
+
+  function showResetForm() {
+    document.getElementById('form-login').style.display  = 'none';
+    document.getElementById('form-reset').style.display  = 'block';
+    document.getElementById('form-register').style.display = 'none';
+  }
+
+  function showLoginForm() {
+    document.getElementById('form-login').style.display  = 'block';
+    document.getElementById('form-reset').style.display  = 'none';
+    document.getElementById('form-register').style.display = 'none';
+  }
+
+  async function sendPasswordReset() {
+    const email = document.getElementById('reset-email').value.trim();
+    if (!email) return;
+    const btn = document.getElementById('btn-reset');
+    btn.disabled = true;
+    const { error } = await authResetPassword(email);
+    btn.disabled = false;
+    showAuthMsg('reset-msg', error ? 'error' : 'success',
+      error ? error.message : 'Email de reset envoyé !');
   }
 
   async function registerAdmin() {
-    const prenom = document.getElementById('reg-prenom').value.trim();
-    const nom    = document.getElementById('reg-nom').value.trim();
-    const email  = document.getElementById('reg-email').value.trim();
-    const dept   = document.getElementById('reg-dept').value.trim();
-    const canton = document.getElementById('reg-canton').value.trim();
+    const prenom   = document.getElementById('reg-prenom').value.trim();
+    const nom      = document.getElementById('reg-nom').value.trim();
+    const email    = document.getElementById('reg-email').value.trim();
+    const dept     = document.getElementById('reg-dept').value.trim();
+    const canton   = document.getElementById('reg-canton').value.trim();
+    const password = document.getElementById('reg-password').value;
+    const password2= document.getElementById('reg-password2').value;
 
-    if (!prenom || !nom || !email || !dept || !canton) {
+    if (!prenom || !nom || !email || !dept || !canton || !password) {
       showAuthMsg('register-msg', 'error', t('msg_fill'));
       return;
     }
+    if (password !== password2) {
+      showAuthMsg('register-msg', 'error', 'Les mots de passe ne correspondent pas.');
+      return;
+    }
+    if (password.length < 8) {
+      showAuthMsg('register-msg', 'error', 'Le mot de passe doit faire au moins 8 caractères.');
+      return;
+    }
+
     const btn = document.getElementById('btn-register');
     btn.disabled = true;
-    const { error } = await authSendMagicLink(email);
+    const { error } = await authSignUp(email, password);
     btn.disabled = false;
     if (error) { showAuthMsg('register-msg', 'error', error.message); return; }
     localStorage.setItem('pending_profile', JSON.stringify({
@@ -218,7 +252,10 @@ const App = (() => {
 
   return {
     init,
-    sendMagicLink,
+    signInWithPassword,
+    showResetForm,
+    showLoginForm,
+    sendPasswordReset,
     registerAdmin,
     signOut,
     confirmDelete,
