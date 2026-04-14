@@ -48,6 +48,11 @@ const App = (() => {
     _refresh();
   }
 
+  async function _loadPending() {
+    const pending = await pendingGetAll();
+    renderPending(pending);
+  }
+
   function _buildUsers() {
     const phones = [...new Set(allSignals.map(s => s.phone_id).filter(Boolean))];
     allUsers = phones.map(phone => ({
@@ -167,6 +172,34 @@ const App = (() => {
     renderUsers(allUsers.filter(u => u.phone_id.toLowerCase().includes(q)));
   }
 
+  // ── VALIDATION ADMINS ───────────────────────────────────────
+
+  function confirmValidate(id, name) {
+    showModal(
+      'Valider cet administrateur',
+      `Accorder l'accès à ${name} ?`,
+      'Valider',
+      async () => {
+        await pendingValidate(id);
+        showToast(`${name} est maintenant administrateur.`);
+        await _loadPending();
+      }
+    );
+  }
+
+  function confirmReject(id, name) {
+    showModal(
+      'Refuser cette demande',
+      `Supprimer la demande de ${name} ?`,
+      'Refuser',
+      async () => {
+        await pendingReject(id);
+        showToast(`Demande de ${name} supprimée.`);
+        await _loadPending();
+      }
+    );
+  }
+
   // ── RAYON ───────────────────────────────────────────────────
 
   async function onRadiusChange(km) {
@@ -175,6 +208,7 @@ const App = (() => {
     setLoading('signals-list');
     setLoading('users-list');
     allSignals    = await signalsGetAll(currentProfile.lat, currentProfile.lon, currentRadius);
+    await _loadPending();
     blockedPhones = await blockedGetAll();
     _buildUsers();
     _refresh();
@@ -193,6 +227,8 @@ const App = (() => {
     filterSignals,
     filterUsers,
     onRadiusChange,
+    confirmValidate,
+    confirmReject,
   };
 
 })();

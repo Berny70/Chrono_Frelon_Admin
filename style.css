@@ -523,3 +523,29 @@ h1, h2, h3 {
   .map-stats { gap: 16px; }
   .search-input { width: 140px; }
 }
+
+/* ── SURBRILLANCE CARTE ─────────────────────────────────────── */
+.signal-card.highlighted {
+  border: 2px solid var(--amber);
+  background: #fffbf0;
+  box-shadow: 0 0 0 3px rgba(212,130,10,0.15);
+  transition: all 0.3s;
+}
+
+.map-tooltip {
+  background: var(--forest);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  padding: 4px 8px;
+}
+
+.map-tooltip::before {
+  border-top-color: var(--forest) !important;
+}
+
+/* ── TAB PENDING ────────────────────────────────────────────── */
+#tab-pending { flex: 1; display: none; overflow-y: auto; }
+#tab-pending.active { display: block; }

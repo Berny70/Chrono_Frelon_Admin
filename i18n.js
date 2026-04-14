@@ -42,6 +42,7 @@ const I18N = {
     modal_delete_title: 'Supprimer ce signalement',
     modal_delete_text:  'Cette action est irréversible.',
     search_placeholder: 'Rechercher…',
+    tab_pending: 'En attente',
   },
   de: {
     admin_portal:       'Administrationsportal',
@@ -86,6 +87,7 @@ const I18N = {
     modal_delete_title: 'Meldung löschen',
     modal_delete_text:  'Diese Aktion ist unwiderruflich.',
     search_placeholder: 'Suchen…',
+    tab_pending: 'Ausstehend',
   }
 };
 

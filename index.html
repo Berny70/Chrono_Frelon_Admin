@@ -134,6 +134,7 @@
     <button class="nav-tab active" onclick="switchTab('map', this)"     data-i18n="tab_map">Carte</button>
     <button class="nav-tab"        onclick="switchTab('signals', this)" data-i18n="tab_signals">Signalements</button>
     <button class="nav-tab"        onclick="switchTab('users', this)"   data-i18n="tab_users">Utilisateurs</button>
+    <button class="nav-tab"        onclick="switchTab('pending', this)" data-i18n="tab_pending">En attente <span id="pending-badge" style="display:none;background:#d4820a;color:#fff;border-radius:10px;padding:1px 6px;font-size:11px;margin-left:4px">0</span></button>
   </div>
 
   <!-- Contenu -->
@@ -184,6 +185,16 @@
           oninput="App.filterUsers()">
       </div>
       <div class="list-container" id="users-list">
+        <div class="loading"><div class="spinner"></div></div>
+      </div>
+    </div>
+
+    <!-- Onglet en attente -->
+    <div id="tab-pending">
+      <div class="tab-header">
+        <h3 data-i18n="tab_pending">Demandes en attente</h3>
+      </div>
+      <div class="list-container" id="pending-list">
         <div class="loading"><div class="spinner"></div></div>
       </div>
     </div>

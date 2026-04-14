@@ -131,3 +131,40 @@ function setLoading(id) {
   document.getElementById(id).innerHTML =
     `<div class="loading"><div class="spinner"></div></div>`;
 }
+
+// ── RENDU DEMANDES EN ATTENTE ────────────────────────────────
+
+function renderPending(profiles) {
+  const el = document.getElementById('pending-list');
+  const badge = document.getElementById('pending-badge');
+
+  // Badge dans l'onglet
+  if (badge) {
+    if (profiles.length > 0) {
+      badge.style.display = 'inline';
+      badge.textContent = profiles.length;
+    } else {
+      badge.style.display = 'none';
+    }
+  }
+
+  if (!profiles.length) {
+    el.innerHTML = `<div class="empty"><div class="empty-icon">✅</div>Aucune demande en attente.</div>`;
+    return;
+  }
+
+  const loc = lang === 'fr' ? 'fr-FR' : 'de-DE';
+  el.innerHTML = profiles.map(p => `
+    <div class="user-card" style="flex-wrap:wrap;gap:12px">
+      <div class="user-info" style="min-width:200px">
+        <div class="user-phone" style="font-family:'DM Sans',sans-serif;font-size:14px">${p.prenom} ${p.nom}</div>
+        <div class="user-meta">${p.email}</div>
+        <div class="user-meta">${p.canton} · ${p.departement}</div>
+        <div class="user-meta" style="font-size:11px">${new Date(p.created_at).toLocaleString(loc)}</div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <button class="btn-unblock" onclick="App.confirmValidate('${p.id}', '${p.prenom} ${p.nom}')">✅ Valider</button>
+        <button class="btn-block" onclick="App.confirmReject('${p.id}', '${p.prenom} ${p.nom}')">❌ Refuser</button>
+      </div>
+    </div>`).join('');
+}

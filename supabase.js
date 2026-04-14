@@ -78,3 +78,22 @@ async function blockedAdd(phone_id, blocked_by) {
 async function blockedRemove(phone_id) {
   return sb.from('blocked_phones').delete().eq('phone_id', phone_id);
 }
+
+// ── ADMINS EN ATTENTE ─────────────────────────────────────────
+
+async function pendingGetAll() {
+  const { data } = await sb
+    .from('admin_profiles')
+    .select('*')
+    .eq('role', 'pending')
+    .order('created_at', { ascending: false });
+  return data || [];
+}
+
+async function pendingValidate(id) {
+  return sb.from('admin_profiles').update({ role: 'admin' }).eq('id', id);
+}
+
+async function pendingReject(id) {
+  return sb.from('admin_profiles').delete().eq('id', id);
+}
