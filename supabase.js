@@ -6,7 +6,7 @@ const sb = createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_KEY);
 async function authSendMagicLink(email) {
   return sb.auth.signInWithOtp({
     email,
-    options: { emailRedirectTo: window.location.origin }
+    options: { emailRedirectTo: 'https://berny70.github.io/Chrono_Frelon_Admin/' }
   });
 }
 
