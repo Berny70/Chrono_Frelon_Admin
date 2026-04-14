@@ -1,6 +1,7 @@
 const App = (() => {
 
   let currentUser    = null;
+  let currentRadius  = 50; // km par défaut
   let currentProfile = null;
   let allSignals     = [];
   let allUsers       = [];
@@ -11,6 +12,7 @@ const App = (() => {
   async function init() {
     setLang(lang);
     document.getElementById('topbar-version').textContent = 'v' + CONFIG.APP_VERSION;
+    initRadiusSelector();
 
     authOnChange(async (event, session) => {
       if (session?.user) {
@@ -40,7 +42,7 @@ const App = (() => {
   async function _loadAll() {
     setLoading('signals-list');
     setLoading('users-list');
-    allSignals = await signalsGetAll(currentProfile.lat, currentProfile.lon);
+    allSignals    = await signalsGetAll();
     blockedPhones = await blockedGetAll();
     _buildUsers();
     _refresh();
@@ -165,6 +167,19 @@ const App = (() => {
     renderUsers(allUsers.filter(u => u.phone_id.toLowerCase().includes(q)));
   }
 
+  // ── RAYON ───────────────────────────────────────────────────
+
+  async function onRadiusChange(km) {
+    currentRadius = km;
+    setRadiusDisplay(km);
+    setLoading('signals-list');
+    setLoading('users-list');
+    allSignals    = await signalsGetAll(currentProfile.lat, currentProfile.lon, currentRadius);
+    blockedPhones = await blockedGetAll();
+    _buildUsers();
+    _refresh();
+  }
+
   // ── API PUBLIQUE ─────────────────────────────────────────────
 
   return {
@@ -177,6 +192,7 @@ const App = (() => {
     confirmUnblock,
     filterSignals,
     filterUsers,
+    onRadiusChange,
   };
 
 })();

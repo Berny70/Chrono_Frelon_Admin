@@ -67,6 +67,19 @@ function updateStats(signals, users) {
   document.getElementById('stat-blocked').textContent = users.filter(u => u.blocked).length;
 }
 
+function initRadiusSelector() {
+  const el = document.getElementById("radius-select");
+  if (!el) return;
+  el.addEventListener("change", () => App.onRadiusChange(parseInt(el.value)));
+}
+
+function setRadiusDisplay(km) {
+  const el = document.getElementById("radius-select");
+  if (el) el.value = km;
+  const lbl = document.getElementById("stat-radius");
+  if (lbl) lbl.textContent = km + " km";
+}
+
 // ── RENDU LISTES ──────────────────────────────────────────────
 
 function renderSignals(signals, users) {

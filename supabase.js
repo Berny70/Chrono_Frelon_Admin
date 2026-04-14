@@ -6,7 +6,7 @@ const sb = createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_KEY);
 async function authSendMagicLink(email) {
   return sb.auth.signInWithOtp({
     email,
-    options: { emailRedirectTo: 'https://berny70.github.io/Chrono_Frelon_Admin/' }
+    options: { emailRedirectTo: window.location.origin }
   });
 }
 
@@ -43,11 +43,12 @@ async function profileCreate(userId, { email, nom, prenom, canton, departement }
 
 // ── SIGNALEMENTS ──────────────────────────────────────────────
 
-async function signalsGetAll(lat, lon) {
+async function signalsGetAll(lat, lon, radiusKm = 50) {
   if (lat && lon) {
-    const { data } = await sb.rpc('signals_within_50km', {
+    const { data } = await sb.rpc('signals_within_radius', {
       admin_lat: lat,
-      admin_lon: lon
+      admin_lon: lon,
+      admin_radius: radiusKm * 1000
     });
     return data || [];
   }

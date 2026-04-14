@@ -147,6 +147,16 @@
         <div><div class="stat-value" id="stat-today">—</div><div class="stat-label" data-i18n="lbl_today">Aujourd'hui</div></div>
         <div><div class="stat-value" id="stat-users">—</div><div class="stat-label" data-i18n="lbl_users">Utilisateurs</div></div>
         <div><div class="stat-value" id="stat-blocked">—</div><div class="stat-label" data-i18n="lbl_blocked">Bloqués</div></div>
+        <div style="display:flex;flex-direction:column;justify-content:center">
+          <label style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px" data-i18n="lbl_radius">Rayon</label>
+          <select id="radius-select" style="padding:4px 8px;border:1.5px solid var(--border);border-radius:6px;font-family:'DM Sans',sans-serif;font-size:13px;background:#fff;color:var(--text);cursor:pointer">
+            <option value="10">10 km</option>
+            <option value="25">25 km</option>
+            <option value="50" selected>50 km</option>
+            <option value="100">100 km</option>
+            <option value="200">200 km</option>
+          </select>
+        </div>
       </div>
     </div>
 
