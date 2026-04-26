@@ -13,7 +13,7 @@ async function authSignUp(email, password) {
 
 async function authResetPassword(email) {
   return sb.auth.resetPasswordForEmail(email, {
-    redirectTo: window.location.origin + window.location.pathname
+    redirectTo: CONFIG.APP_URL
   });
 }
 
