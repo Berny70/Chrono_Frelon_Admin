@@ -79,6 +79,22 @@
       <div class="auth-message" id="reset-msg"></div>
     </div>
 
+    <!-- Nouveau mot de passe (après reset) -->
+    <div id="form-new-password" style="display:none">
+      <div class="form-group">
+        <label>Nouveau mot de passe</label>
+        <input type="password" id="new-password" placeholder="••••••••">
+      </div>
+      <div class="form-group">
+        <label>Confirmer le mot de passe</label>
+        <input type="password" id="new-password2" placeholder="••••••••">
+      </div>
+      <button class="btn-primary" id="btn-new-password" onclick="App.updatePassword()">
+        Enregistrer le mot de passe
+      </button>
+      <div class="auth-message" id="new-password-msg"></div>
+    </div>
+
     <!-- Inscription -->
     <div id="form-register" style="display:none">
       <div class="form-row">

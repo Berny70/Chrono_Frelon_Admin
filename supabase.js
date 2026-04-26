@@ -3,11 +3,22 @@ const sb = createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_KEY);
 
 // ── AUTH ──────────────────────────────────────────────────────
 
-async function authSendMagicLink(email) {
-  return sb.auth.signInWithOtp({
-    email,
-    options: { emailRedirectTo: window.location.origin }
+async function authSignInWithPassword(email, password) {
+  return sb.auth.signInWithPassword({ email, password });
+}
+
+async function authSignUp(email, password) {
+  return sb.auth.signUp({ email, password });
+}
+
+async function authResetPassword(email) {
+  return sb.auth.resetPasswordForEmail(email, {
+    redirectTo: window.location.origin
   });
+}
+
+async function authUpdatePassword(newPassword) {
+  return sb.auth.updateUser({ password: newPassword });
 }
 
 async function authSignOut() {

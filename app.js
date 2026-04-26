@@ -15,6 +15,14 @@ const App = (() => {
     initRadiusSelector();
 
     authOnChange(async (event, session) => {
+      if (event === 'PASSWORD_RECOVERY') {
+        showScreen('auth');
+        document.getElementById('form-login').style.display       = 'none';
+        document.getElementById('form-reset').style.display       = 'none';
+        document.getElementById('form-register').style.display    = 'none';
+        document.getElementById('form-new-password').style.display = 'block';
+        return;
+      }
       if (session?.user) {
         currentUser = session.user;
         await _checkPendingProfile(session.user.id, session.user.email);
@@ -150,6 +158,32 @@ const App = (() => {
     showAuthMsg('register-msg', 'success', t('msg_registered'));
   }
 
+  async function updatePassword() {
+    const p1 = document.getElementById('new-password').value;
+    const p2 = document.getElementById('new-password2').value;
+    if (p1 !== p2) {
+      showAuthMsg('new-password-msg', 'error', 'Les mots de passe ne correspondent pas.');
+      return;
+    }
+    if (p1.length < 8) {
+      showAuthMsg('new-password-msg', 'error', 'Le mot de passe doit faire au moins 8 caractères.');
+      return;
+    }
+    const btn = document.getElementById('btn-new-password');
+    btn.disabled = true;
+    const { error } = await authUpdatePassword(p1);
+    btn.disabled = false;
+    if (error) {
+      showAuthMsg('new-password-msg', 'error', error.message);
+    } else {
+      showAuthMsg('new-password-msg', 'success', 'Mot de passe mis à jour !');
+      setTimeout(() => {
+        document.getElementById('form-new-password').style.display = 'none';
+        document.getElementById('form-login').style.display = 'block';
+      }, 2000);
+    }
+  }
+
   async function signOut() {
     await authSignOut();
     currentUser = currentProfile = null;
@@ -266,6 +300,7 @@ const App = (() => {
     onRadiusChange,
     confirmValidate,
     confirmReject,
+    updatePassword,
   };
 
 })();
