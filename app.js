@@ -158,6 +158,39 @@ const App = (() => {
     showAuthMsg('register-msg', 'success', t('msg_registered'));
   }
 
+  function showProfilePanel() {
+    const p = currentProfile;
+    document.getElementById('profile-info').textContent =
+      (p?.prenom ? p.prenom + ' ' + p.nom + ' — ' : '') + (p?.email || currentUser?.email || '');
+    document.getElementById('profile-password').value  = '';
+    document.getElementById('profile-password2').value = '';
+    document.getElementById('profile-msg').textContent = '';
+    document.getElementById('profile-msg').className   = 'auth-message';
+    document.getElementById('profile-panel').classList.add('active');
+  }
+
+  function hideProfilePanel() {
+    document.getElementById('profile-panel').classList.remove('active');
+  }
+
+  async function savePassword() {
+    const p1 = document.getElementById('profile-password').value;
+    const p2 = document.getElementById('profile-password2').value;
+    if (!p1) { showAuthMsg('profile-msg', 'error', 'Saisir un mot de passe.'); return; }
+    if (p1 !== p2) { showAuthMsg('profile-msg', 'error', 'Les mots de passe ne correspondent pas.'); return; }
+    if (p1.length < 8) { showAuthMsg('profile-msg', 'error', 'Minimum 8 caractères.'); return; }
+    const btn = document.getElementById('btn-profile-save');
+    btn.disabled = true;
+    const { error } = await authUpdatePassword(p1);
+    btn.disabled = false;
+    if (error) {
+      showAuthMsg('profile-msg', 'error', error.message);
+    } else {
+      showAuthMsg('profile-msg', 'success', 'Mot de passe mis à jour !');
+      setTimeout(() => hideProfilePanel(), 1500);
+    }
+  }
+
   async function updatePassword() {
     const p1 = document.getElementById('new-password').value;
     const p2 = document.getElementById('new-password2').value;
@@ -301,6 +334,9 @@ const App = (() => {
     confirmValidate,
     confirmReject,
     updatePassword,
+    showProfilePanel,
+    hideProfilePanel,
+    savePassword,
   };
 
 })();
