@@ -48,17 +48,31 @@
         <label data-i18n="lbl_email">Email</label>
         <input type="email" id="login-email" placeholder="admin@commune.fr">
       </div>
-      <div class="form-group">
-        <label data-i18n="lbl_password">Mot de passe</label>
-        <input type="password" id="login-password" placeholder="••••••••"
-          onkeydown="if(event.key==='Enter') App.signInWithPassword()">
+      <label style="font-size:13px;color:var(--text-muted);display:block;margin-bottom:6px" data-i18n="lbl_password">Code PIN (6 chiffres)</label>
+      <div class="pin-display" id="pin-login-display">
+        <div class="pin-dot"></div><div class="pin-dot"></div><div class="pin-dot"></div>
+        <div class="pin-dot"></div><div class="pin-dot"></div><div class="pin-dot"></div>
+      </div>
+      <div class="pin-keyboard">
+        <button class="pin-key" onclick="Pin.press('login',1)">1</button>
+        <button class="pin-key" onclick="Pin.press('login',2)">2</button>
+        <button class="pin-key" onclick="Pin.press('login',3)">3</button>
+        <button class="pin-key" onclick="Pin.press('login',4)">4</button>
+        <button class="pin-key" onclick="Pin.press('login',5)">5</button>
+        <button class="pin-key" onclick="Pin.press('login',6)">6</button>
+        <button class="pin-key" onclick="Pin.press('login',7)">7</button>
+        <button class="pin-key" onclick="Pin.press('login',8)">8</button>
+        <button class="pin-key" onclick="Pin.press('login',9)">9</button>
+        <button class="pin-key empty" disabled></button>
+        <button class="pin-key" onclick="Pin.press('login',0)">0</button>
+        <button class="pin-key del" onclick="Pin.del('login')">⌫</button>
       </div>
       <button class="btn-primary" id="btn-login" onclick="App.signInWithPassword()">
         <span data-i18n="btn_login">Se connecter</span>
       </button>
       <div style="text-align:center;margin-top:12px">
         <a href="#" onclick="App.showResetForm()" style="font-size:13px;color:var(--text-muted);text-decoration:none"
-          data-i18n="btn_forgot">Mot de passe oublié ?</a>
+          data-i18n="btn_forgot">Code oublié ?</a>
       </div>
       <div class="auth-message" id="login-msg"></div>
     </div>
@@ -79,18 +93,34 @@
       <div class="auth-message" id="reset-msg"></div>
     </div>
 
-    <!-- Nouveau mot de passe (après reset) -->
+    <!-- Nouveau code PIN (après reset) -->
     <div id="form-new-password" style="display:none">
-      <div class="form-group">
-        <label>Nouveau mot de passe</label>
-        <input type="password" id="new-password" placeholder="••••••••">
+      <label style="font-size:13px;color:var(--text-muted);display:block;margin-bottom:6px">Nouveau code PIN (6 chiffres)</label>
+      <div class="pin-display" id="pin-new1-display">
+        <div class="pin-dot"></div><div class="pin-dot"></div><div class="pin-dot"></div>
+        <div class="pin-dot"></div><div class="pin-dot"></div><div class="pin-dot"></div>
       </div>
-      <div class="form-group">
-        <label>Confirmer le mot de passe</label>
-        <input type="password" id="new-password2" placeholder="••••••••">
+      <label style="font-size:13px;color:var(--text-muted);display:block;margin:8px 0 6px">Confirmer</label>
+      <div class="pin-display" id="pin-new2-display">
+        <div class="pin-dot"></div><div class="pin-dot"></div><div class="pin-dot"></div>
+        <div class="pin-dot"></div><div class="pin-dot"></div><div class="pin-dot"></div>
+      </div>
+      <div class="pin-keyboard">
+        <button class="pin-key" onclick="Pin.press('new',1)">1</button>
+        <button class="pin-key" onclick="Pin.press('new',2)">2</button>
+        <button class="pin-key" onclick="Pin.press('new',3)">3</button>
+        <button class="pin-key" onclick="Pin.press('new',4)">4</button>
+        <button class="pin-key" onclick="Pin.press('new',5)">5</button>
+        <button class="pin-key" onclick="Pin.press('new',6)">6</button>
+        <button class="pin-key" onclick="Pin.press('new',7)">7</button>
+        <button class="pin-key" onclick="Pin.press('new',8)">8</button>
+        <button class="pin-key" onclick="Pin.press('new',9)">9</button>
+        <button class="pin-key empty" disabled></button>
+        <button class="pin-key" onclick="Pin.press('new',0)">0</button>
+        <button class="pin-key del" onclick="Pin.del('new')">⌫</button>
       </div>
       <button class="btn-primary" id="btn-new-password" onclick="App.updatePassword()">
-        Enregistrer le mot de passe
+        Enregistrer le code PIN
       </button>
       <div class="auth-message" id="new-password-msg"></div>
     </div>
@@ -121,13 +151,29 @@
           <input type="text" id="reg-canton" placeholder="Baume-les-Dames">
         </div>
       </div>
-      <div class="form-group">
-        <label data-i18n="lbl_password">Mot de passe</label>
-        <input type="password" id="reg-password" placeholder="••••••••">
+      <label style="font-size:13px;color:var(--text-muted);display:block;margin-bottom:6px">Code PIN (6 chiffres)</label>
+      <div class="pin-display" id="pin-reg1-display">
+        <div class="pin-dot"></div><div class="pin-dot"></div><div class="pin-dot"></div>
+        <div class="pin-dot"></div><div class="pin-dot"></div><div class="pin-dot"></div>
       </div>
-      <div class="form-group">
-        <label data-i18n="lbl_password_confirm">Confirmer le mot de passe</label>
-        <input type="password" id="reg-password2" placeholder="••••••••">
+      <label style="font-size:13px;color:var(--text-muted);display:block;margin:8px 0 6px">Confirmer</label>
+      <div class="pin-display" id="pin-reg2-display">
+        <div class="pin-dot"></div><div class="pin-dot"></div><div class="pin-dot"></div>
+        <div class="pin-dot"></div><div class="pin-dot"></div><div class="pin-dot"></div>
+      </div>
+      <div class="pin-keyboard">
+        <button class="pin-key" onclick="Pin.press('reg',1)">1</button>
+        <button class="pin-key" onclick="Pin.press('reg',2)">2</button>
+        <button class="pin-key" onclick="Pin.press('reg',3)">3</button>
+        <button class="pin-key" onclick="Pin.press('reg',4)">4</button>
+        <button class="pin-key" onclick="Pin.press('reg',5)">5</button>
+        <button class="pin-key" onclick="Pin.press('reg',6)">6</button>
+        <button class="pin-key" onclick="Pin.press('reg',7)">7</button>
+        <button class="pin-key" onclick="Pin.press('reg',8)">8</button>
+        <button class="pin-key" onclick="Pin.press('reg',9)">9</button>
+        <button class="pin-key empty" disabled></button>
+        <button class="pin-key" onclick="Pin.press('reg',0)">0</button>
+        <button class="pin-key del" onclick="Pin.del('reg')">⌫</button>
       </div>
       <button class="btn-primary" id="btn-register" onclick="App.registerAdmin()">
         <span data-i18n="btn_request">Demander l'accès</span>
@@ -262,14 +308,30 @@
     <h3>Mon profil</h3>
     <div id="profile-info" style="margin-bottom:16px;font-size:14px;color:var(--text-muted)"></div>
     <hr style="border:none;border-top:1px solid var(--border);margin-bottom:16px">
-    <h3 style="font-size:15px;margin-bottom:12px">Changer le mot de passe</h3>
-    <div class="form-group">
-      <label>Nouveau mot de passe</label>
-      <input type="password" id="profile-password" placeholder="••••••••">
+    <h3 style="font-size:15px;margin-bottom:12px">Changer le code PIN</h3>
+    <label style="font-size:13px;color:var(--text-muted);display:block;margin-bottom:6px">Nouveau PIN (6 chiffres)</label>
+    <div class="pin-display" id="pin-prof1-display">
+      <div class="pin-dot"></div><div class="pin-dot"></div><div class="pin-dot"></div>
+      <div class="pin-dot"></div><div class="pin-dot"></div><div class="pin-dot"></div>
     </div>
-    <div class="form-group">
-      <label>Confirmer</label>
-      <input type="password" id="profile-password2" placeholder="••••••••">
+    <label style="font-size:13px;color:var(--text-muted);display:block;margin:8px 0 6px">Confirmer</label>
+    <div class="pin-display" id="pin-prof2-display">
+      <div class="pin-dot"></div><div class="pin-dot"></div><div class="pin-dot"></div>
+      <div class="pin-dot"></div><div class="pin-dot"></div><div class="pin-dot"></div>
+    </div>
+    <div class="pin-keyboard">
+      <button class="pin-key" onclick="Pin.press('prof',1)">1</button>
+      <button class="pin-key" onclick="Pin.press('prof',2)">2</button>
+      <button class="pin-key" onclick="Pin.press('prof',3)">3</button>
+      <button class="pin-key" onclick="Pin.press('prof',4)">4</button>
+      <button class="pin-key" onclick="Pin.press('prof',5)">5</button>
+      <button class="pin-key" onclick="Pin.press('prof',6)">6</button>
+      <button class="pin-key" onclick="Pin.press('prof',7)">7</button>
+      <button class="pin-key" onclick="Pin.press('prof',8)">8</button>
+      <button class="pin-key" onclick="Pin.press('prof',9)">9</button>
+      <button class="pin-key empty" disabled></button>
+      <button class="pin-key" onclick="Pin.press('prof',0)">0</button>
+      <button class="pin-key del" onclick="Pin.del('prof')">⌫</button>
     </div>
     <div class="auth-message" id="profile-msg"></div>
     <div class="modal-actions" style="margin-top:8px">

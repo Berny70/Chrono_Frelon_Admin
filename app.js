@@ -1,3 +1,83 @@
+// ── MODULE PIN ────────────────────────────────────────────────
+const Pin = (() => {
+  const state = { login: '', reg: ['',''], new: ['',''], prof: ['',''] };
+  // Pour reg/new/prof : state[ctx][0] = pin1, state[ctx][1] = pin2
+  // On saisit pin1 en premier, puis pin2 automatiquement quand pin1 est complet
+
+  function _dots(ctx, slot) {
+    const idMap = {
+      login: ['pin-login-display'],
+      reg:   ['pin-reg1-display',  'pin-reg2-display'],
+      new:   ['pin-new1-display',  'pin-new2-display'],
+      prof:  ['pin-prof1-display', 'pin-prof2-display'],
+    };
+    return document.getElementById(idMap[ctx][slot]).querySelectorAll('.pin-dot');
+  }
+
+  function _render(ctx) {
+    if (ctx === 'login') {
+      const val = state.login;
+      _dots('login', 0).forEach((d, i) => d.classList.toggle('filled', i < val.length));
+    } else {
+      const pair = state[ctx];
+      const active = pair[0].length < 6 ? 0 : 1;
+      [0, 1].forEach(s => {
+        const val = pair[s];
+        _dots(ctx, s).forEach((d, i) => d.classList.toggle('filled', i < val.length));
+      });
+      // Highlight active display
+      [0, 1].forEach(s => {
+        const el = _dots(ctx, s)[0].parentElement;
+        el.style.opacity = (s === active) ? '1' : '0.4';
+      });
+    }
+  }
+
+  function press(ctx, digit) {
+    if (ctx === 'login') {
+      if (state.login.length < 6) state.login += digit;
+    } else {
+      const pair = state[ctx];
+      const active = pair[0].length < 6 ? 0 : 1;
+      if (pair[active].length < 6) pair[active] += digit;
+    }
+    _render(ctx);
+  }
+
+  function del(ctx) {
+    if (ctx === 'login') {
+      state.login = state.login.slice(0, -1);
+    } else {
+      const pair = state[ctx];
+      const active = pair[1].length > 0 ? 1 : 0;
+      pair[active] = pair[active].slice(0, -1);
+    }
+    _render(ctx);
+  }
+
+  function get(ctx) {
+    if (ctx === 'login') return state.login;
+    return state[ctx]; // retourne [pin1, pin2]
+  }
+
+  function reset(ctx) {
+    if (ctx === 'login') state.login = '';
+    else state[ctx] = ['', ''];
+    _render(ctx);
+  }
+
+  function setError(ctx) {
+    const ctxs = ctx === 'login' ? [['login',0]] : [[ctx,0],[ctx,1]];
+    ctxs.forEach(([c, s]) => _dots(c, s).forEach(d => {
+      d.classList.add('error');
+      setTimeout(() => { d.classList.remove('error'); d.classList.remove('filled'); }, 500);
+    }));
+    setTimeout(() => reset(ctx), 500);
+  }
+
+  return { press, del, get, reset, setError };
+})();
+
 const App = (() => {
 
   let currentUser    = null;
@@ -92,14 +172,18 @@ const App = (() => {
   // ── AUTH ─────────────────────────────────────────────────────
 
   async function signInWithPassword() {
-    const email    = document.getElementById('login-email').value.trim();
-    const password = document.getElementById('login-password').value;
-    if (!email || !password) return;
+    const email = document.getElementById('login-email').value.trim();
+    const pin   = Pin.get('login');
+    if (!email || pin.length < 6) {
+      showAuthMsg('login-msg', 'error', 'Saisir l\'email et le code PIN complet.');
+      return;
+    }
     const btn = document.getElementById('btn-login');
     btn.disabled = true;
-    const { error } = await authSignInWithPassword(email, password);
+    const { error } = await authSignInWithPassword(email, pin);
     btn.disabled = false;
-    if (error) showAuthMsg('login-msg', 'error', error.message);
+    if (error) { Pin.setError('login'); showAuthMsg('login-msg', 'error', error.message); }
+    else Pin.reset('login');
   }
 
   function showResetForm() {
@@ -126,32 +210,30 @@ const App = (() => {
   }
 
   async function registerAdmin() {
-    const prenom   = document.getElementById('reg-prenom').value.trim();
-    const nom      = document.getElementById('reg-nom').value.trim();
-    const email    = document.getElementById('reg-email').value.trim();
-    const dept     = document.getElementById('reg-dept').value.trim();
-    const canton   = document.getElementById('reg-canton').value.trim();
-    const password = document.getElementById('reg-password').value;
-    const password2= document.getElementById('reg-password2').value;
+    const prenom = document.getElementById('reg-prenom').value.trim();
+    const nom    = document.getElementById('reg-nom').value.trim();
+    const email  = document.getElementById('reg-email').value.trim();
+    const dept   = document.getElementById('reg-dept').value.trim();
+    const canton = document.getElementById('reg-canton').value.trim();
+    const [pin1, pin2] = Pin.get('reg');
 
-    if (!prenom || !nom || !email || !dept || !canton || !password) {
-      showAuthMsg('register-msg', 'error', t('msg_fill'));
-      return;
+    if (!prenom || !nom || !email || !dept || !canton) {
+      showAuthMsg('register-msg', 'error', t('msg_fill')); return;
     }
-    if (password !== password2) {
-      showAuthMsg('register-msg', 'error', 'Les mots de passe ne correspondent pas.');
-      return;
+    if (pin1.length < 6) {
+      showAuthMsg('register-msg', 'error', 'Saisir un code PIN à 6 chiffres.'); return;
     }
-    if (password.length < 8) {
-      showAuthMsg('register-msg', 'error', 'Le mot de passe doit faire au moins 8 caractères.');
-      return;
+    if (pin1 !== pin2) {
+      Pin.setError('reg');
+      showAuthMsg('register-msg', 'error', 'Les codes PIN ne correspondent pas.'); return;
     }
 
     const btn = document.getElementById('btn-register');
     btn.disabled = true;
-    const { error } = await authSignUp(email, password);
+    const { error } = await authSignUp(email, pin1);
     btn.disabled = false;
     if (error) { showAuthMsg('register-msg', 'error', error.message); return; }
+    Pin.reset('reg');
     localStorage.setItem('pending_profile', JSON.stringify({
       prenom, nom, email, departement: dept, canton
     }));
@@ -162,8 +244,7 @@ const App = (() => {
     const p = currentProfile;
     document.getElementById('profile-info').textContent =
       (p?.prenom ? p.prenom + ' ' + p.nom + ' — ' : '') + (p?.email || currentUser?.email || '');
-    document.getElementById('profile-password').value  = '';
-    document.getElementById('profile-password2').value = '';
+    Pin.reset('prof');
     document.getElementById('profile-msg').textContent = '';
     document.getElementById('profile-msg').className   = 'auth-message';
     document.getElementById('profile-panel').classList.add('active');
@@ -174,11 +255,12 @@ const App = (() => {
   }
 
   async function savePassword() {
-    const p1 = document.getElementById('profile-password').value;
-    const p2 = document.getElementById('profile-password2').value;
-    if (!p1) { showAuthMsg('profile-msg', 'error', 'Saisir un mot de passe.'); return; }
-    if (p1 !== p2) { showAuthMsg('profile-msg', 'error', 'Les mots de passe ne correspondent pas.'); return; }
-    if (p1.length < 8) { showAuthMsg('profile-msg', 'error', 'Minimum 8 caractères.'); return; }
+    const [p1, p2] = Pin.get('prof');
+    if (p1.length < 6) { showAuthMsg('profile-msg', 'error', 'Saisir un code PIN à 6 chiffres.'); return; }
+    if (p1 !== p2) {
+      Pin.setError('prof');
+      showAuthMsg('profile-msg', 'error', 'Les codes PIN ne correspondent pas.'); return;
+    }
     const btn = document.getElementById('btn-profile-save');
     btn.disabled = true;
     const { error } = await authUpdatePassword(p1);
@@ -186,21 +268,20 @@ const App = (() => {
     if (error) {
       showAuthMsg('profile-msg', 'error', error.message);
     } else {
-      showAuthMsg('profile-msg', 'success', 'Mot de passe mis à jour !');
+      Pin.reset('prof');
+      showAuthMsg('profile-msg', 'success', 'Code PIN mis à jour !');
       setTimeout(() => hideProfilePanel(), 1500);
     }
   }
 
   async function updatePassword() {
-    const p1 = document.getElementById('new-password').value;
-    const p2 = document.getElementById('new-password2').value;
-    if (p1 !== p2) {
-      showAuthMsg('new-password-msg', 'error', 'Les mots de passe ne correspondent pas.');
-      return;
+    const [p1, p2] = Pin.get('new');
+    if (p1.length < 6) {
+      showAuthMsg('new-password-msg', 'error', 'Saisir un code PIN à 6 chiffres.'); return;
     }
-    if (p1.length < 8) {
-      showAuthMsg('new-password-msg', 'error', 'Le mot de passe doit faire au moins 8 caractères.');
-      return;
+    if (p1 !== p2) {
+      Pin.setError('new');
+      showAuthMsg('new-password-msg', 'error', 'Les codes PIN ne correspondent pas.'); return;
     }
     const btn = document.getElementById('btn-new-password');
     btn.disabled = true;
@@ -209,7 +290,8 @@ const App = (() => {
     if (error) {
       showAuthMsg('new-password-msg', 'error', error.message);
     } else {
-      showAuthMsg('new-password-msg', 'success', 'Mot de passe mis à jour !');
+      Pin.reset('new');
+      showAuthMsg('new-password-msg', 'success', 'Code PIN mis à jour !');
       setTimeout(() => {
         document.getElementById('form-new-password').style.display = 'none';
         document.getElementById('form-login').style.display = 'block';

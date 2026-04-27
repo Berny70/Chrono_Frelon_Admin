@@ -524,6 +524,47 @@ h1, h2, h3 {
   .search-input { width: 140px; }
 }
 
+/* ── CLAVIER PIN ────────────────────────────────────────────── */
+.pin-display {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin: 12px 0 20px;
+}
+.pin-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 2px solid var(--forest-light);
+  background: transparent;
+  transition: background 0.15s;
+}
+.pin-dot.filled { background: var(--forest); border-color: var(--forest); }
+.pin-dot.error  { border-color: var(--danger); background: var(--danger); }
+
+.pin-keyboard {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-bottom: 8px;
+}
+.pin-key {
+  background: var(--cream-dark);
+  border: none;
+  border-radius: 12px;
+  padding: 16px 0;
+  font-size: 20px;
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 500;
+  color: var(--text);
+  cursor: pointer;
+  transition: background 0.12s, transform 0.08s;
+  user-select: none;
+}
+.pin-key:active { background: var(--forest-light); color: #fff; transform: scale(0.95); }
+.pin-key.del    { font-size: 16px; color: var(--text-muted); }
+.pin-key.empty  { visibility: hidden; }
+
 /* ── SURBRILLANCE CARTE ─────────────────────────────────────── */
 .signal-card.highlighted {
   border: 2px solid var(--amber);
