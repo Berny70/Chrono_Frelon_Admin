@@ -1,8 +1,6 @@
 // ── MODULE PIN ────────────────────────────────────────────────
 const Pin = (() => {
   const state = { login: '', reg: ['',''], new: ['',''], prof: ['',''] };
-  // Pour reg/new/prof : state[ctx][0] = pin1, state[ctx][1] = pin2
-  // On saisit pin1 en premier, puis pin2 automatiquement quand pin1 est complet
 
   function _dots(ctx, slot) {
     const idMap = {
@@ -25,7 +23,6 @@ const Pin = (() => {
         const val = pair[s];
         _dots(ctx, s).forEach((d, i) => d.classList.toggle('filled', i < val.length));
       });
-      // Highlight active display
       [0, 1].forEach(s => {
         const el = _dots(ctx, s)[0].parentElement;
         el.style.opacity = (s === active) ? '1' : '0.4';
@@ -57,7 +54,7 @@ const Pin = (() => {
 
   function get(ctx) {
     if (ctx === 'login') return state.login;
-    return state[ctx]; // retourne [pin1, pin2]
+    return state[ctx];
   }
 
   function reset(ctx) {
@@ -81,10 +78,12 @@ const Pin = (() => {
 const App = (() => {
 
   let currentUser    = null;
-  let currentRadius  = 50; // km par défaut
+  let currentRadius  = 50;
   let currentProfile = null;
   let allSignals     = [];
   let allUsers       = [];
+  let allPilots      = [];
+  let pilotUsers     = [];
   let blockedPhones  = new Set();
 
   // ── INIT ────────────────────────────────────────────────────
@@ -97,9 +96,9 @@ const App = (() => {
     authOnChange(async (event, session) => {
       if (event === 'PASSWORD_RECOVERY') {
         showScreen('auth');
-        document.getElementById('form-login').style.display       = 'none';
-        document.getElementById('form-reset').style.display       = 'none';
-        document.getElementById('form-register').style.display    = 'none';
+        document.getElementById('form-login').style.display        = 'none';
+        document.getElementById('form-reset').style.display        = 'none';
+        document.getElementById('form-register').style.display     = 'none';
         document.getElementById('form-new-password').style.display = 'block';
         return;
       }
@@ -114,8 +113,10 @@ const App = (() => {
           await authSignOut();
           showScreen('auth');
         } else {
+          _applyRoleUI(currentProfile.role);
           document.getElementById('topbar-canton').textContent =
-            currentProfile.canton + ' · ' + currentProfile.departement;
+            (currentProfile.secteur || currentProfile.canton || '—') +
+            ' · ' + (currentProfile.departement || '—');
           showScreen('dashboard');
           await _loadAll();
         }
@@ -125,13 +126,52 @@ const App = (() => {
     });
   }
 
+  // ── GESTION DE L'UI SELON LE RÔLE ───────────────────────────
+
+  function _applyRoleUI(role) {
+    // Onglet "Mes pilotes" : visible uniquement pour superadmin et admin_dept
+    const tabPilots = document.getElementById('tab-btn-pilots');
+    if (tabPilots) {
+      tabPilots.style.display =
+        ['superadmin', 'admin_dept'].includes(role) ? 'block' : 'none';
+    }
+    // Onglet "En attente" : visible uniquement pour superadmin et admin_dept
+    const tabPending = document.getElementById('tab-btn-pending');
+    if (tabPending) {
+      tabPending.style.display =
+        ['superadmin', 'admin_dept'].includes(role) ? 'block' : 'none';
+    }
+    // Bouton QR Code : visible pour pilot, admin_dept, superadmin
+    const btnQr = document.getElementById('btn-qrcode');
+    if (btnQr) {
+      btnQr.style.display =
+        ['superadmin', 'admin_dept', 'pilot'].includes(role) ? 'inline-flex' : 'none';
+    }
+  }
+
   // ── CHARGEMENT DES DONNÉES ───────────────────────────────────
 
   async function _loadAll() {
     setLoading('signals-list');
     setLoading('users-list');
-    allSignals    = await signalsGetAll();
-    blockedPhones = await blockedGetAll();
+
+    const role = currentProfile.role;
+
+    if (role === 'pilot') {
+      // Le pilote voit uniquement les observations de ses utilisateurs
+      allSignals  = await signalsGetAll(currentProfile.lat, currentProfile.lon, currentRadius);
+      pilotUsers  = await pilotUsersGet(currentProfile.id);
+      blockedPhones = new Set(pilotUsers.filter(u => u.blocked).map(u => u.phone_id));
+    } else {
+      // admin_dept et superadmin voient tout leur périmètre
+      allSignals    = await signalsGetAll(currentProfile.lat, currentProfile.lon, currentRadius);
+      blockedPhones = await blockedGetAll();
+      if (['superadmin', 'admin_dept'].includes(role)) {
+        allPilots = await pilotsGetByDept(currentProfile.id);
+        await _loadPending();
+      }
+    }
+
     _buildUsers();
     _refresh();
   }
@@ -142,13 +182,24 @@ const App = (() => {
   }
 
   function _buildUsers() {
-    const phones = [...new Set(allSignals.map(s => s.phone_id).filter(Boolean))];
-    allUsers = phones.map(phone => ({
-      phone_id: phone,
-      count:    allSignals.filter(s => s.phone_id === phone).length,
-      last:     allSignals.find(s => s.phone_id === phone)?.created_at,
-      blocked:  blockedPhones.has(phone),
-    }));
+    const role = currentProfile?.role;
+    if (role === 'pilot') {
+      // Pour le pilote, les utilisateurs viennent de pilot_user_stats
+      allUsers = pilotUsers.map(u => ({
+        phone_id:  u.phone_id,
+        count:     u.nb_observations || 0,
+        last:      u.derniere_observation || u.rattachement_date,
+        blocked:   u.blocked,
+      }));
+    } else {
+      const phones = [...new Set(allSignals.map(s => s.phone_id).filter(Boolean))];
+      allUsers = phones.map(phone => ({
+        phone_id: phone,
+        count:    allSignals.filter(s => s.phone_id === phone).length,
+        last:     allSignals.find(s => s.phone_id === phone)?.created_at,
+        blocked:  blockedPhones.has(phone),
+      }));
+    }
   }
 
   function _refresh() {
@@ -156,6 +207,9 @@ const App = (() => {
     renderUsers(allUsers);
     updateStats(allSignals, allUsers);
     mapInit(allSignals, blockedPhones);
+    if (['superadmin', 'admin_dept'].includes(currentProfile?.role)) {
+      renderPilots(allPilots);
+    }
   }
 
   // ── PROFIL EN ATTENTE ────────────────────────────────────────
@@ -187,14 +241,14 @@ const App = (() => {
   }
 
   function showResetForm() {
-    document.getElementById('form-login').style.display  = 'none';
-    document.getElementById('form-reset').style.display  = 'block';
+    document.getElementById('form-login').style.display    = 'none';
+    document.getElementById('form-reset').style.display    = 'block';
     document.getElementById('form-register').style.display = 'none';
   }
 
   function showLoginForm() {
-    document.getElementById('form-login').style.display  = 'block';
-    document.getElementById('form-reset').style.display  = 'none';
+    document.getElementById('form-login').style.display    = 'block';
+    document.getElementById('form-reset').style.display    = 'none';
     document.getElementById('form-register').style.display = 'none';
   }
 
@@ -243,7 +297,9 @@ const App = (() => {
   function showProfilePanel() {
     const p = currentProfile;
     document.getElementById('profile-info').textContent =
-      (p?.prenom ? p.prenom + ' ' + p.nom + ' — ' : '') + (p?.email || currentUser?.email || '');
+      (p?.prenom ? p.prenom + ' ' + p.nom + ' — ' : '') +
+      (p?.email || currentUser?.email || '') +
+      (p?.role ? ' · ' + _roleLabel(p.role) : '');
     Pin.reset('prof');
     document.getElementById('profile-msg').textContent = '';
     document.getElementById('profile-msg').className   = 'auth-message';
@@ -256,7 +312,9 @@ const App = (() => {
 
   async function savePassword() {
     const [p1, p2] = Pin.get('prof');
-    if (p1.length < 6) { showAuthMsg('profile-msg', 'error', 'Saisir un code PIN à 6 chiffres.'); return; }
+    if (p1.length < 6) {
+      showAuthMsg('profile-msg', 'error', 'Saisir un code PIN à 6 chiffres.'); return;
+    }
     if (p1 !== p2) {
       Pin.setError('prof');
       showAuthMsg('profile-msg', 'error', 'Les codes PIN ne correspondent pas.'); return;
@@ -302,7 +360,7 @@ const App = (() => {
   async function signOut() {
     await authSignOut();
     currentUser = currentProfile = null;
-    allSignals = []; allUsers = [];
+    allSignals = []; allUsers = []; allPilots = []; pilotUsers = [];
     showScreen('auth');
   }
 
@@ -322,9 +380,17 @@ const App = (() => {
 
   function confirmBlock(phone_id) {
     showModal(t('modal_block_title'), t('modal_block_text'), t('btn_block'), async () => {
-      await blockedAdd(phone_id, currentUser.id);
+      const role = currentProfile.role;
+      if (role === 'pilot') {
+        await pilotUserBlock(phone_id, currentProfile.id);
+        pilotUsers = pilotUsers.map(u =>
+          u.phone_id === phone_id ? { ...u, blocked: true } : u
+        );
+      } else {
+        await blockedAdd(phone_id, currentUser.id);
+        blockedPhones.add(phone_id);
+      }
       showToast(t('msg_blocked'));
-      blockedPhones.add(phone_id);
       _buildUsers();
       _refresh();
     });
@@ -332,12 +398,113 @@ const App = (() => {
 
   function confirmUnblock(phone_id) {
     showModal(t('modal_unblock_title'), t('modal_unblock_text'), t('btn_unblock'), async () => {
-      await blockedRemove(phone_id);
+      const role = currentProfile.role;
+      if (role === 'pilot') {
+        await pilotUserUnblock(phone_id, currentProfile.id);
+        pilotUsers = pilotUsers.map(u =>
+          u.phone_id === phone_id ? { ...u, blocked: false } : u
+        );
+      } else {
+        await blockedRemove(phone_id);
+        blockedPhones.delete(phone_id);
+      }
       showToast(t('msg_unblocked'));
-      blockedPhones.delete(phone_id);
       _buildUsers();
       _refresh();
     });
+  }
+
+  // ── ACTIONS PILOTES (admin_dept) ────────────────────────────
+
+  function showCreatePilotPanel() {
+    document.getElementById('create-pilot-panel').classList.add('active');
+  }
+
+  function hideCreatePilotPanel() {
+    document.getElementById('create-pilot-panel').classList.remove('active');
+    document.getElementById('create-pilot-msg').textContent = '';
+  }
+
+  async function createPilot() {
+    const prenom  = document.getElementById('pilot-prenom').value.trim();
+    const nom     = document.getElementById('pilot-nom').value.trim();
+    const email   = document.getElementById('pilot-email').value.trim();
+    const secteur = document.getElementById('pilot-secteur').value.trim();
+
+    if (!prenom || !nom || !email || !secteur) {
+      showAuthMsg('create-pilot-msg', 'error', 'Tous les champs sont requis.'); return;
+    }
+
+    const btn = document.getElementById('btn-create-pilot');
+    btn.disabled = true;
+    const { error } = await pilotCreate(currentProfile.id, {
+      email, nom, prenom, secteur,
+      departement: currentProfile.departement,
+    });
+    btn.disabled = false;
+
+    if (error) {
+      showAuthMsg('create-pilot-msg', 'error', error.message);
+    } else {
+      showToast(`Pilote ${prenom} ${nom} créé — PIN provisoire : ${CONFIG.PILOT_DEFAULT_PIN}`);
+      hideCreatePilotPanel();
+      allPilots = await pilotsGetByDept(currentProfile.id);
+      renderPilots(allPilots);
+    }
+  }
+
+  function confirmDeletePilot(id, name) {
+    showModal(
+      'Supprimer ce pilote',
+      `Supprimer ${name} et tous ses utilisateurs rattachés ?`,
+      'Supprimer',
+      async () => {
+        await pilotDelete(id);
+        showToast(`${name} supprimé.`);
+        allPilots = allPilots.filter(p => p.id !== id);
+        renderPilots(allPilots);
+      }
+    );
+  }
+
+  function confirmBlockPilot(id, name) {
+    showModal(
+      'Bloquer ce pilote',
+      `Bloquer l'accès de ${name} ?`,
+      'Bloquer',
+      async () => {
+        await pilotUpdateRole(id, 'blocked');
+        showToast(`${name} bloqué.`);
+        allPilots = await pilotsGetByDept(currentProfile.id);
+        renderPilots(allPilots);
+      }
+    );
+  }
+
+  // ── QR CODE ──────────────────────────────────────────────────
+
+  function showQrCode() {
+    const url = qrCodeBuildUrl(currentProfile.id);
+    const panel = document.getElementById('qrcode-panel');
+    const container = document.getElementById('qrcode-container');
+    const urlEl = document.getElementById('qrcode-url');
+
+    // Vide le container et génère le QR Code
+    container.innerHTML = '';
+    new QRCode(container, {
+      text:          url,
+      width:         220,
+      height:        220,
+      colorDark:     '#1a2e1a',
+      colorLight:    '#ffffff',
+      correctLevel:  QRCode.CorrectLevel.H,
+    });
+    if (urlEl) urlEl.textContent = url;
+    panel.classList.add('active');
+  }
+
+  function hideQrCode() {
+    document.getElementById('qrcode-panel').classList.remove('active');
   }
 
   // ── FILTRES ─────────────────────────────────────────────────
@@ -391,10 +558,22 @@ const App = (() => {
     setLoading('signals-list');
     setLoading('users-list');
     allSignals    = await signalsGetAll(currentProfile.lat, currentProfile.lon, currentRadius);
-    await _loadPending();
     blockedPhones = await blockedGetAll();
     _buildUsers();
     _refresh();
+  }
+
+  // ── UTILITAIRES ──────────────────────────────────────────────
+
+  function _roleLabel(role) {
+    const labels = {
+      superadmin: 'Super Admin',
+      admin_dept: 'Admin Départemental',
+      pilot:      'Pilote',
+      pending:    'En attente',
+      blocked:    'Bloqué',
+    };
+    return labels[role] || role;
   }
 
   // ── API PUBLIQUE ─────────────────────────────────────────────
@@ -419,6 +598,13 @@ const App = (() => {
     showProfilePanel,
     hideProfilePanel,
     savePassword,
+    showCreatePilotPanel,
+    hideCreatePilotPanel,
+    createPilot,
+    confirmDeletePilot,
+    confirmBlockPilot,
+    showQrCode,
+    hideQrCode,
   };
 
 })();
