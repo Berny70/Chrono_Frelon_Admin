@@ -7,4 +7,5 @@ const CONFIG = {
   MAX_SIGNALS:       500,
   PILOT_DEFAULT_PIN: '000000',
   CHRONO_FRELON_URL: 'https://berny70.github.io/Chrono_Frelon/distrib/',
+  TRAIT_LENGTH_M: 1000,   // longueur des traits en mètres, modifiable par le pilote
 };
