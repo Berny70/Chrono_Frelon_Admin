@@ -590,3 +590,14 @@ h1, h2, h3 {
 /* ── TAB PENDING ────────────────────────────────────────────── */
 #tab-pending { flex: 1; display: none; overflow-y: auto; }
 #tab-pending.active { display: block; }
+
+.convergence-label {
+  background: rgba(240, 168, 50, 0.9);
+  border: none;
+  border-radius: 6px;
+  color: #1a2e1a;
+  font-weight: 600;
+  font-size: 12px;
+  padding: 3px 8px;
+  white-space: nowrap;
+}
