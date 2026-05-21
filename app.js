@@ -576,6 +576,26 @@ const App = (() => {
     return labels[role] || role;
   }
 
+  function confirmUnblockPilot(id, name) {
+    showModal(
+      'Débloquer ce pilote',
+      `Rétablir l'accès de ${name} ?`,
+      'Débloquer',
+      async () => {
+        await pilotUpdateRole(id, 'pilot');
+        showToast(`${name} débloqué.`);
+        allPilots = await pilotsGetByDept(currentProfile.id);
+        renderPilots(allPilots);
+      }
+    );
+  }
+
+  async function loadPilotsTab() {
+    setLoading('pilots-list');
+    allPilots = await pilotsGetByDept(currentProfile.id);
+    renderPilots(allPilots);
+  }
+
   // ── API PUBLIQUE ─────────────────────────────────────────────
 
   return {
@@ -603,10 +623,10 @@ const App = (() => {
     createPilot,
     confirmDeletePilot,
     confirmBlockPilot,
+    confirmUnblockPilot,   // ← manquant
     showQrCode,
     hideQrCode,
+    loadPilotsTab,         // ← manquant
   };
-
 })();
-
 document.addEventListener('DOMContentLoaded', App.init);
