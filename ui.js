@@ -239,3 +239,17 @@ function setLoading(id) {
   const el = document.getElementById(id);
   if (el) el.innerHTML = `<div class="loading"><div class="spinner"></div></div>`;
 }
+
+// ── FAQ ACCORDION ─────────────────────────────────────────────
+function toggleFaq(el) {
+  const answer = el.nextElementSibling;
+  const isOpen = answer.classList.contains('open');
+  // Ferme toutes les réponses ouvertes
+  document.querySelectorAll('.faq-answer.open').forEach(a => a.classList.remove('open'));
+  document.querySelectorAll('.faq-question.open').forEach(q => q.classList.remove('open'));
+  // Ouvre celle cliquée si elle était fermée
+  if (!isOpen) {
+    answer.classList.add('open');
+    el.classList.add('open');
+  }
+}
