@@ -41,7 +41,6 @@ function _computeConvergence(signals) {
 
       // Convertit les deux droites en coordonnées cartésiennes locales (mètres)
       // Origine = premier signal comme référence
-      const R = 6371000;
       const φ0 = a.lat * Math.PI / 180;
       const λ0 = a.lon * Math.PI / 180;
 
