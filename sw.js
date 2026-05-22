@@ -1,4 +1,4 @@
-const CACHE = 'cf-admin-v1';
+const CACHE = 'cf-admin-v2'; // ← version incrémentée pour forcer le rechargement
 const ASSETS = ['/', '/index.html', '/manifest.json'];
 
 self.addEventListener('install', e => {
@@ -16,6 +16,15 @@ self.addEventListener('activate', e => {
 self.addEventListener('fetch', e => {
   if (e.request.method !== 'GET') return;
   if (e.request.url.includes('supabase.co')) return;
+
+  // ← NE JAMAIS intercepter les callbacks d'authentification Supabase
+  const url = e.request.url;
+  if (url.includes('access_token')  ||
+      url.includes('refresh_token') ||
+      url.includes('error_code')    ||
+      url.includes('type=recovery') ||
+      url.includes('#')) return;
+
   e.respondWith(
     fetch(e.request)
       .then(r => {
