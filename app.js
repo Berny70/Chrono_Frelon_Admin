@@ -486,24 +486,22 @@ async function init() {
 
   function showQrCode() {
     const url = qrCodeBuildUrl(currentProfile.id);
-    const panel = document.getElementById('qrcode-panel');
+    const panel     = document.getElementById('qrcode-panel');
     const container = document.getElementById('qrcode-container');
-    const urlEl = document.getElementById('qrcode-url');
-
-    // Vide le container et génère le QR Code
+    const urlEl     = document.getElementById('qrcode-url');
+  
     container.innerHTML = '';
     new QRCode(container, {
-      text:          url,
-      width:         220,
-      height:        220,
-      colorDark:     '#1a2e1a',
-      colorLight:    '#ffffff',
-      correctLevel:  QRCode.CorrectLevel.H,
+      text:         url,
+      width:        220,
+      height:       220,
+      colorDark:    '#1a2e1a',
+      colorLight:   '#ffffff',
+      correctLevel: QRCode.CorrectLevel.H,
     });
     if (urlEl) urlEl.textContent = url;
     panel.classList.add('active');
   }
-
   function hideQrCode() {
     document.getElementById('qrcode-panel').classList.remove('active');
   }
