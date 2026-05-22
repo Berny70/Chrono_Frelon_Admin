@@ -68,7 +68,7 @@ function _computeConvergence(signals) {
 
       // Filtre les intersections aberrantes (> 5 km du signal)
       const dist = Math.sqrt(ix * ix + iy * iy);
-      if (dist < 5000) intersections.push([iLat, iLon]);
+      if (dist > 0 && dist < 2000) intersections.push([iLat, iLon]);
     }
   }
 
