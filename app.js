@@ -637,7 +637,7 @@ document.addEventListener('DOMContentLoaded', App.init);
 // ── AIDE ────────────────────────────────────────────────────
 
 function showAide() {
-  document.getElementById('contact-email').value  = currentProfile?.email || '';
+  document.getElementById('contact-email').value = currentProfile?.email || currentUser?.email || '';
   document.getElementById('contact-message').value = '';
   document.getElementById('contact-msg').textContent = '';
   document.getElementById('contact-msg').className   = 'auth-message';
