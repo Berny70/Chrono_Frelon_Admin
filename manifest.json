@@ -1,6 +1,6 @@
 {
-  "name": "Chrono-Frelon Admin",
-  "short_name": "CF Admin",
+  "name": "Vigie Frelon Admin",
+  "short_name": "Vigie Frelon",
   "description": "Portail administrateur Chrono-Frelon",
   "start_url": "/Chrono_Frelon_Admin/",
   "scope": "/Chrono_Frelon_Admin/",
