@@ -630,3 +630,59 @@ const App = (() => {
   };
 })();
 document.addEventListener('DOMContentLoaded', App.init);
+
+// ── AIDE ────────────────────────────────────────────────────
+
+function showAide() {
+  document.getElementById('contact-email').value  = currentProfile?.email || '';
+  document.getElementById('contact-message').value = '';
+  document.getElementById('contact-msg').textContent = '';
+  document.getElementById('contact-msg').className   = 'auth-message';
+  document.getElementById('aide-panel').classList.add('active');
+}
+
+function hideAide() {
+  document.getElementById('aide-panel').classList.remove('active');
+}
+
+async function sendContact() {
+  const email   = document.getElementById('contact-email').value.trim();
+  const sujet   = document.getElementById('contact-sujet').value;
+  const message = document.getElementById('contact-message').value.trim();
+
+  if (!email || !message) {
+    showAuthMsg('contact-msg', 'error', 'Veuillez renseigner votre email et votre message.');
+    return;
+  }
+
+  const btn = document.getElementById('btn-contact-send');
+  btn.disabled = true;
+
+  // Envoi via mailto (ouvre le client mail natif)
+  // ou via Resend si la Edge Function est disponible
+  try {
+    const { error } = await sb.functions.invoke('smooth-responder', {
+      body: {
+        type:    'contact',
+        from:    email,
+        subject: `[Chrono-Frelon Admin] ${sujet} — ${currentProfile?.prenom || ''} ${currentProfile?.nom || ''}`,
+        message: message,
+        to:      'bc.barrois@gmail.com',
+      }
+    });
+    if (error) throw error;
+    showAuthMsg('contact-msg', 'success', 'Message envoyé ! Bernard vous répondra dans les meilleurs délais.');
+    setTimeout(() => hideAide(), 2500);
+  } catch (err) {
+    // Fallback : ouvre le client mail natif
+    const body = encodeURIComponent(
+      `De : ${email}\nNom : ${currentProfile?.prenom || ''} ${currentProfile?.nom || ''}\nSecteur : ${currentProfile?.secteur || currentProfile?.canton || ''}\n\n${message}`
+    );
+    const subj = encodeURIComponent(`[Chrono-Frelon Admin] ${sujet}`);
+    window.open(`mailto:bc.barrois@gmail.com?subject=${subj}&body=${body}`);
+    showAuthMsg('contact-msg', 'success', 'Votre client mail s\'est ouvert.');
+    setTimeout(() => hideAide(), 2000);
+  }
+
+  btn.disabled = false;
+}
