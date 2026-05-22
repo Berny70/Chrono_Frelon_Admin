@@ -516,42 +516,29 @@
     </div>
 
     <!-- Formulaire de contact -->
-    <div style="font-weight:600;font-size:13px;margin-bottom:10px">
-      ✉ Contacter le coordinateur national
-    </div>
-    <div class="form-group">
-      <label style="font-size:12px">Votre email</label>
-      <input type="email" id="contact-email" placeholder="votre@email.fr">
-    </div>
-    <div class="form-group">
-      <label style="font-size:12px">Sujet</label>
-      <select id="contact-sujet" style="
-        width:100%;padding:10px 12px;border:1.5px solid var(--border);
-        border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;
-        background:#fff;color:var(--text)">
-        <option value="compte">Problème de compte / accès</option>
-        <option value="pilote">Gestion d'un pilote</option>
-        <option value="carte">Problème sur la carte</option>
-        <option value="donnees">Données incorrectes</option>
-        <option value="autre">Autre</option>
-      </select>
-    </div>
-    <div class="form-group">
-      <label style="font-size:12px">Message</label>
-      <textarea id="contact-message" rows="4" placeholder="Décrivez votre problème..." style="
-        width:100%;padding:10px 12px;border:1.5px solid var(--border);
-        border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;
-        resize:vertical;box-sizing:border-box"></textarea>
-    </div>
-    <div class="auth-message" id="contact-msg"></div>
-    <div class="modal-actions">
-      <button class="btn-cancel" onclick="App.hideAide()">Fermer</button>
-      <button class="btn-primary" id="btn-contact-send" onclick="App.sendContact()">
-        Envoyer
-      </button>
-    </div>
-  </div>
+<div style="font-weight:600;font-size:13px;margin-bottom:10px">
+  ✉ Contacter le coordinateur national
 </div>
+<p style="font-size:12px;color:var(--text-muted);margin-bottom:12px">
+  Pour toute question technique, problème de compte ou demande d'assistance,
+  utilisez le formulaire de contact en ligne. Bernard BARROIS vous répondra
+  dans les meilleurs délais.
+</p>
+<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:8px">
+  <button class="btn-primary" onclick="window.open('https://docs.google.com/forms/d/1z6fp6oWa_iBpW5IyfAvMxSYpDmHrLn4BrfLZeyOZI9Q/viewform','_blank')"
+    style="flex:1;min-width:160px">
+    📋 Ouvrir le formulaire
+  </button>
+  <a href="mailto:bc.barrois@gmail.com" style="
+    flex:1;min-width:160px;text-align:center;padding:10px;
+    border:1.5px solid #2d6a4f;border-radius:8px;
+    color:#2d6a4f;font-size:13px;font-weight:500;text-decoration:none">
+    ✉ bc.barrois@gmail.com
+  </a>
+</div>
+<p style="font-size:11px;color:var(--text-muted);text-align:center">
+  Urgence : 06 28 13 62 47
+</p>
   
 
 <!-- ══ MODAL ═════════════════════════════════════════════════ -->
