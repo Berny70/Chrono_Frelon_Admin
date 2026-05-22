@@ -601,3 +601,36 @@ h1, h2, h3 {
   padding: 3px 8px;
   white-space: nowrap;
 }
+/* ── FAQ ──────────────────────────────────────────────────── */
+.faq-item {
+  border-bottom: 1px solid var(--border, #ddd);
+  margin-bottom: 4px;
+}
+.faq-question {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text);
+  padding: 10px 4px;
+  cursor: pointer;
+  user-select: none;
+  transition: color 0.2s;
+}
+.faq-question:hover {
+  color: #2d6a4f;
+}
+.faq-question.open {
+  color: #2d6a4f;
+}
+.faq-question.open::first-letter {
+  content: '▼';
+}
+.faq-answer {
+  display: none;
+  font-size: 12px;
+  color: var(--text-muted, #666);
+  padding: 0 4px 10px 16px;
+  line-height: 1.6;
+}
+.faq-answer.open {
+  display: block;
+}
