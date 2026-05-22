@@ -597,8 +597,48 @@ async function init() {
     renderPilots(allPilots);
   }
 
-  // ── API PUBLIQUE ─────────────────────────────────────────────
+  // ── AIDE ──────────────────────────────────────────────────
+  function showAide() {
+    document.getElementById('aide-panel').classList.add('active');
+  }
 
+  function hideAide() {
+    document.getElementById('aide-panel').classList.remove('active');
+  }
+
+  // ── UTILITAIRES ───────────────────────────────────────────
+  function _roleLabel(role) {
+    const labels = {
+      superadmin: 'Super Admin',
+      admin_dept: 'Admin Départemental',
+      pilot:      'Pilote',
+      pending:    'En attente',
+      blocked:    'Bloqué',
+    };
+    return labels[role] || role;
+  }
+
+  function confirmUnblockPilot(id, name) {
+    showModal(
+      'Débloquer ce pilote',
+      `Rétablir l'accès de ${name} ?`,
+      'Débloquer',
+      async () => {
+        await pilotUpdateRole(id, 'pilot');
+        showToast(`${name} débloqué.`);
+        allPilots = await pilotsGetByDept(currentProfile.id);
+        renderPilots(allPilots);
+      }
+    );
+  }
+
+  async function loadPilotsTab() {
+    setLoading('pilots-list');
+    allPilots = await pilotsGetByDept(currentProfile.id);
+    renderPilots(allPilots);
+  }
+
+  // ── API PUBLIQUE ─────────────────────────────────────────
   return {
     init,
     signInWithPassword,
@@ -624,27 +664,13 @@ async function init() {
     createPilot,
     confirmDeletePilot,
     confirmBlockPilot,
-    confirmUnblockPilot,   // ← manquant
+    confirmUnblockPilot,
     showQrCode,
     hideQrCode,
-    loadPilotsTab,         // ← manquant
+    loadPilotsTab,
     showAide,
     hideAide,
   };
 })();
+
 document.addEventListener('DOMContentLoaded', App.init);
-
-// ── AIDE ────────────────────────────────────────────────────
-
-function showAide() {
-  document.getElementById('contact-email').value = currentProfile?.email || currentUser?.email || '';
-  document.getElementById('contact-message').value = '';
-  document.getElementById('contact-msg').textContent = '';
-  document.getElementById('contact-msg').className   = 'auth-message';
-  document.getElementById('aide-panel').classList.add('active');
-}
-
-function hideAide() {
-  document.getElementById('aide-panel').classList.remove('active');
-}
-
