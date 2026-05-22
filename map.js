@@ -26,6 +26,7 @@ function _destPoint(lat, lon, bearingDeg, distM) {
 // et le rayon moyen d'incertitude
 function _computeConvergence(signals) {
   if (signals.length < 2) return null;
+  const R = 6371000;  // ← ajouter ici
 
   // Chaque signal définit une droite : origine + direction
   // On cherche le point minimisant la somme des distances aux droites
