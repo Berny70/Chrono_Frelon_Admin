@@ -88,9 +88,10 @@ const App = (() => {
 
   // ── INIT ────────────────────────────────────────────────────
 
-  async function init() {
+async function init() {
     setLang(lang);
     document.getElementById('topbar-version').textContent = 'v' + CONFIG.APP_VERSION;
+    document.getElementById('auth-version').textContent   = 'v' + CONFIG.APP_VERSION;  // ← ajouter
     initRadiusSelector();
 
     authOnChange(async (event, session) => {
