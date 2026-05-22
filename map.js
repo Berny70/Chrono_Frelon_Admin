@@ -26,47 +26,47 @@ function _destPoint(lat, lon, bearingDeg, distM) {
 // et le rayon moyen d'incertitude
 function _computeConvergence(signals) {
   if (signals.length < 2) return null;
-  const R = 6371000;  // ← ajouter ici
+  const R = 6371000;
 
-  // Chaque signal définit une droite : origine + direction
-  // On cherche le point minimisant la somme des distances aux droites
-  // Méthode : barycentre des intersections par paires
+  // Calcule le centre géographique de tous les signaux
+  const centerLat = signals.reduce((s, p) => s + p.lat, 0) / signals.length;
+  const centerLon = signals.reduce((s, p) => s + p.lon, 0) / signals.length;
+
+  // Ne garde que les signaux dans un rayon de 5 km autour du centre
+  const local = signals.filter(s => {
+    const dlat = (s.lat - centerLat) * Math.PI / 180 * R;
+    const dlon = (s.lon - centerLon) * Math.PI / 180 * R * Math.cos(centerLat * Math.PI / 180);
+    return Math.sqrt(dlat * dlat + dlon * dlon) < 5000;
+  });
+
+  if (local.length < 2) return null;
 
   const intersections = [];
 
-  for (let i = 0; i < signals.length; i++) {
-    for (let j = i + 1; j < signals.length; j++) {
-      const a = signals[i];
-      const b = signals[j];
+  for (let i = 0; i < local.length; i++) {
+    for (let j = i + 1; j < local.length; j++) {
+      const a = local[i];
+      const b = local[j];
 
-      // Convertit les deux droites en coordonnées cartésiennes locales (mètres)
-      // Origine = premier signal comme référence
       const φ0 = a.lat * Math.PI / 180;
-      const λ0 = a.lon * Math.PI / 180;
-
-      // Position de b en mètres depuis a
       const dx = (b.lon - a.lon) * Math.PI / 180 * R * Math.cos(φ0);
       const dy = (b.lat - a.lat) * Math.PI / 180 * R;
 
-      // Vecteurs directeurs des deux droites
       const ba = a.direction * Math.PI / 180;
       const bb = b.direction * Math.PI / 180;
       const ux = Math.sin(ba), uy = Math.cos(ba);
       const vx = Math.sin(bb), vy = Math.cos(bb);
 
-      // Intersection : résolution du système linéaire
       const denom = ux * vy - uy * vx;
-      if (Math.abs(denom) < 0.001) continue; // droites parallèles
+      if (Math.abs(denom) < 0.001) continue;
 
       const t = (dx * vy - dy * vx) / denom;
-      const ix = t * ux;        // en mètres depuis a
+      const ix = t * ux;
       const iy = t * uy;
 
-      // Reconvertit en lat/lon
       const iLat = a.lat + (iy / R) * 180 / Math.PI;
       const iLon = a.lon + (ix / (R * Math.cos(φ0))) * 180 / Math.PI;
 
-      // Filtre les intersections aberrantes (> 5 km du signal)
       const dist = Math.sqrt(ix * ix + iy * iy);
       if (dist > 0 && dist < 2000) intersections.push([iLat, iLon]);
     }
@@ -74,18 +74,16 @@ function _computeConvergence(signals) {
 
   if (!intersections.length) return null;
 
-  // Barycentre
   const cLat = intersections.reduce((s, p) => s + p[0], 0) / intersections.length;
   const cLon = intersections.reduce((s, p) => s + p[1], 0) / intersections.length;
 
-  // Rayon = distance moyenne des intersections au barycentre (en mètres)
   const radius = intersections.reduce((s, p) => {
     const dlat = (p[0] - cLat) * Math.PI / 180 * R;
     const dlon = (p[1] - cLon) * Math.PI / 180 * R * Math.cos(cLat * Math.PI / 180);
     return s + Math.sqrt(dlat * dlat + dlon * dlon);
   }, 0) / intersections.length;
 
-  return { lat: cLat, lon: cLon, radius: Math.max(radius, 30) };
+  return { lat: cLat, lon: cLon, radius: Math.min(Math.max(radius, 30), 500) };
 }
 
 // ── INIT CARTE ────────────────────────────────────────────────
