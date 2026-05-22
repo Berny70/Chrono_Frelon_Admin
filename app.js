@@ -152,30 +152,33 @@ async function init() {
 
   // ── CHARGEMENT DES DONNÉES ───────────────────────────────────
 
-  async function _loadAll() {
-    setLoading('signals-list');
-    setLoading('users-list');
+ async function _loadAll() {
+  setLoading('signals-list');
+  setLoading('users-list');
 
-    const role = currentProfile.role;
+  const role = currentProfile.role;
 
-    if (role === 'pilot') {
-      // Le pilote voit uniquement les observations de ses utilisateurs
-      allSignals  = await signalsGetAll(currentProfile.lat, currentProfile.lon, currentRadius);
-      pilotUsers  = await pilotUsersGet(currentProfile.id);
-      blockedPhones = new Set(pilotUsers.filter(u => u.blocked).map(u => u.phone_id));
-    } else {
-      // admin_dept et superadmin voient tout leur périmètre
-      allSignals    = await signalsGetAll(currentProfile.lat, currentProfile.lon, currentRadius);
-      blockedPhones = await blockedGetAll();
-      if (['superadmin', 'admin_dept'].includes(role)) {
-        allPilots = await pilotsGetByDept(currentProfile.id);
-        await _loadPending();
-      }
-    }
-
-    _buildUsers();
-    _refresh();
+  if (role === 'superadmin') {
+    // Vue globale : tous les signaux sans filtre géographique
+    allSignals    = await signalsGetAll();
+    blockedPhones = await blockedGetAll();
+    allPilots     = await pilotsGetByDept(currentProfile.id);
+    await _loadPending();
+  } else if (role === 'pilot') {
+    allSignals    = await signalsGetAll(currentProfile.lat, currentProfile.lon, currentRadius);
+    pilotUsers    = await pilotUsersGet(currentProfile.id);
+    blockedPhones = new Set(pilotUsers.filter(u => u.blocked).map(u => u.phone_id));
+  } else {
+    // admin_dept
+    allSignals    = await signalsGetAll(currentProfile.lat, currentProfile.lon, currentRadius);
+    blockedPhones = await blockedGetAll();
+    allPilots     = await pilotsGetByDept(currentProfile.id);
+    await _loadPending();
   }
+
+  _buildUsers();
+  _refresh();
+}
 
   async function _loadPending() {
     const pending = await pendingGetAll();
