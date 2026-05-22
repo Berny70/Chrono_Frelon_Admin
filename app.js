@@ -554,16 +554,20 @@ async function init() {
 
   // ── RAYON ───────────────────────────────────────────────────
 
-  async function onRadiusChange(km) {
-    currentRadius = km;
-    setRadiusDisplay(km);
-    setLoading('signals-list');
-    setLoading('users-list');
-    allSignals    = await signalsGetAll(currentProfile.lat, currentProfile.lon, currentRadius);
-    blockedPhones = await blockedGetAll();
-    _buildUsers();
-    _refresh();
+async function onRadiusChange(km) {
+  currentRadius = km;
+  setRadiusDisplay(km);
+  setLoading('signals-list');
+  setLoading('users-list');
+  if (currentProfile.role === 'superadmin') {
+    allSignals = await signalsGetAll();
+  } else {
+    allSignals = await signalsGetAll(currentProfile.lat, currentProfile.lon, currentRadius);
   }
+  blockedPhones = await blockedGetAll();
+  _buildUsers();
+  _refresh();
+}
 
   // ── UTILITAIRES ──────────────────────────────────────────────
 
