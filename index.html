@@ -422,7 +422,21 @@
     </p>
     <div id="qrcode-container" style="display:inline-block;padding:12px;background:#fff;border-radius:8px;margin-bottom:16px"></div>
     <div id="qrcode-url" style="font-size:10px;font-family:monospace;color:var(--text-muted);word-break:break-all;margin-bottom:16px"></div>
-    <div class="modal-actions" style="justify-content:center">
+    <div class="modal-actions" style="justify-content:center;flex-wrap:wrap;gap:8px">
+      <button class="btn-primary" onclick="
+        const url = document.getElementById('qrcode-url').textContent;
+        window.open('https://wa.me/?text=' + encodeURIComponent(
+          'Installez Vigie Frelon en scannant ce QR Code ou via ce lien : ' + url
+        ), '_blank')
+      " style="background:#25D366;min-width:160px">
+        📲 Partager sur WhatsApp
+      </button>
+      <button class="btn-primary" onclick="
+        navigator.clipboard.writeText(document.getElementById('qrcode-url').textContent)
+          .then(() => showToast('Lien copié !'))
+      " style="min-width:160px">
+        📋 Copier le lien
+      </button>
       <button class="btn-cancel" onclick="App.hideQrCode()">Fermer</button>
     </div>
   </div>
