@@ -1,4 +1,4 @@
-const CACHE = 'cf-admin-v3.1';
+const CACHE = 'cf-admin-v3.2';
 const ASSETS = []; // ← vide, on ne précache plus rien au démarrage
 
 self.addEventListener('install', e => {
