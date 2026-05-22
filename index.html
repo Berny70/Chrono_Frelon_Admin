@@ -31,15 +31,11 @@
         <span data-i18n="admin_portal">Portail Administrateur</span>
       </div>
     </div>
-    <div class="auth-logo-text">
-        <h1>Chrono-Frelon</h1>
-        <span data-i18n="admin_portal">Portail Administrateur</span>
-      </div>
-    </div>
 
     <!-- Version -->
     <div style="text-align:center;font-size:11px;opacity:0.45;margin-bottom:4px;letter-spacing:0.06em"
          id="auth-version"></div>
+
     <div class="lang-pill" style="margin-bottom:20px">
       <button class="lang-btn active" data-lang="fr" onclick="setLang('fr')">FR</button>
       <button class="lang-btn"        data-lang="de" onclick="setLang('de')">DE</button>
@@ -232,6 +228,15 @@
           <rect x="3" y="14" width="7" height="7"/><path d="M14 14h3v3h-3zM17 17h3v3h-3zM14 20h3"/>
         </svg>
       </button>
+      <!-- Bouton Aide -->
+      <button class="btn-icon" id="btn-aide" onclick="App.showAide()"
+        title="Aide" aria-label="Aide">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/>
+          <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+          <circle cx="12" cy="17" r=".5" fill="currentColor"/>
+        </svg>
+      </button>
       <button class="btn-icon" onclick="App.showProfilePanel()" title="Mon profil" aria-label="Mon profil">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
@@ -242,15 +247,6 @@
           <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/>
         </svg>
       </button>
-     <!-- Bouton Aide -->
-      <button class="btn-icon" id="btn-aide" onclick="App.showAide()"
-        title="Aide" aria-label="Aide">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <circle cx="12" cy="12" r="10"/>
-          <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
-          <circle cx="12" cy="17" r=".5" fill="currentColor"/>
-        </svg>
-      </button>      
     </div>
   </div>
 
@@ -406,7 +402,7 @@
     </div>
     <p style="font-size:12px;color:var(--text-muted);margin:8px 0 16px">
       Le pilote recevra un email de confirmation. Son PIN provisoire est
-      <strong>${CONFIG.PILOT_DEFAULT_PIN}</strong> — il devra le modifier à sa première connexion.
+      <strong>000000</strong> — il devra le modifier à sa première connexion.
     </p>
     <div class="auth-message" id="create-pilot-msg"></div>
     <div class="modal-actions">
@@ -431,6 +427,7 @@
     </div>
   </div>
 </div>
+
 <!-- ══ PANNEAU AIDE ══════════════════════════════════════════ -->
 <div class="modal-overlay" id="aide-panel" role="dialog" aria-modal="true">
   <div class="modal" style="max-width:520px">
@@ -507,12 +504,8 @@
     </div>
 
     <!-- Notices PDF -->
-    <div style="
-      background:var(--bg2,#f5f5f5);border-radius:8px;
-      padding:12px 14px;margin-bottom:20px">
-      <div style="font-weight:600;font-size:13px;margin-bottom:8px">
-        📄 Notices PDF
-      </div>
+    <div style="background:var(--bg2,#f5f5f5);border-radius:8px;padding:12px 14px;margin-bottom:20px">
+      <div style="font-weight:600;font-size:13px;margin-bottom:8px">📄 Notices PDF</div>
       <a href="https://berny70.github.io/Chrono_Frelon_Admin/notices/notice_utilisateur.pdf"
          target="_blank" style="display:block;font-size:13px;color:#2d6a4f;margin-bottom:4px">
         → Notice utilisateur (pilotes)
@@ -523,31 +516,37 @@
       </a>
     </div>
 
-    <!-- Formulaire de contact -->
-<div style="font-weight:600;font-size:13px;margin-bottom:10px">
-  ✉ Contacter le coordinateur national
+    <!-- Contact -->
+    <div style="font-weight:600;font-size:13px;margin-bottom:10px">
+      ✉ Contacter le coordinateur national
+    </div>
+    <p style="font-size:12px;color:var(--text-muted);margin-bottom:12px">
+      Pour toute question technique, problème de compte ou demande d'assistance,
+      utilisez le formulaire de contact en ligne. Bernard BARROIS vous répondra
+      dans les meilleurs délais.
+    </p>
+    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:8px">
+      <button class="btn-primary"
+        onclick="window.open('https://docs.google.com/forms/d/1z6fp6oWa_iBpW5IyfAvMxSYpDmHrLn4BrfLZeyOZI9Q/viewform','_blank')"
+        style="flex:1;min-width:160px">
+        📋 Ouvrir le formulaire
+      </button>
+      <a href="mailto:bc.barrois@gmail.com" style="
+        flex:1;min-width:160px;text-align:center;padding:10px;
+        border:1.5px solid #2d6a4f;border-radius:8px;
+        color:#2d6a4f;font-size:13px;font-weight:500;text-decoration:none">
+        ✉ bc.barrois@gmail.com
+      </a>
+    </div>
+    <p style="font-size:11px;color:var(--text-muted);text-align:center;margin-bottom:16px">
+      Urgence : 06 28 13 62 47
+    </p>
+
+    <div class="modal-actions" style="justify-content:center">
+      <button class="btn-cancel" onclick="App.hideAide()">Fermer</button>
+    </div>
+  </div>
 </div>
-<p style="font-size:12px;color:var(--text-muted);margin-bottom:12px">
-  Pour toute question technique, problème de compte ou demande d'assistance,
-  utilisez le formulaire de contact en ligne. Bernard BARROIS vous répondra
-  dans les meilleurs délais.
-</p>
-<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:8px">
-  <button class="btn-primary" onclick="window.open('https://docs.google.com/forms/d/1z6fp6oWa_iBpW5IyfAvMxSYpDmHrLn4BrfLZeyOZI9Q/viewform','_blank')"
-    style="flex:1;min-width:160px">
-    📋 Ouvrir le formulaire
-  </button>
-  <a href="mailto:bc.barrois@gmail.com" style="
-    flex:1;min-width:160px;text-align:center;padding:10px;
-    border:1.5px solid #2d6a4f;border-radius:8px;
-    color:#2d6a4f;font-size:13px;font-weight:500;text-decoration:none">
-    ✉ bc.barrois@gmail.com
-  </a>
-</div>
-<p style="font-size:11px;color:var(--text-muted);text-align:center">
-  Urgence : 06 28 13 62 47
-</p>
-  
 
 <!-- ══ MODAL ═════════════════════════════════════════════════ -->
 <div class="modal-overlay" id="modal" role="dialog" aria-modal="true">
