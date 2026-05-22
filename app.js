@@ -627,6 +627,9 @@ const App = (() => {
     showQrCode,
     hideQrCode,
     loadPilotsTab,         // ← manquant
+    showAide,
+    hideAide,
+    sendContact,
   };
 })();
 document.addEventListener('DOMContentLoaded', App.init);
