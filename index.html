@@ -423,6 +423,136 @@
     </div>
   </div>
 </div>
+<!-- ══ PANNEAU AIDE ══════════════════════════════════════════ -->
+<div class="modal-overlay" id="aide-panel" role="dialog" aria-modal="true">
+  <div class="modal" style="max-width:520px">
+    <h3>Aide — Chrono-Frelon Admin</h3>
+
+    <!-- FAQ -->
+    <div style="margin-bottom:20px">
+
+      <div class="faq-item">
+        <div class="faq-question" onclick="toggleFaq(this)">
+          ▶ Comment distribuer l'application à mes observateurs ?
+        </div>
+        <div class="faq-answer">
+          Affichez votre QR Code (icône ▦ en haut à droite) lors d'une réunion.
+          Chaque participant le scanne et Chrono-Frelon s'installe automatiquement,
+          rattaché à votre secteur.
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question" onclick="toggleFaq(this)">
+          ▶ Comment lire la carte ?
+        </div>
+        <div class="faq-answer">
+          Chaque trait représente une observation : le point est la position de
+          l'observateur, la ligne indique la direction de vol du frelon.
+          Le cercle orange indique la zone probable du nid calculée par convergence
+          des traits.
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question" onclick="toggleFaq(this)">
+          ▶ Que faire après la destruction d'un nid ?
+        </div>
+        <div class="faq-answer">
+          Supprimez les signalements de la zone neutralisée dans l'onglet
+          Signalements, pour ne pas induire de nouvelles recherches inutiles.
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question" onclick="toggleFaq(this)">
+          ▶ Comment créer un pilote ? (admin départemental)
+        </div>
+        <div class="faq-answer">
+          Aller dans l'onglet "Mes pilotes" → "+ Nouveau pilote" → renseigner
+          prénom, nom, email et secteur → "Créer". Le pilote reçoit un email
+          avec un PIN provisoire 000000 à changer à la première connexion.
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question" onclick="toggleFaq(this)">
+          ▶ J'ai oublié mon code PIN
+        </div>
+        <div class="faq-answer">
+          Sur l'écran de connexion, appuyer sur "Code oublié ?" et saisir
+          votre email. Un lien de réinitialisation vous sera envoyé.
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question" onclick="toggleFaq(this)">
+          ▶ La carte n'affiche aucun trait
+        </div>
+        <div class="faq-answer">
+          Vérifiez votre connexion internet et augmentez le rayon d'affichage
+          dans la barre de statistiques. Si le problème persiste, contactez
+          le coordinateur national.
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Notices PDF -->
+    <div style="
+      background:var(--bg2,#f5f5f5);border-radius:8px;
+      padding:12px 14px;margin-bottom:20px">
+      <div style="font-weight:600;font-size:13px;margin-bottom:8px">
+        📄 Notices PDF
+      </div>
+      <a href="https://berny70.github.io/Chrono_Frelon_Admin/notices/notice_utilisateur.pdf"
+         target="_blank" style="display:block;font-size:13px;color:#2d6a4f;margin-bottom:4px">
+        → Notice utilisateur (pilotes)
+      </a>
+      <a href="https://berny70.github.io/Chrono_Frelon_Admin/notices/notice_admin.pdf"
+         target="_blank" style="display:block;font-size:13px;color:#2d6a4f">
+        → Notice administrateur départemental
+      </a>
+    </div>
+
+    <!-- Formulaire de contact -->
+    <div style="font-weight:600;font-size:13px;margin-bottom:10px">
+      ✉ Contacter le coordinateur national
+    </div>
+    <div class="form-group">
+      <label style="font-size:12px">Votre email</label>
+      <input type="email" id="contact-email" placeholder="votre@email.fr">
+    </div>
+    <div class="form-group">
+      <label style="font-size:12px">Sujet</label>
+      <select id="contact-sujet" style="
+        width:100%;padding:10px 12px;border:1.5px solid var(--border);
+        border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;
+        background:#fff;color:var(--text)">
+        <option value="compte">Problème de compte / accès</option>
+        <option value="pilote">Gestion d'un pilote</option>
+        <option value="carte">Problème sur la carte</option>
+        <option value="donnees">Données incorrectes</option>
+        <option value="autre">Autre</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label style="font-size:12px">Message</label>
+      <textarea id="contact-message" rows="4" placeholder="Décrivez votre problème..." style="
+        width:100%;padding:10px 12px;border:1.5px solid var(--border);
+        border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;
+        resize:vertical;box-sizing:border-box"></textarea>
+    </div>
+    <div class="auth-message" id="contact-msg"></div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="App.hideAide()">Fermer</button>
+      <button class="btn-primary" id="btn-contact-send" onclick="App.sendContact()">
+        Envoyer
+      </button>
+    </div>
+  </div>
+</div>
+  
 
 <!-- ══ MODAL ═════════════════════════════════════════════════ -->
 <div class="modal-overlay" id="modal" role="dialog" aria-modal="true">
