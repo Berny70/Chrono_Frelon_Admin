@@ -5,7 +5,7 @@ const Pin = (() => {
   function _dots(ctx, slot) {
     const idMap = {
       login: ['pin-login-display'],
-      reg:   ['pin-reg1-display',  'pin-reg2-display'],
+      reg:   ['pin-reg1-display',  'pin-reg2-display'], 
       new:   ['pin-new1-display',  'pin-new2-display'],
       prof:  ['pin-prof1-display', 'pin-prof2-display'],
     };
