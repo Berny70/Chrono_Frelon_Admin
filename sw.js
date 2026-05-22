@@ -1,4 +1,4 @@
-const CACHE = 'cf-admin-v3.5';
+const CACHE = 'cf-admin-v3.6';
 const ASSETS = []; // ← vide, on ne précache plus rien au démarrage
 
 self.addEventListener('install', e => {
@@ -18,6 +18,9 @@ self.addEventListener('activate', e => {
 self.addEventListener('fetch', e => {
   if (e.request.method !== 'GET') return;
   if (e.request.url.includes('supabase.co')) return;
+  if (e.request.url.includes('openstreetmap.org')) return;  // ← ajouter
+  if (e.request.url.includes('tile.')) return;               // ← ajouter
+  
   const url = e.request.url;
   if (url.includes('access_token')  ||
       url.includes('refresh_token') ||
