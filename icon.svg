@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192">
+  <!-- Fond vert foncé -->
+  <circle cx="96" cy="96" r="96" fill="#1a2e1a"/>
+  <!-- Corps du frelon -->
+  <ellipse cx="96" cy="96" rx="38" ry="22" fill="#d4820a" transform="rotate(-20 96 96)"/>
+  <!-- Centre -->
+  <circle cx="96" cy="96" r="16" fill="#f0a832"/>
+  <!-- Antennes -->
+  <path d="M83 60 Q96 45 109 60" stroke="#f0a832" stroke-width="4" fill="none" stroke-linecap="round"/>
+  <!-- Pattes jaunes -->
+  <path d="M72 108 Q62 120 55 128" stroke="#f0a832" stroke-width="3" fill="none" stroke-linecap="round"/>
+  <path d="M96 112 Q96 126 96 134" stroke="#f0a832" stroke-width="3" fill="none" stroke-linecap="round"/>
+  <path d="M120 108 Q130 120 137 128" stroke="#f0a832" stroke-width="3" fill="none" stroke-linecap="round"/>
+</svg>
