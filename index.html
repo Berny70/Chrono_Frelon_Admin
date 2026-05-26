@@ -17,7 +17,6 @@
 <!-- ══ SCREEN AUTH ══════════════════════════════════════════ -->
 <div id="screen-auth" class="screen active">
   <div class="auth-card">
-
     <div class="auth-logo">
       <svg width="44" height="44" viewBox="0 0 44 44" aria-hidden="true">
         <circle cx="22" cy="22" r="22" fill="#1a2e1a"/>
@@ -27,26 +26,19 @@
         <path d="M17 30 Q22 34 27 30" stroke="#f0a832" stroke-width="1.5" fill="none" stroke-linecap="round"/>
       </svg>
       <div class="auth-logo-text">
-        <h1>Chrono-Frelon</h1>
+        <h1>Réseau Frelon</h1>
         <span data-i18n="admin_portal">Portail Administrateur</span>
       </div>
     </div>
-
-    <!-- Version -->
-    <div style="text-align:center;font-size:11px;opacity:0.45;margin-bottom:4px;letter-spacing:0.06em"
-         id="auth-version"></div>
-
+    <div style="text-align:center;font-size:11px;opacity:0.45;margin-bottom:4px;letter-spacing:0.06em" id="auth-version"></div>
     <div class="lang-pill" style="margin-bottom:20px">
       <button class="lang-btn active" data-lang="fr" onclick="setLang('fr')">FR</button>
       <button class="lang-btn"        data-lang="de" onclick="setLang('de')">DE</button>
     </div>
-
     <div class="auth-tabs">
       <button class="auth-tab active" onclick="switchAuthTab('login')"    data-i18n="tab_login">Connexion</button>
       <button class="auth-tab"        onclick="switchAuthTab('register')" data-i18n="tab_register">Inscription</button>
     </div>
-
-    <!-- Connexion -->
     <div id="form-login">
       <div class="form-group">
         <label data-i18n="lbl_email">Email</label>
@@ -69,19 +61,16 @@
         <button class="pin-key" onclick="Pin.press('login',9)">9</button>
         <button class="pin-key empty" disabled></button>
         <button class="pin-key" onclick="Pin.press('login',0)">0</button>
-        <button class="pin-key del" onclick="Pin.del('login')">⌫</button>
+        <button class="pin-key del" onclick="Pin.del('login')">&#x232B;</button>
       </div>
       <button class="btn-primary" id="btn-login" onclick="App.signInWithPassword()">
         <span data-i18n="btn_login">Se connecter</span>
       </button>
       <div style="text-align:center;margin-top:12px">
-        <a href="#" onclick="App.showResetForm()" style="font-size:13px;color:var(--text-muted);text-decoration:none"
-          data-i18n="btn_forgot">Code oublié ?</a>
+        <a href="#" onclick="App.showResetForm()" style="font-size:13px;color:var(--text-muted);text-decoration:none" data-i18n="btn_forgot">Code oublié ?</a>
       </div>
       <div class="auth-message" id="login-msg"></div>
     </div>
-
-    <!-- Reset mot de passe -->
     <div id="form-reset" style="display:none">
       <div class="form-group">
         <label data-i18n="lbl_email">Email</label>
@@ -91,13 +80,10 @@
         <span data-i18n="btn_send_reset">Envoyer le lien de reset</span>
       </button>
       <div style="text-align:center;margin-top:12px">
-        <a href="#" onclick="App.showLoginForm()" style="font-size:13px;color:var(--text-muted);text-decoration:none"
-          data-i18n="btn_back_login">← Retour connexion</a>
+        <a href="#" onclick="App.showLoginForm()" style="font-size:13px;color:var(--text-muted);text-decoration:none" data-i18n="btn_back_login">&#8592; Retour connexion</a>
       </div>
       <div class="auth-message" id="reset-msg"></div>
     </div>
-
-    <!-- Nouveau code PIN (après reset) -->
     <div id="form-new-password" style="display:none">
       <label style="font-size:13px;color:var(--text-muted);display:block;margin-bottom:6px">Nouveau code PIN (6 chiffres)</label>
       <div class="pin-display" id="pin-new1-display">
@@ -121,15 +107,11 @@
         <button class="pin-key" onclick="Pin.press('new',9)">9</button>
         <button class="pin-key empty" disabled></button>
         <button class="pin-key" onclick="Pin.press('new',0)">0</button>
-        <button class="pin-key del" onclick="Pin.del('new')">⌫</button>
+        <button class="pin-key del" onclick="Pin.del('new')">&#x232B;</button>
       </div>
-      <button class="btn-primary" id="btn-new-password" onclick="App.updatePassword()">
-        Enregistrer le code PIN
-      </button>
+      <button class="btn-primary" id="btn-new-password" onclick="App.updatePassword()">Enregistrer le code PIN</button>
       <div class="auth-message" id="new-password-msg"></div>
     </div>
-
-    <!-- Inscription -->
     <div id="form-register" style="display:none">
       <div class="form-row">
         <div class="form-group">
@@ -177,21 +159,20 @@
         <button class="pin-key" onclick="Pin.press('reg',9)">9</button>
         <button class="pin-key empty" disabled></button>
         <button class="pin-key" onclick="Pin.press('reg',0)">0</button>
-        <button class="pin-key del" onclick="Pin.del('reg')">⌫</button>
+        <button class="pin-key del" onclick="Pin.del('reg')">&#x232B;</button>
       </div>
       <button class="btn-primary" id="btn-register" onclick="App.registerAdmin()">
         <span data-i18n="btn_request">Demander l'accès</span>
       </button>
       <div class="auth-message" id="register-msg"></div>
     </div>
-
   </div>
 </div>
 
 <!-- ══ SCREEN PENDING ════════════════════════════════════════ -->
 <div id="screen-pending" class="screen">
   <div class="pending-card">
-    <div class="pending-icon">⏳</div>
+    <div class="pending-icon">&#x23F3;</div>
     <h2 data-i18n="pending_title">Compte en attente</h2>
     <p data-i18n="pending_text">Votre demande d'accès a été enregistrée. Vous serez notifié par email après validation par le super-administrateur.</p>
     <button class="btn-secondary" onclick="App.signOut()" data-i18n="btn_logout">Se déconnecter</button>
@@ -200,8 +181,6 @@
 
 <!-- ══ SCREEN DASHBOARD ══════════════════════════════════════ -->
 <div id="screen-dashboard" class="screen">
-
-  <!-- Topbar -->
   <div class="topbar">
     <div class="topbar-left">
       <svg width="28" height="28" viewBox="0 0 28 28" aria-hidden="true">
@@ -220,17 +199,13 @@
         <button class="lang-btn active" data-lang="fr" onclick="setLang('fr')">FR</button>
         <button class="lang-btn"        data-lang="de" onclick="setLang('de')">DE</button>
       </div>
-      <!-- Bouton QR Code (visible pilot/admin_dept/superadmin) -->
-      <button class="btn-icon" id="btn-qrcode" onclick="App.showQrCode()"
-        title="Mon QR Code" aria-label="Mon QR Code" style="display:none">
+      <button class="btn-icon" id="btn-qrcode" onclick="App.showQrCode()" title="Mon QR Code" aria-label="Mon QR Code" style="display:none">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
           <rect x="3" y="14" width="7" height="7"/><path d="M14 14h3v3h-3zM17 17h3v3h-3zM14 20h3"/>
         </svg>
       </button>
-      <!-- Bouton Aide -->
-      <button class="btn-icon" id="btn-aide" onclick="App.showAide()"
-        title="Aide" aria-label="Aide">
+      <button class="btn-icon" id="btn-aide" onclick="App.showAide()" title="Aide" aria-label="Aide">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <circle cx="12" cy="12" r="10"/>
           <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
@@ -250,11 +225,11 @@
     </div>
   </div>
 
-  <!-- Navigation -->
   <div class="nav-tabs">
     <button class="nav-tab active"  onclick="switchTab('map', this)"     data-i18n="tab_map">Carte</button>
     <button class="nav-tab"         onclick="switchTab('signals', this)" data-i18n="tab_signals">Signalements</button>
     <button class="nav-tab"         onclick="switchTab('users', this)"   data-i18n="tab_users">Utilisateurs</button>
+    <button class="nav-tab" id="tab-btn-admins"  onclick="switchTab('admins', this)"  style="display:none">Mes admins</button>
     <button class="nav-tab" id="tab-btn-pilots"  onclick="switchTab('pilots', this)"  style="display:none">Mes pilotes</button>
     <button class="nav-tab" id="tab-btn-pending" onclick="switchTab('pending', this)" data-i18n="tab_pending" style="display:none">
       En attente
@@ -262,10 +237,8 @@
     </button>
   </div>
 
-  <!-- Contenu -->
   <div class="dashboard-content">
 
-    <!-- Onglet carte -->
     <div id="tab-map" class="active">
       <div id="map" role="application" aria-label="Carte des signalements"></div>
       <div class="map-stats">
@@ -286,54 +259,43 @@
       </div>
     </div>
 
-    <!-- Onglet signalements -->
     <div id="tab-signals">
       <div class="tab-header">
         <h3 data-i18n="tab_signals">Signalements</h3>
-        <input class="search-input" type="search" id="search-signals"
-          placeholder="Rechercher…"
-          data-i18n-placeholder="search_placeholder"
-          oninput="App.filterSignals()">
+        <input class="search-input" type="search" id="search-signals" placeholder="Rechercher…" data-i18n-placeholder="search_placeholder" oninput="App.filterSignals()">
       </div>
-      <div class="list-container" id="signals-list">
-        <div class="loading"><div class="spinner"></div></div>
-      </div>
+      <div class="list-container" id="signals-list"><div class="loading"><div class="spinner"></div></div></div>
     </div>
 
-    <!-- Onglet utilisateurs -->
     <div id="tab-users">
       <div class="tab-header">
         <h3 data-i18n="tab_users">Utilisateurs</h3>
-        <input class="search-input" type="search" id="search-users"
-          placeholder="Rechercher…"
-          data-i18n-placeholder="search_placeholder"
-          oninput="App.filterUsers()">
+        <input class="search-input" type="search" id="search-users" placeholder="Rechercher…" data-i18n-placeholder="search_placeholder" oninput="App.filterUsers()">
       </div>
-      <div class="list-container" id="users-list">
-        <div class="loading"><div class="spinner"></div></div>
-      </div>
+      <div class="list-container" id="users-list"><div class="loading"><div class="spinner"></div></div></div>
     </div>
 
-    <!-- Onglet pilotes (admin_dept / superadmin) -->
+    <div id="tab-admins">
+      <div class="tab-header">
+        <h3>Administrateurs départementaux</h3>
+        <button class="btn-primary" onclick="App.showCreateAdminPanel()" style="padding:8px 16px;font-size:13px">+ Nouvel admin</button>
+      </div>
+      <div class="list-container" id="admins-list"><div class="loading"><div class="spinner"></div></div></div>
+    </div>
+
     <div id="tab-pilots">
       <div class="tab-header">
         <h3>Mes pilotes</h3>
-        <button class="btn-primary" onclick="App.showCreatePilotPanel()"
-          style="padding:8px 16px;font-size:13px">+ Nouveau pilote</button>
+        <button class="btn-primary" onclick="App.showCreatePilotPanel()" style="padding:8px 16px;font-size:13px">+ Nouveau pilote</button>
       </div>
-      <div class="list-container" id="pilots-list">
-        <div class="loading"><div class="spinner"></div></div>
-      </div>
+      <div class="list-container" id="pilots-list"><div class="loading"><div class="spinner"></div></div></div>
     </div>
 
-    <!-- Onglet en attente -->
     <div id="tab-pending">
       <div class="tab-header">
         <h3 data-i18n="tab_pending">Demandes en attente</h3>
       </div>
-      <div class="list-container" id="pending-list">
-        <div class="loading"><div class="spinner"></div></div>
-      </div>
+      <div class="list-container" id="pending-list"><div class="loading"><div class="spinner"></div></div></div>
     </div>
 
   </div>
@@ -368,12 +330,49 @@
       <button class="pin-key" onclick="Pin.press('prof',9)">9</button>
       <button class="pin-key empty" disabled></button>
       <button class="pin-key" onclick="Pin.press('prof',0)">0</button>
-      <button class="pin-key del" onclick="Pin.del('prof')">⌫</button>
+      <button class="pin-key del" onclick="Pin.del('prof')">&#x232B;</button>
     </div>
     <div class="auth-message" id="profile-msg"></div>
     <div class="modal-actions" style="margin-top:8px">
       <button class="btn-cancel" onclick="App.hideProfilePanel()">Fermer</button>
       <button class="btn-primary" id="btn-profile-save" onclick="App.savePassword()">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ PANNEAU CRÉATION ADMIN ════════════════════════════════ -->
+<div class="modal-overlay" id="create-admin-panel" role="dialog" aria-modal="true">
+  <div class="modal">
+    <h3>Nouvel administrateur départemental</h3>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Prénom</label>
+        <input type="text" id="admin-prenom" placeholder="Jean">
+      </div>
+      <div class="form-group">
+        <label>Nom</label>
+        <input type="text" id="admin-nom" placeholder="Martin">
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Email</label>
+      <input type="email" id="admin-email" placeholder="jean.martin@gmail.com">
+    </div>
+    <div class="form-group">
+      <label>Département</label>
+      <input type="text" id="admin-departement" placeholder="Isère (38)">
+    </div>
+    <div class="form-group">
+      <label>Secteur / territoire</label>
+      <input type="text" id="admin-secteur" placeholder="Grenoble Alpes Métropole">
+    </div>
+    <p style="font-size:12px;color:var(--text-muted);margin:8px 0 16px">
+      PIN provisoire : <strong>000000</strong> — à changer à la première connexion.
+    </p>
+    <div class="auth-message" id="create-admin-msg"></div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="App.hideCreateAdminPanel()">Annuler</button>
+      <button class="btn-primary" id="btn-create-admin" onclick="App.createAdmin()">Créer</button>
     </div>
   </div>
 </div>
@@ -401,8 +400,7 @@
       <input type="text" id="pilot-secteur" placeholder="Baume-les-Dames">
     </div>
     <p style="font-size:12px;color:var(--text-muted);margin:8px 0 16px">
-      Le pilote recevra un email de confirmation. Son PIN provisoire est
-      <strong>000000</strong> — il devra le modifier à sa première connexion.
+      PIN provisoire : <strong>000000</strong> — à changer à la première connexion.
     </p>
     <div class="auth-message" id="create-pilot-msg"></div>
     <div class="modal-actions">
@@ -425,17 +423,15 @@
     <div class="modal-actions" style="justify-content:center;flex-wrap:wrap;gap:8px">
       <button class="btn-primary" onclick="
         const url = document.getElementById('qrcode-url').textContent;
-        window.open('https://wa.me/?text=' + encodeURIComponent(
-          'Installez Réseau Frelon en scannant ce QR Code ou via ce lien : ' + url
-        ), '_blank')
+        window.open('https://wa.me/?text=' + encodeURIComponent('Installez Réseau Frelon en scannant ce QR Code ou via ce lien : ' + url), '_blank')
       " style="background:#25D366;min-width:160px">
-        📲 Partager sur WhatsApp
+        &#x1F4F2; Partager sur WhatsApp
       </button>
       <button class="btn-primary" onclick="
         navigator.clipboard.writeText(document.getElementById('qrcode-url').textContent)
           .then(() => showToast('Lien copié !'))
       " style="min-width:160px">
-        📋 Copier le lien
+        &#x1F4CB; Copier le lien
       </button>
       <button class="btn-cancel" onclick="App.hideQrCode()">Fermer</button>
     </div>
@@ -445,117 +441,49 @@
 <!-- ══ PANNEAU AIDE ══════════════════════════════════════════ -->
 <div class="modal-overlay" id="aide-panel" role="dialog" aria-modal="true">
   <div class="modal" style="max-width:520px">
-    <h3>Aide — Chrono-Frelon Admin</h3>
-
-    <!-- FAQ -->
+    <h3>Aide — Réseau Frelon Admin</h3>
     <div style="margin-bottom:20px">
-
       <div class="faq-item">
-        <div class="faq-question" onclick="toggleFaq(this)">
-          ▶ Comment distribuer l'application à mes observateurs ?
-        </div>
-        <div class="faq-answer">
-          Affichez votre QR Code (icône ▦ en haut à droite) lors d'une réunion.
-          Chaque participant le scanne et Chrono-Frelon s'installe automatiquement,
-          rattaché à votre secteur.
-        </div>
+        <div class="faq-question" onclick="toggleFaq(this)">&#x25B6; Comment distribuer l'application à mes observateurs ?</div>
+        <div class="faq-answer">Affichez votre QR Code (icône &#x25A6; en haut à droite) lors d'une réunion. Chaque participant le scanne et Chrono-Frelon s'installe automatiquement, rattaché à votre secteur.</div>
       </div>
-
       <div class="faq-item">
-        <div class="faq-question" onclick="toggleFaq(this)">
-          ▶ Comment lire la carte ?
-        </div>
-        <div class="faq-answer">
-          Chaque trait représente une observation : le point est la position de
-          l'observateur, la ligne indique la direction de vol du frelon.
-          Le cercle orange indique la zone probable du nid calculée par convergence
-          des traits.
-        </div>
+        <div class="faq-question" onclick="toggleFaq(this)">&#x25B6; Comment lire la carte ?</div>
+        <div class="faq-answer">Chaque trait représente une observation : le point est la position de l'observateur, la ligne indique la direction de vol du frelon. Le cercle orange indique la zone probable du nid calculée par convergence des traits.</div>
       </div>
-
       <div class="faq-item">
-        <div class="faq-question" onclick="toggleFaq(this)">
-          ▶ Que faire après la destruction d'un nid ?
-        </div>
-        <div class="faq-answer">
-          Supprimez les signalements de la zone neutralisée dans l'onglet
-          Signalements, pour ne pas induire de nouvelles recherches inutiles.
-        </div>
+        <div class="faq-question" onclick="toggleFaq(this)">&#x25B6; Que faire après la destruction d'un nid ?</div>
+        <div class="faq-answer">Supprimez les signalements de la zone neutralisée dans l'onglet Signalements, pour ne pas induire de nouvelles recherches inutiles.</div>
       </div>
-
       <div class="faq-item">
-        <div class="faq-question" onclick="toggleFaq(this)">
-          ▶ Comment créer un pilote ? (admin départemental)
-        </div>
-        <div class="faq-answer">
-          Aller dans l'onglet "Mes pilotes" → "+ Nouveau pilote" → renseigner
-          prénom, nom, email et secteur → "Créer". Le pilote reçoit un email
-          avec un PIN provisoire 000000 à changer à la première connexion.
-        </div>
+        <div class="faq-question" onclick="toggleFaq(this)">&#x25B6; Comment créer un admin départemental ? (superadmin)</div>
+        <div class="faq-answer">Aller dans l'onglet "Mes admins" → "+ Nouvel admin" → renseigner prénom, nom, email, département et secteur → "Créer". PIN provisoire 000000 à changer à la première connexion.</div>
       </div>
-
       <div class="faq-item">
-        <div class="faq-question" onclick="toggleFaq(this)">
-          ▶ J'ai oublié mon code PIN
-        </div>
-        <div class="faq-answer">
-          Sur l'écran de connexion, appuyer sur "Code oublié ?" et saisir
-          votre email. Un lien de réinitialisation vous sera envoyé.
-        </div>
+        <div class="faq-question" onclick="toggleFaq(this)">&#x25B6; Comment créer un pilote ? (admin départemental)</div>
+        <div class="faq-answer">Aller dans l'onglet "Mes pilotes" → "+ Nouveau pilote" → renseigner prénom, nom, email et secteur → "Créer". PIN provisoire 000000 à changer à la première connexion.</div>
       </div>
-
       <div class="faq-item">
-        <div class="faq-question" onclick="toggleFaq(this)">
-          ▶ La carte n'affiche aucun trait
-        </div>
-        <div class="faq-answer">
-          Vérifiez votre connexion internet et augmentez le rayon d'affichage
-          dans la barre de statistiques. Si le problème persiste, contactez
-          le coordinateur national.
-        </div>
+        <div class="faq-question" onclick="toggleFaq(this)">&#x25B6; J'ai oublié mon code PIN</div>
+        <div class="faq-answer">Sur l'écran de connexion, appuyer sur "Code oublié ?" et saisir votre email. Un lien de réinitialisation vous sera envoyé.</div>
       </div>
-
+      <div class="faq-item">
+        <div class="faq-question" onclick="toggleFaq(this)">&#x25B6; La carte n'affiche aucun trait</div>
+        <div class="faq-answer">Vérifiez votre connexion internet et augmentez le rayon d'affichage dans la barre de statistiques. Si le problème persiste, contactez le coordinateur national.</div>
+      </div>
     </div>
-
-    <!-- Notices PDF -->
     <div style="background:var(--bg2,#f5f5f5);border-radius:8px;padding:12px 14px;margin-bottom:20px">
-      <div style="font-weight:600;font-size:13px;margin-bottom:8px">📄 Notices PDF</div>
-      <a href="https://berny70.github.io/Chrono_Frelon_Admin/notices/notice_utilisateur.pdf"
-         target="_blank" style="display:block;font-size:13px;color:#2d6a4f;margin-bottom:4px">
-        → Notice utilisateur (pilotes)
-      </a>
-      <a href="https://berny70.github.io/Chrono_Frelon_Admin/notices/notice_admin.pdf"
-         target="_blank" style="display:block;font-size:13px;color:#2d6a4f">
-        → Notice administrateur départemental
-      </a>
+      <div style="font-weight:600;font-size:13px;margin-bottom:8px">&#x1F4C4; Notices PDF</div>
+      <a href="https://berny70.github.io/Chrono_Frelon_Admin/notices/notice_utilisateur.pdf" target="_blank" style="display:block;font-size:13px;color:#2d6a4f;margin-bottom:4px">&#x2192; Notice utilisateur (pilotes)</a>
+      <a href="https://berny70.github.io/Chrono_Frelon_Admin/notices/notice_admin.pdf" target="_blank" style="display:block;font-size:13px;color:#2d6a4f">&#x2192; Notice administrateur départemental</a>
     </div>
-
-    <!-- Contact -->
-    <div style="font-weight:600;font-size:13px;margin-bottom:10px">
-      ✉ Contacter le coordinateur national
-    </div>
-    <p style="font-size:12px;color:var(--text-muted);margin-bottom:12px">
-      Pour toute question technique, problème de compte ou demande d'assistance,
-      utilisez le formulaire de contact en ligne. Bernard BARROIS vous répondra
-      dans les meilleurs délais.
-    </p>
+    <div style="font-weight:600;font-size:13px;margin-bottom:10px">&#x2709; Contacter le coordinateur national</div>
+    <p style="font-size:12px;color:var(--text-muted);margin-bottom:12px">Pour toute question technique, problème de compte ou demande d'assistance, utilisez le formulaire de contact en ligne. Bernard BARROIS vous répondra dans les meilleurs délais.</p>
     <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:8px">
-      <button class="btn-primary"
-        onclick="window.open('https://docs.google.com/forms/d/1z6fp6oWa_iBpW5IyfAvMxSYpDmHrLn4BrfLZeyOZI9Q/viewform','_blank')"
-        style="flex:1;min-width:160px">
-        📋 Ouvrir le formulaire
-      </button>
-      <a href="mailto:bc.barrois@gmail.com" style="
-        flex:1;min-width:160px;text-align:center;padding:10px;
-        border:1.5px solid #2d6a4f;border-radius:8px;
-        color:#2d6a4f;font-size:13px;font-weight:500;text-decoration:none">
-        ✉ bc.barrois@gmail.com
-      </a>
+      <button class="btn-primary" onclick="window.open('https://docs.google.com/forms/d/1z6fp6oWa_iBpW5IyfAvMxSYpDmHrLn4BrfLZeyOZI9Q/viewform','_blank')" style="flex:1;min-width:160px">&#x1F4CB; Ouvrir le formulaire</button>
+      <a href="mailto:bc.barrois@gmail.com" style="flex:1;min-width:160px;text-align:center;padding:10px;border:1.5px solid #2d6a4f;border-radius:8px;color:#2d6a4f;font-size:13px;font-weight:500;text-decoration:none">&#x2709; bc.barrois@gmail.com</a>
     </div>
-    <p style="font-size:11px;color:var(--text-muted);text-align:center;margin-bottom:16px">
-      Urgence : 06 28 13 62 47
-    </p>
-
+    <p style="font-size:11px;color:var(--text-muted);text-align:center;margin-bottom:16px">Urgence : 06 28 13 62 47</p>
     <div class="modal-actions" style="justify-content:center">
       <button class="btn-cancel" onclick="App.hideAide()">Fermer</button>
     </div>
@@ -577,7 +505,7 @@
 <!-- ══ TOAST ══════════════════════════════════════════════════ -->
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-<!-- ══ SCRIPTS (ordre important) ════════════════════════════ -->
+<!-- ══ SCRIPTS ════════════════════════════════════════════════ -->
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
