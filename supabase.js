@@ -7,6 +7,7 @@ const sb = createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_KEY, {
     storageKey: 'sb-pqozgsgytzntrqscevrt-auth-token',
   }
 });
+window.sb = sb; // ← ajouter cette ligne
 // ── AUTH ──────────────────────────────────────────────────────
 async function authSignInWithPassword(email, password) {
   return sb.auth.signInWithPassword({ email, password });
