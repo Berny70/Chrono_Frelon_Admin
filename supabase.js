@@ -111,11 +111,37 @@ async function adminsGetAll() {
     .order('created_at', { ascending: false });
   return data || [];
 }
+
 async function adminCreate(superAdminId, { email, nom, prenom, secteur, departement }) {
+  // Vérifie si le profil existe déjà
+  const { data: existingProfile } = await sb
+    .from('admin_profiles')
+    .select('id')
+    .eq('email', email)
+    .maybeSingle();
+  if (existingProfile) {
+    return { error: { message: 'Cet email est déjà enregistré dans la base.' } };
+  }
+
   const { data, error } = await authSignUp(email, CONFIG.PILOT_DEFAULT_PIN);
+
+  // Si "already registered" : le compte auth existe mais pas le profil
+  if (error?.message?.includes('already registered') || error?.message?.includes('already been registered')) {
+    // On récupère l'UUID via une requête directe
+    const { data: userData } = await sb
+      .from('admin_profiles')
+      .select('id')
+      .eq('email', email)
+      .maybeSingle();
+    // Le profil n'existe pas mais auth oui — on insère avec l'UUID existant
+    // Impossible sans droits admin — on retourne un message clair
+    return { error: { message: 'Email déjà enregistré dans Supabase Auth. Demandez à Bernard de créer ce compte manuellement.' } };
+  }
+
   if (error) return { error };
   const userId = data?.user?.id;
   if (!userId) return { error: { message: 'Création compte échouée' } };
+
   const { error: profileError } = await sb.from('admin_profiles').insert({
     id: userId,
     email, nom, prenom,
@@ -126,6 +152,7 @@ async function adminCreate(superAdminId, { email, nom, prenom, secteur, departem
   });
   return { error: profileError };
 }
+
 async function adminDelete(adminId) {
   return sb.from('admin_profiles').delete().eq('id', adminId);
 }
@@ -140,11 +167,29 @@ async function pilotsGetByDept(adminDeptId) {
     .order('created_at', { ascending: false });
   return data || [];
 }
+
 async function pilotCreate(adminDeptId, { email, nom, prenom, secteur, departement }) {
+  // Vérifie si le profil existe déjà
+  const { data: existingProfile } = await sb
+    .from('admin_profiles')
+    .select('id')
+    .eq('email', email)
+    .maybeSingle();
+  if (existingProfile) {
+    return { error: { message: 'Cet email est déjà enregistré dans la base.' } };
+  }
+
   const { data, error } = await authSignUp(email, CONFIG.PILOT_DEFAULT_PIN);
+
+  // Si "already registered" : le compte auth existe mais pas le profil
+  if (error?.message?.includes('already registered') || error?.message?.includes('already been registered')) {
+    return { error: { message: 'Email déjà enregistré dans Supabase Auth. Demandez à Bernard de créer ce pilote manuellement.' } };
+  }
+
   if (error) return { error };
   const userId = data?.user?.id;
   if (!userId) return { error: { message: 'Création compte échouée' } };
+
   const { error: profileError } = await sb.from('admin_profiles').insert({
     id: userId,
     email, nom, prenom,
@@ -155,6 +200,7 @@ async function pilotCreate(adminDeptId, { email, nom, prenom, secteur, departeme
   });
   return { error: profileError };
 }
+
 async function pilotDelete(pilotId) {
   return sb.from('admin_profiles').delete().eq('id', pilotId);
 }
