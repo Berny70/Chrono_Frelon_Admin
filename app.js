@@ -89,43 +89,60 @@ const App = (() => {
   // ── INIT ────────────────────────────────────────────────────
 
 async function init() {
-    setLang(lang);
-    document.getElementById('topbar-version').textContent = 'v' + CONFIG.APP_VERSION;
-    document.getElementById('auth-version').textContent   = 'v' + CONFIG.APP_VERSION;  // ← ajouter
-    initRadiusSelector();
+  setLang(lang);
+  document.getElementById('topbar-version').textContent = 'v' + CONFIG.APP_VERSION;
+  document.getElementById('auth-version').textContent   = 'v' + CONFIG.APP_VERSION;
+  initRadiusSelector();
 
-    authOnChange(async (event, session) => {
-      if (event === 'PASSWORD_RECOVERY') {
-        showScreen('auth');
-        document.getElementById('form-login').style.display        = 'none';
-        document.getElementById('form-reset').style.display        = 'none';
-        document.getElementById('form-register').style.display     = 'none';
-        document.getElementById('form-new-password').style.display = 'block';
-        return;
-      }
-      if (session?.user) {
-        currentUser = session.user;
-        await _checkPendingProfile(session.user.id, session.user.email);
-        currentProfile = await profileGet(session.user.id);
-
-        if (!currentProfile || currentProfile.role === 'pending') {
-          showScreen('pending');
-        } else if (currentProfile.role === 'blocked') {
-          await authSignOut();
-          showScreen('auth');
-        } else {
-          _applyRoleUI(currentProfile.role);
-          document.getElementById('topbar-canton').textContent =
-            (currentProfile.secteur || currentProfile.canton || '—') +
-            ' · ' + (currentProfile.departement || '—');
-          showScreen('dashboard');
-          await _loadAll();
-        }
-      } else {
-        showScreen('auth');
-      }
-    });
+  // ── Récupération de session au démarrage ──────────────────
+  const { data: { session: existingSession } } = await sb.auth.getSession();
+  if (existingSession?.user) {
+    currentUser = existingSession.user;
+    await _checkPendingProfile(existingSession.user.id, existingSession.user.email);
+    currentProfile = await profileGet(existingSession.user.id);
+    if (currentProfile && currentProfile.role !== 'pending' && currentProfile.role !== 'blocked') {
+      _applyRoleUI(currentProfile.role);
+      document.getElementById('topbar-canton').textContent =
+        (currentProfile.secteur || currentProfile.canton || '—') +
+        ' · ' + (currentProfile.departement || '—');
+      showScreen('dashboard');
+      await _loadAll();
+      return;
+    }
   }
+
+  // ── Écoute des changements d'état auth ────────────────────
+  authOnChange(async (event, session) => {
+    if (event === 'PASSWORD_RECOVERY') {
+      showScreen('auth');
+      document.getElementById('form-login').style.display        = 'none';
+      document.getElementById('form-reset').style.display        = 'none';
+      document.getElementById('form-register').style.display     = 'none';
+      document.getElementById('form-new-password').style.display = 'block';
+      return;
+    }
+    if (session?.user) {
+      currentUser = session.user;
+      await _checkPendingProfile(session.user.id, session.user.email);
+      currentProfile = await profileGet(session.user.id);
+      if (!currentProfile || currentProfile.role === 'pending') {
+        showScreen('pending');
+      } else if (currentProfile.role === 'blocked') {
+        await authSignOut();
+        showScreen('auth');
+      } else {
+        _applyRoleUI(currentProfile.role);
+        document.getElementById('topbar-canton').textContent =
+          (currentProfile.secteur || currentProfile.canton || '—') +
+          ' · ' + (currentProfile.departement || '—');
+        showScreen('dashboard');
+        await _loadAll();
+      }
+    } else {
+      showScreen('auth');
+    }
+  });
+}
 
   // ── GESTION DE L'UI SELON LE RÔLE ───────────────────────────
 
