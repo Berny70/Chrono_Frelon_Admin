@@ -1,6 +1,12 @@
 const { createClient } = supabase;
-const sb = createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_KEY);
-
+const sb = createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_KEY, {
+  auth: {
+    persistSession: true,
+    detectSessionInUrl: true,
+    autoRefreshToken: true,
+    storageKey: 'sb-pqozgsgytzntrqscevrt-auth-token',
+  }
+});
 // ── AUTH ──────────────────────────────────────────────────────
 async function authSignInWithPassword(email, password) {
   return sb.auth.signInWithPassword({ email, password });
