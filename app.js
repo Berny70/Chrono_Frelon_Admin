@@ -5,7 +5,7 @@ const Pin = (() => {
   function _dots(ctx, slot) {
     const idMap = {
       login: ['pin-login-display'],
-      reg:   ['pin-reg1-display',  'pin-reg2-display'], 
+      reg:   ['pin-reg1-display',  'pin-reg2-display'],
       new:   ['pin-new1-display',  'pin-new2-display'],
       prof:  ['pin-prof1-display', 'pin-prof2-display'],
     };
@@ -83,119 +83,117 @@ const App = (() => {
   let allSignals     = [];
   let allUsers       = [];
   let allPilots      = [];
+  let allAdmins      = [];
   let pilotUsers     = [];
   let blockedPhones  = new Set();
 
   // ── INIT ────────────────────────────────────────────────────
 
-async function init() {
-  setLang(lang);
-  document.getElementById('topbar-version').textContent = 'v' + CONFIG.APP_VERSION;
-  document.getElementById('auth-version').textContent   = 'v' + CONFIG.APP_VERSION;
-  initRadiusSelector();
+  async function init() {
+    setLang(lang);
+    document.getElementById('topbar-version').textContent = 'v' + CONFIG.APP_VERSION;
+    document.getElementById('auth-version').textContent   = 'v' + CONFIG.APP_VERSION;
+    initRadiusSelector();
 
-  // ── Récupération de session au démarrage ──────────────────
-  const { data: { session: existingSession } } = await sb.auth.getSession();
-  if (existingSession?.user) {
-    currentUser = existingSession.user;
-    await _checkPendingProfile(existingSession.user.id, existingSession.user.email);
-    currentProfile = await profileGet(existingSession.user.id);
-    if (currentProfile && currentProfile.role !== 'pending' && currentProfile.role !== 'blocked') {
-      _applyRoleUI(currentProfile.role);
-      document.getElementById('topbar-canton').textContent =
-        (currentProfile.secteur || currentProfile.canton || '—') +
-        ' · ' + (currentProfile.departement || '—');
-      showScreen('dashboard');
-      await _loadAll();
-      return;
-    }
-  }
-
-  // ── Écoute des changements d'état auth ────────────────────
-  authOnChange(async (event, session) => {
-    if (event === 'PASSWORD_RECOVERY') {
-      showScreen('auth');
-      document.getElementById('form-login').style.display        = 'none';
-      document.getElementById('form-reset').style.display        = 'none';
-      document.getElementById('form-register').style.display     = 'none';
-      document.getElementById('form-new-password').style.display = 'block';
-      return;
-    }
-    if (session?.user) {
-      currentUser = session.user;
-      await _checkPendingProfile(session.user.id, session.user.email);
-      currentProfile = await profileGet(session.user.id);
-      if (!currentProfile || currentProfile.role === 'pending') {
-        showScreen('pending');
-      } else if (currentProfile.role === 'blocked') {
-        await authSignOut();
-        showScreen('auth');
-      } else {
+    // Récupération de session au démarrage
+    const { data: { session: existingSession } } = await sb.auth.getSession();
+    if (existingSession?.user) {
+      currentUser = existingSession.user;
+      await _checkPendingProfile(existingSession.user.id, existingSession.user.email);
+      currentProfile = await profileGet(existingSession.user.id);
+      if (currentProfile && currentProfile.role !== 'pending' && currentProfile.role !== 'blocked') {
         _applyRoleUI(currentProfile.role);
         document.getElementById('topbar-canton').textContent =
           (currentProfile.secteur || currentProfile.canton || '—') +
           ' · ' + (currentProfile.departement || '—');
         showScreen('dashboard');
         await _loadAll();
+        return;
       }
-    } else {
-      showScreen('auth');
     }
-  });
-}
+
+    authOnChange(async (event, session) => {
+      if (event === 'PASSWORD_RECOVERY') {
+        showScreen('auth');
+        document.getElementById('form-login').style.display        = 'none';
+        document.getElementById('form-reset').style.display        = 'none';
+        document.getElementById('form-register').style.display     = 'none';
+        document.getElementById('form-new-password').style.display = 'block';
+        return;
+      }
+      if (session?.user) {
+        currentUser = session.user;
+        await _checkPendingProfile(session.user.id, session.user.email);
+        currentProfile = await profileGet(session.user.id);
+        if (!currentProfile || currentProfile.role === 'pending') {
+          showScreen('pending');
+        } else if (currentProfile.role === 'blocked') {
+          await authSignOut();
+          showScreen('auth');
+        } else {
+          _applyRoleUI(currentProfile.role);
+          document.getElementById('topbar-canton').textContent =
+            (currentProfile.secteur || currentProfile.canton || '—') +
+            ' · ' + (currentProfile.departement || '—');
+          showScreen('dashboard');
+          await _loadAll();
+        }
+      } else {
+        showScreen('auth');
+      }
+    });
+  }
 
   // ── GESTION DE L'UI SELON LE RÔLE ───────────────────────────
 
   function _applyRoleUI(role) {
-    // Onglet "Mes pilotes" : visible uniquement pour superadmin et admin_dept
+    const tabAdmins = document.getElementById('tab-btn-admins');
+    if (tabAdmins) {
+      tabAdmins.style.display = role === 'superadmin' ? 'block' : 'none';
+    }
     const tabPilots = document.getElementById('tab-btn-pilots');
     if (tabPilots) {
-      tabPilots.style.display =
-        ['superadmin', 'admin_dept'].includes(role) ? 'block' : 'none';
+      tabPilots.style.display = ['superadmin', 'admin_dept'].includes(role) ? 'block' : 'none';
     }
-    // Onglet "En attente" : visible uniquement pour superadmin et admin_dept
     const tabPending = document.getElementById('tab-btn-pending');
     if (tabPending) {
-      tabPending.style.display =
-        ['superadmin', 'admin_dept'].includes(role) ? 'block' : 'none';
+      tabPending.style.display = ['superadmin', 'admin_dept'].includes(role) ? 'block' : 'none';
     }
-    // Bouton QR Code : visible pour pilot, admin_dept, superadmin
     const btnQr = document.getElementById('btn-qrcode');
     if (btnQr) {
-      btnQr.style.display =
-        ['superadmin', 'admin_dept', 'pilot'].includes(role) ? 'inline-flex' : 'none';
+      btnQr.style.display = ['superadmin', 'admin_dept', 'pilot'].includes(role) ? 'inline-flex' : 'none';
     }
   }
 
   // ── CHARGEMENT DES DONNÉES ───────────────────────────────────
 
- async function _loadAll() {
-  setLoading('signals-list');
-  setLoading('users-list');
+  async function _loadAll() {
+    setLoading('signals-list');
+    setLoading('users-list');
 
-  const role = currentProfile.role;
+    const role = currentProfile.role;
 
-  if (role === 'superadmin') {
-    // Vue globale : tous les signaux sans filtre géographique
-    allSignals    = await signalsGetAll();
-    blockedPhones = await blockedGetAll();
-    allPilots     = await pilotsGetByDept(currentProfile.id);
-    await _loadPending();
-  } else if (role === 'pilot') {
-    allSignals    = await signalsGetAll(currentProfile.lat, currentProfile.lon, currentRadius);
-    pilotUsers    = await pilotUsersGet(currentProfile.id);
-    blockedPhones = new Set(pilotUsers.filter(u => u.blocked).map(u => u.phone_id));
-  } else {
-    // admin_dept
-    allSignals    = await signalsGetAll(currentProfile.lat, currentProfile.lon, currentRadius);
-    blockedPhones = await blockedGetAll();
-    allPilots     = await pilotsGetByDept(currentProfile.id);
-    await _loadPending();
+    if (role === 'superadmin') {
+      allSignals    = await signalsGetAll();
+      blockedPhones = await blockedGetAll();
+      allAdmins     = await adminsGetAll();
+      allPilots     = await pilotsGetByDept(currentProfile.id);
+      await _loadPending();
+    } else if (role === 'pilot') {
+      allSignals    = await signalsGetAll(currentProfile.lat, currentProfile.lon, currentRadius);
+      pilotUsers    = await pilotUsersGet(currentProfile.id);
+      blockedPhones = new Set(pilotUsers.filter(u => u.blocked).map(u => u.phone_id));
+    } else {
+      // admin_dept
+      allSignals    = await signalsGetAll(currentProfile.lat, currentProfile.lon, currentRadius);
+      blockedPhones = await blockedGetAll();
+      allPilots     = await pilotsGetByDept(currentProfile.id);
+      await _loadPending();
+    }
+
+    _buildUsers();
+    _refresh();
   }
-
-  _buildUsers();
-  _refresh();
-}
 
   async function _loadPending() {
     const pending = await pendingGetAll();
@@ -205,12 +203,11 @@ async function init() {
   function _buildUsers() {
     const role = currentProfile?.role;
     if (role === 'pilot') {
-      // Pour le pilote, les utilisateurs viennent de pilot_user_stats
       allUsers = pilotUsers.map(u => ({
-        phone_id:  u.phone_id,
-        count:     u.nb_observations || 0,
-        last:      u.derniere_observation || u.rattachement_date,
-        blocked:   u.blocked,
+        phone_id: u.phone_id,
+        count:    u.nb_observations || 0,
+        last:     u.derniere_observation || u.rattachement_date,
+        blocked:  u.blocked,
       }));
     } else {
       const phones = [...new Set(allSignals.map(s => s.phone_id).filter(Boolean))];
@@ -228,6 +225,9 @@ async function init() {
     renderUsers(allUsers);
     updateStats(allSignals, allUsers);
     mapInit(allSignals, blockedPhones);
+    if (currentProfile?.role === 'superadmin') {
+      renderAdmins(allAdmins);
+    }
     if (['superadmin', 'admin_dept'].includes(currentProfile?.role)) {
       renderPilots(allPilots);
     }
@@ -250,7 +250,7 @@ async function init() {
     const email = document.getElementById('login-email').value.trim();
     const pin   = Pin.get('login');
     if (!email || pin.length < 6) {
-      showAuthMsg('login-msg', 'error', 'Saisir l\'email et le code PIN complet.');
+      showAuthMsg('login-msg', 'error', "Saisir l'email et le code PIN complet.");
       return;
     }
     const btn = document.getElementById('btn-login');
@@ -381,7 +381,7 @@ async function init() {
   async function signOut() {
     await authSignOut();
     currentUser = currentProfile = null;
-    allSignals = []; allUsers = []; allPilots = []; pilotUsers = [];
+    allSignals = []; allUsers = []; allPilots = []; allAdmins = []; pilotUsers = [];
     showScreen('auth');
   }
 
@@ -433,6 +433,93 @@ async function init() {
       _buildUsers();
       _refresh();
     });
+  }
+
+  // ── ACTIONS ADMINS (superadmin) ─────────────────────────────
+
+  function showCreateAdminPanel() {
+    document.getElementById('create-admin-panel').classList.add('active');
+  }
+
+  function hideCreateAdminPanel() {
+    document.getElementById('create-admin-panel').classList.remove('active');
+    document.getElementById('create-admin-msg').textContent = '';
+  }
+
+  async function createAdmin() {
+    const prenom  = document.getElementById('admin-prenom').value.trim();
+    const nom     = document.getElementById('admin-nom').value.trim();
+    const email   = document.getElementById('admin-email').value.trim();
+    const dept    = document.getElementById('admin-departement').value.trim();
+    const secteur = document.getElementById('admin-secteur').value.trim();
+
+    if (!prenom || !nom || !email || !dept) {
+      showAuthMsg('create-admin-msg', 'error', 'Tous les champs sont requis.'); return;
+    }
+
+    const btn = document.getElementById('btn-create-admin');
+    btn.disabled = true;
+    const { error } = await adminCreate(currentProfile.id, {
+      email, nom, prenom, secteur, departement: dept,
+    });
+    btn.disabled = false;
+
+    if (error) {
+      showAuthMsg('create-admin-msg', 'error', error.message);
+    } else {
+      showToast(`Admin ${prenom} ${nom} créé — PIN provisoire : ${CONFIG.PILOT_DEFAULT_PIN}`);
+      hideCreateAdminPanel();
+      allAdmins = await adminsGetAll();
+      renderAdmins(allAdmins);
+    }
+  }
+
+  function confirmDeleteAdmin(id, name) {
+    showModal(
+      'Supprimer cet administrateur',
+      `Supprimer ${name} et tous ses pilotes rattachés ?`,
+      'Supprimer',
+      async () => {
+        await adminDelete(id);
+        showToast(`${name} supprimé.`);
+        allAdmins = allAdmins.filter(a => a.id !== id);
+        renderAdmins(allAdmins);
+      }
+    );
+  }
+
+  function confirmBlockAdmin(id, name) {
+    showModal(
+      'Bloquer cet administrateur',
+      `Bloquer l'accès de ${name} ?`,
+      'Bloquer',
+      async () => {
+        await pilotUpdateRole(id, 'blocked');
+        showToast(`${name} bloqué.`);
+        allAdmins = await adminsGetAll();
+        renderAdmins(allAdmins);
+      }
+    );
+  }
+
+  function confirmUnblockAdmin(id, name) {
+    showModal(
+      'Débloquer cet administrateur',
+      `Rétablir l'accès de ${name} ?`,
+      'Débloquer',
+      async () => {
+        await pilotUpdateRole(id, 'admin_dept');
+        showToast(`${name} débloqué.`);
+        allAdmins = await adminsGetAll();
+        renderAdmins(allAdmins);
+      }
+    );
+  }
+
+  async function loadAdminsTab() {
+    setLoading('admins-list');
+    allAdmins = await adminsGetAll();
+    renderAdmins(allAdmins);
   }
 
   // ── ACTIONS PILOTES (admin_dept) ────────────────────────────
@@ -502,6 +589,26 @@ async function init() {
     );
   }
 
+  function confirmUnblockPilot(id, name) {
+    showModal(
+      'Débloquer ce pilote',
+      `Rétablir l'accès de ${name} ?`,
+      'Débloquer',
+      async () => {
+        await pilotUpdateRole(id, 'pilot');
+        showToast(`${name} débloqué.`);
+        allPilots = await pilotsGetByDept(currentProfile.id);
+        renderPilots(allPilots);
+      }
+    );
+  }
+
+  async function loadPilotsTab() {
+    setLoading('pilots-list');
+    allPilots = await pilotsGetByDept(currentProfile.id);
+    renderPilots(allPilots);
+  }
+
   // ── QR CODE ──────────────────────────────────────────────────
 
   function showQrCode() {
@@ -509,7 +616,6 @@ async function init() {
     const panel     = document.getElementById('qrcode-panel');
     const container = document.getElementById('qrcode-container');
     const urlEl     = document.getElementById('qrcode-url');
-  
     container.innerHTML = '';
     new QRCode(container, {
       text:         url,
@@ -522,8 +628,19 @@ async function init() {
     if (urlEl) urlEl.textContent = url;
     panel.classList.add('active');
   }
+
   function hideQrCode() {
     document.getElementById('qrcode-panel').classList.remove('active');
+  }
+
+  // ── AIDE ─────────────────────────────────────────────────────
+
+  function showAide() {
+    document.getElementById('aide-panel').classList.add('active');
+  }
+
+  function hideAide() {
+    document.getElementById('aide-panel').classList.remove('active');
   }
 
   // ── FILTRES ─────────────────────────────────────────────────
@@ -541,7 +658,7 @@ async function init() {
     renderUsers(allUsers.filter(u => u.phone_id.toLowerCase().includes(q)));
   }
 
-  // ── VALIDATION ADMINS ───────────────────────────────────────
+  // ── VALIDATION ADMINS EN ATTENTE ────────────────────────────
 
   function confirmValidate(id, name) {
     showModal(
@@ -571,20 +688,20 @@ async function init() {
 
   // ── RAYON ───────────────────────────────────────────────────
 
-async function onRadiusChange(km) {
-  currentRadius = km;
-  setRadiusDisplay(km);
-  setLoading('signals-list');
-  setLoading('users-list');
-  if (currentProfile.role === 'superadmin') {
-    allSignals = await signalsGetAll();
-  } else {
-    allSignals = await signalsGetAll(currentProfile.lat, currentProfile.lon, currentRadius);
+  async function onRadiusChange(km) {
+    currentRadius = km;
+    setRadiusDisplay(km);
+    setLoading('signals-list');
+    setLoading('users-list');
+    if (currentProfile.role === 'superadmin') {
+      allSignals = await signalsGetAll();
+    } else {
+      allSignals = await signalsGetAll(currentProfile.lat, currentProfile.lon, currentRadius);
+    }
+    blockedPhones = await blockedGetAll();
+    _buildUsers();
+    _refresh();
   }
-  blockedPhones = await blockedGetAll();
-  _buildUsers();
-  _refresh();
-}
 
   // ── UTILITAIRES ──────────────────────────────────────────────
 
@@ -599,68 +716,8 @@ async function onRadiusChange(km) {
     return labels[role] || role;
   }
 
-  function confirmUnblockPilot(id, name) {
-    showModal(
-      'Débloquer ce pilote',
-      `Rétablir l'accès de ${name} ?`,
-      'Débloquer',
-      async () => {
-        await pilotUpdateRole(id, 'pilot');
-        showToast(`${name} débloqué.`);
-        allPilots = await pilotsGetByDept(currentProfile.id);
-        renderPilots(allPilots);
-      }
-    );
-  }
+  // ── API PUBLIQUE ─────────────────────────────────────────────
 
-  async function loadPilotsTab() {
-    setLoading('pilots-list');
-    allPilots = await pilotsGetByDept(currentProfile.id);
-    renderPilots(allPilots);
-  }
-
-  // ── AIDE ──────────────────────────────────────────────────
-  function showAide() {
-    document.getElementById('aide-panel').classList.add('active');
-  }
-
-  function hideAide() {
-    document.getElementById('aide-panel').classList.remove('active');
-  }
-
-  // ── UTILITAIRES ───────────────────────────────────────────
-  function _roleLabel(role) {
-    const labels = {
-      superadmin: 'Super Admin',
-      admin_dept: 'Admin Départemental',
-      pilot:      'Pilote',
-      pending:    'En attente',
-      blocked:    'Bloqué',
-    };
-    return labels[role] || role;
-  }
-
-  function confirmUnblockPilot(id, name) {
-    showModal(
-      'Débloquer ce pilote',
-      `Rétablir l'accès de ${name} ?`,
-      'Débloquer',
-      async () => {
-        await pilotUpdateRole(id, 'pilot');
-        showToast(`${name} débloqué.`);
-        allPilots = await pilotsGetByDept(currentProfile.id);
-        renderPilots(allPilots);
-      }
-    );
-  }
-
-  async function loadPilotsTab() {
-    setLoading('pilots-list');
-    allPilots = await pilotsGetByDept(currentProfile.id);
-    renderPilots(allPilots);
-  }
-
-  // ── API PUBLIQUE ─────────────────────────────────────────
   return {
     init,
     signInWithPassword,
@@ -681,15 +738,22 @@ async function onRadiusChange(km) {
     showProfilePanel,
     hideProfilePanel,
     savePassword,
+    showCreateAdminPanel,
+    hideCreateAdminPanel,
+    createAdmin,
+    confirmDeleteAdmin,
+    confirmBlockAdmin,
+    confirmUnblockAdmin,
+    loadAdminsTab,
     showCreatePilotPanel,
     hideCreatePilotPanel,
     createPilot,
     confirmDeletePilot,
     confirmBlockPilot,
     confirmUnblockPilot,
+    loadPilotsTab,
     showQrCode,
     hideQrCode,
-    loadPilotsTab,
     showAide,
     hideAide,
   };
