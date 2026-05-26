@@ -89,7 +89,7 @@ const App = (() => {
 
   // ── INIT ────────────────────────────────────────────────────
 
-  async function init() {
+ async function init() {
     setLang(lang);
     document.getElementById('topbar-version').textContent = 'v' + CONFIG.APP_VERSION;
     document.getElementById('auth-version').textContent   = 'v' + CONFIG.APP_VERSION;
@@ -101,11 +101,11 @@ const App = (() => {
       await _checkPendingProfile(existingSession.user.id, existingSession.user.email);
       currentProfile = await profileGet(existingSession.user.id);
       if (currentProfile && currentProfile.role !== 'pending' && currentProfile.role !== 'blocked') {
-        _applyRoleUI(currentProfile.role);
         document.getElementById('topbar-canton').textContent =
           (currentProfile.secteur || currentProfile.canton || '—') +
           ' · ' + (currentProfile.departement || '—');
         showScreen('dashboard');
+        _applyRoleUI(currentProfile.role);
         await _loadAll();
         return;
       }
@@ -130,11 +130,11 @@ const App = (() => {
           await authSignOut();
           showScreen('auth');
         } else {
-          _applyRoleUI(currentProfile.role);
           document.getElementById('topbar-canton').textContent =
             (currentProfile.secteur || currentProfile.canton || '—') +
             ' · ' + (currentProfile.departement || '—');
           showScreen('dashboard');
+          _applyRoleUI(currentProfile.role);
           await _loadAll();
         }
       } else {
