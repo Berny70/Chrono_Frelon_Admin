@@ -634,3 +634,12 @@ h1, h2, h3 {
 .faq-answer.open {
   display: block;
 }
+/* ── TAB PILOTS / ADMINS ────────────────────────────────────── */
+#tab-pilots, #tab-admins {
+  flex: 1;
+  display: none;
+  overflow-y: auto;
+}
+#tab-pilots.active, #tab-admins.active {
+  display: block;
+}
