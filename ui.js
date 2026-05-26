@@ -22,8 +22,8 @@ function switchTab(name, btn) {
   document.querySelectorAll('[id^="tab-"]').forEach(el => el.classList.remove('active'));
   if (btn) btn.classList.add('active');
   document.getElementById('tab-' + name).classList.add('active');
-  if (name === 'map') mapInvalidate();
-  // Chargement différé de l'onglet pilotes
+  if (name === 'map')    mapInvalidate();
+  if (name === 'admins') App.loadAdminsTab();
   if (name === 'pilots') App.loadPilotsTab();
 }
 
@@ -136,6 +136,56 @@ function renderUsers(users) {
     </div>`).join('');
 }
 
+// ── RENDU ADMINS DÉPARTEMENTAUX ───────────────────────────────
+
+function renderAdmins(admins) {
+  const el = document.getElementById('admins-list');
+  if (!el) return;
+  if (!admins.length) {
+    el.innerHTML = `
+      <div class="empty">
+        <div class="empty-icon">🗺</div>
+        Aucun administrateur départemental.<br>
+        <small style="color:var(--text-muted)">Cliquez sur "+ Nouvel admin" pour en créer un.</small>
+      </div>`;
+    return;
+  }
+  const loc = lang === 'fr' ? 'fr-FR' : 'de-DE';
+  el.innerHTML = admins.map(a => {
+    const isBlocked = a.role === 'blocked';
+    const initiales = ((a.prenom?.[0] || '') + (a.nom?.[0] || '')).toUpperCase();
+    return `
+      <div class="user-card ${isBlocked ? 'blocked' : ''}">
+        <div style="display:flex;align-items:center;gap:12px;flex:1;min-width:0">
+          <div style="
+            width:36px;height:36px;border-radius:50%;
+            background:${isBlocked ? '#c0392b' : '#d4820a'};
+            color:#fff;display:flex;align-items:center;justify-content:center;
+            font-weight:600;font-size:14px;flex-shrink:0
+          ">${initiales}</div>
+          <div class="user-info" style="min-width:0">
+            <div class="user-phone" style="font-family:'DM Sans',sans-serif;font-size:14px">
+              ${a.prenom} ${a.nom}
+              ${isBlocked ? '<span style="color:#c0392b;font-size:11px"> · Bloqué</span>' : ''}
+            </div>
+            <div class="user-meta">${a.email}</div>
+            <div class="user-meta">📍 ${a.secteur || '—'} · ${a.departement || '—'}</div>
+            <div class="user-meta" style="font-size:11px">
+              Créé le ${new Date(a.created_at).toLocaleDateString(loc)}
+            </div>
+          </div>
+        </div>
+        <div style="display:flex;gap:6px;align-items:center;flex-shrink:0">
+          ${isBlocked
+            ? `<button class="btn-unblock" onclick="App.confirmUnblockAdmin('${a.id}', '${a.prenom} ${a.nom}')">Débloquer</button>`
+            : `<button class="btn-block"   onclick="App.confirmBlockAdmin('${a.id}', '${a.prenom} ${a.nom}')">Bloquer</button>`
+          }
+          <button class="btn-delete" onclick="App.confirmDeleteAdmin('${a.id}', '${a.prenom} ${a.nom}')">🗑</button>
+        </div>
+      </div>`;
+  }).join('');
+}
+
 // ── RENDU PILOTES ─────────────────────────────────────────────
 
 function renderPilots(pilots) {
@@ -169,10 +219,7 @@ function renderPilots(pilots) {
               ${isBlocked ? '<span style="color:#c0392b;font-size:11px"> · Bloqué</span>' : ''}
             </div>
             <div class="user-meta">${p.email}</div>
-            <div class="user-meta">
-              📍 ${p.secteur || p.canton || '—'}
-              · ${p.departement || '—'}
-            </div>
+            <div class="user-meta">📍 ${p.secteur || p.canton || '—'} · ${p.departement || '—'}</div>
             <div class="user-meta" style="font-size:11px">
               Créé le ${new Date(p.created_at).toLocaleDateString(loc)}
             </div>
@@ -180,16 +227,10 @@ function renderPilots(pilots) {
         </div>
         <div style="display:flex;gap:6px;align-items:center;flex-shrink:0">
           ${isBlocked
-            ? `<button class="btn-unblock" onclick="App.confirmUnblockPilot('${p.id}', '${p.prenom} ${p.nom}')">
-                Débloquer
-               </button>`
-            : `<button class="btn-block" onclick="App.confirmBlockPilot('${p.id}', '${p.prenom} ${p.nom}')">
-                Bloquer
-               </button>`
+            ? `<button class="btn-unblock" onclick="App.confirmUnblockPilot('${p.id}', '${p.prenom} ${p.nom}')">Débloquer</button>`
+            : `<button class="btn-block"   onclick="App.confirmBlockPilot('${p.id}', '${p.prenom} ${p.nom}')">Bloquer</button>`
           }
-          <button class="btn-delete" onclick="App.confirmDeletePilot('${p.id}', '${p.prenom} ${p.nom}')">
-            🗑
-          </button>
+          <button class="btn-delete" onclick="App.confirmDeletePilot('${p.id}', '${p.prenom} ${p.nom}')">🗑</button>
         </div>
       </div>`;
   }).join('');
@@ -223,12 +264,8 @@ function renderPending(profiles) {
         <div class="user-meta" style="font-size:11px">${new Date(p.created_at).toLocaleString(loc)}</div>
       </div>
       <div style="display:flex;gap:8px;align-items:center">
-        <button class="btn-unblock" onclick="App.confirmValidate('${p.id}', '${p.prenom} ${p.nom}')">
-          ✅ Valider
-        </button>
-        <button class="btn-block" onclick="App.confirmReject('${p.id}', '${p.prenom} ${p.nom}')">
-          ❌ Refuser
-        </button>
+        <button class="btn-unblock" onclick="App.confirmValidate('${p.id}', '${p.prenom} ${p.nom}')">✅ Valider</button>
+        <button class="btn-block"   onclick="App.confirmReject('${p.id}', '${p.prenom} ${p.nom}')">❌ Refuser</button>
       </div>
     </div>`).join('');
 }
@@ -241,13 +278,12 @@ function setLoading(id) {
 }
 
 // ── FAQ ACCORDION ─────────────────────────────────────────────
+
 function toggleFaq(el) {
   const answer = el.nextElementSibling;
   const isOpen = answer.classList.contains('open');
-  // Ferme toutes les réponses ouvertes
   document.querySelectorAll('.faq-answer.open').forEach(a => a.classList.remove('open'));
   document.querySelectorAll('.faq-question.open').forEach(q => q.classList.remove('open'));
-  // Ouvre celle cliquée si elle était fermée
   if (!isOpen) {
     answer.classList.add('open');
     el.classList.add('open');
