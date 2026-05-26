@@ -7,7 +7,8 @@ const sb = createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_KEY, {
     storageKey: 'sb-pqozgsgytzntrqscevrt-auth-token',
   }
 });
-window.sb = sb; // ← ajouter cette ligne
+window.sb = sb;
+
 // ── AUTH ──────────────────────────────────────────────────────
 async function authSignInWithPassword(email, password) {
   return sb.auth.signInWithPassword({ email, password });
@@ -101,18 +102,45 @@ async function pendingReject(id) {
   return sb.from('admin_profiles').delete().eq('id', id);
 }
 
+// ── ADMINS DÉPARTEMENTAUX (gestion par superadmin) ────────────
+async function adminsGetAll() {
+  const { data } = await sb
+    .from('admin_profiles')
+    .select('*')
+    .in('role', ['admin_dept', 'blocked'])
+    .order('created_at', { ascending: false });
+  return data || [];
+}
+async function adminCreate(superAdminId, { email, nom, prenom, secteur, departement }) {
+  const { data, error } = await authSignUp(email, CONFIG.PILOT_DEFAULT_PIN);
+  if (error) return { error };
+  const userId = data?.user?.id;
+  if (!userId) return { error: { message: 'Création compte échouée' } };
+  const { error: profileError } = await sb.from('admin_profiles').insert({
+    id: userId,
+    email, nom, prenom,
+    secteur, departement,
+    canton: secteur,
+    role: 'admin_dept',
+    parent_id: superAdminId,
+  });
+  return { error: profileError };
+}
+async function adminDelete(adminId) {
+  return sb.from('admin_profiles').delete().eq('id', adminId);
+}
+
 // ── PILOTES (gestion par admin_dept) ─────────────────────────
 async function pilotsGetByDept(adminDeptId) {
   const { data } = await sb
     .from('admin_profiles')
     .select('*')
     .eq('parent_id', adminDeptId)
-    .eq('role', 'pilot')
+    .in('role', ['pilot', 'blocked'])
     .order('created_at', { ascending: false });
   return data || [];
 }
 async function pilotCreate(adminDeptId, { email, nom, prenom, secteur, departement }) {
-  // Crée le compte auth + profil pilot
   const { data, error } = await authSignUp(email, CONFIG.PILOT_DEFAULT_PIN);
   if (error) return { error };
   const userId = data?.user?.id;
@@ -128,7 +156,6 @@ async function pilotCreate(adminDeptId, { email, nom, prenom, secteur, departeme
   return { error: profileError };
 }
 async function pilotDelete(pilotId) {
-  // Supprime le profil (cascade sur pilot_users)
   return sb.from('admin_profiles').delete().eq('id', pilotId);
 }
 async function pilotUpdateRole(pilotId, role) {
@@ -157,7 +184,6 @@ async function pilotUserUnblock(phone_id, pilotId) {
     .eq('pilot_id', pilotId);
 }
 async function pilotUserRegister(phone_id, pilotId) {
-  // Rattache un utilisateur à un pilote (appelé par Chrono-Frelon au premier envoi)
   const { data: existing } = await sb
     .from('pilot_users')
     .select('id')
@@ -169,6 +195,5 @@ async function pilotUserRegister(phone_id, pilotId) {
 
 // ── QR CODE ───────────────────────────────────────────────────
 function qrCodeBuildUrl(pilotId) {
-  // URL que Chrono-Frelon lira au scan pour se rattacher au pilote
   return `${CONFIG.CHRONO_FRELON_URL}?pilot=${pilotId}`;
 }
