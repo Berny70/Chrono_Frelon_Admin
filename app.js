@@ -95,7 +95,6 @@ const App = (() => {
     document.getElementById('auth-version').textContent   = 'v' + CONFIG.APP_VERSION;
     initRadiusSelector();
 
-    // Récupération de session au démarrage
     const { data: { session: existingSession } } = await sb.auth.getSession();
     if (existingSession?.user) {
       currentUser = existingSession.user;
@@ -148,21 +147,13 @@ const App = (() => {
 
   function _applyRoleUI(role) {
     const tabAdmins = document.getElementById('tab-btn-admins');
-    if (tabAdmins) {
-      tabAdmins.style.display = role === 'superadmin' ? 'block' : 'none';
-    }
+    if (tabAdmins) tabAdmins.style.display = role === 'superadmin' ? 'block' : 'none';
     const tabPilots = document.getElementById('tab-btn-pilots');
-    if (tabPilots) {
-      tabPilots.style.display = ['superadmin', 'admin_dept'].includes(role) ? 'block' : 'none';
-    }
+    if (tabPilots) tabPilots.style.display = ['superadmin', 'admin_dept'].includes(role) ? 'block' : 'none';
     const tabPending = document.getElementById('tab-btn-pending');
-    if (tabPending) {
-      tabPending.style.display = ['superadmin', 'admin_dept'].includes(role) ? 'block' : 'none';
-    }
+    if (tabPending) tabPending.style.display = ['superadmin', 'admin_dept'].includes(role) ? 'block' : 'none';
     const btnQr = document.getElementById('btn-qrcode');
-    if (btnQr) {
-      btnQr.style.display = ['superadmin', 'admin_dept', 'pilot'].includes(role) ? 'inline-flex' : 'none';
-    }
+    if (btnQr) btnQr.style.display = ['superadmin', 'admin_dept', 'pilot'].includes(role) ? 'inline-flex' : 'none';
   }
 
   // ── CHARGEMENT DES DONNÉES ───────────────────────────────────
@@ -170,9 +161,7 @@ const App = (() => {
   async function _loadAll() {
     setLoading('signals-list');
     setLoading('users-list');
-
     const role = currentProfile.role;
-
     if (role === 'superadmin') {
       allSignals    = await signalsGetAll();
       blockedPhones = await blockedGetAll();
@@ -184,13 +173,11 @@ const App = (() => {
       pilotUsers    = await pilotUsersGet(currentProfile.id);
       blockedPhones = new Set(pilotUsers.filter(u => u.blocked).map(u => u.phone_id));
     } else {
-      // admin_dept
       allSignals    = await signalsGetAll(currentProfile.lat, currentProfile.lon, currentRadius);
       blockedPhones = await blockedGetAll();
       allPilots     = await pilotsGetByDept(currentProfile.id);
       await _loadPending();
     }
-
     _buildUsers();
     _refresh();
   }
@@ -225,12 +212,8 @@ const App = (() => {
     renderUsers(allUsers);
     updateStats(allSignals, allUsers);
     mapInit(allSignals, blockedPhones);
-    if (currentProfile?.role === 'superadmin') {
-      renderAdmins(allAdmins);
-    }
-    if (['superadmin', 'admin_dept'].includes(currentProfile?.role)) {
-      renderPilots(allPilots);
-    }
+    if (currentProfile?.role === 'superadmin') renderAdmins(allAdmins);
+    if (['superadmin', 'admin_dept'].includes(currentProfile?.role)) renderPilots(allPilots);
   }
 
   // ── PROFIL EN ATTENTE ────────────────────────────────────────
@@ -291,7 +274,6 @@ const App = (() => {
     const dept   = document.getElementById('reg-dept').value.trim();
     const canton = document.getElementById('reg-canton').value.trim();
     const [pin1, pin2] = Pin.get('reg');
-
     if (!prenom || !nom || !email || !dept || !canton) {
       showAuthMsg('register-msg', 'error', t('msg_fill')); return;
     }
@@ -302,7 +284,6 @@ const App = (() => {
       Pin.setError('reg');
       showAuthMsg('register-msg', 'error', 'Les codes PIN ne correspondent pas.'); return;
     }
-
     const btn = document.getElementById('btn-register');
     btn.disabled = true;
     const { error } = await authSignUp(email, pin1);
@@ -435,6 +416,38 @@ const App = (() => {
     });
   }
 
+  // ── MESSAGE À ENVOYER ────────────────────────────────────────
+
+  function _showMessageToSend(prenom, nom, email) {
+    const msg = `Bonjour ${prenom},\n\nTon accès à Réseau Frelon Admin est prêt.\n\nLien : https://berny70.github.io/Chrono_Frelon_Admin/\nEmail : ${email}\nPIN provisoire : 000000\n\nChange ton PIN à la première connexion via l'icône en haut à droite.\nEn cas de problème, utilise Chrome de préférence.\n\nBonne traque !\nBernard`;
+
+    showModal(
+      `✅ ${prenom} ${nom} créé`,
+      '',
+      'Copier le message',
+      () => {
+        navigator.clipboard.writeText(msg)
+          .then(() => showToast('Message copié !'))
+          .catch(() => showToast('Sélectionnez et copiez manuellement'));
+      }
+    );
+
+    setTimeout(() => {
+      const modalText = document.getElementById('modal-text');
+      if (modalText) {
+        modalText.innerHTML = `
+          <div style="margin-bottom:10px">Copiez ce message et envoyez-le à la personne :</div>
+          <textarea readonly style="
+            width:100%;height:160px;padding:10px;
+            border:1px solid var(--border);border-radius:6px;
+            font-family:'DM Sans',sans-serif;font-size:12px;
+            resize:none;background:var(--bg2,#f5f5f5);
+            color:var(--text);line-height:1.5
+          ">${msg}</textarea>`;
+      }
+    }, 50);
+  }
+
   // ── ACTIONS ADMINS (superadmin) ─────────────────────────────
 
   function showCreateAdminPanel() {
@@ -446,92 +459,33 @@ const App = (() => {
     document.getElementById('create-admin-msg').textContent = '';
   }
 
- async function createAdmin() {
-  const prenom  = document.getElementById('admin-prenom').value.trim();
-  const nom     = document.getElementById('admin-nom').value.trim();
-  const email   = document.getElementById('admin-email').value.trim();
-  const dept    = document.getElementById('admin-departement').value.trim();
-  const secteur = document.getElementById('admin-secteur').value.trim();
+  async function createAdmin() {
+    const prenom  = document.getElementById('admin-prenom').value.trim();
+    const nom     = document.getElementById('admin-nom').value.trim();
+    const email   = document.getElementById('admin-email').value.trim();
+    const dept    = document.getElementById('admin-departement').value.trim();
+    const secteur = document.getElementById('admin-secteur').value.trim();
 
-  if (!prenom || !nom || !email || !dept) {
-    showAuthMsg('create-admin-msg', 'error', 'Tous les champs sont requis.'); return;
-  }
-
-  const btn = document.getElementById('btn-create-admin');
-  btn.disabled = true;
-  const { error } = await adminCreate(currentProfile.id, {
-    email, nom, prenom, secteur, departement: dept,
-  });
-  btn.disabled = false;
-
-  if (error) {
-    showAuthMsg('create-admin-msg', 'error', error.message);
-  } else {
-    hideCreateAdminPanel();
-    allAdmins = await adminsGetAll();
-    renderAdmins(allAdmins);
-    _showMessageToSend(prenom, nom, email);
-  }
-}
-
-async function createPilot() {
-  const prenom  = document.getElementById('pilot-prenom').value.trim();
-  const nom     = document.getElementById('pilot-nom').value.trim();
-  const email   = document.getElementById('pilot-email').value.trim();
-  const secteur = document.getElementById('pilot-secteur').value.trim();
-
-  if (!prenom || !nom || !email || !secteur) {
-    showAuthMsg('create-pilot-msg', 'error', 'Tous les champs sont requis.'); return;
-  }
-
-  const btn = document.getElementById('btn-create-pilot');
-  btn.disabled = true;
-  const { error } = await pilotCreate(currentProfile.id, {
-    email, nom, prenom, secteur,
-    departement: currentProfile.departement,
-  });
-  btn.disabled = false;
-
-  if (error) {
-    showAuthMsg('create-pilot-msg', 'error', error.message);
-  } else {
-    hideCreatePilotPanel();
-    allPilots = await pilotsGetByDept(currentProfile.id);
-    renderPilots(allPilots);
-    _showMessageToSend(prenom, nom, email);
-  }
-}
-
-function _showMessageToSend(prenom, nom, email) {
-  const msg = `Bonjour ${prenom},\n\nTon accès à Réseau Frelon Admin est prêt.\n\nLien : https://berny70.github.io/Chrono_Frelon_Admin/\nEmail : ${email}\nPIN provisoire : 000000\n\nChange ton PIN à la première connexion via l'icône 👤 en haut à droite.\nEn cas de problème, utilise Chrome de préférence.\n\nBonne traque !\nBernard`;
-
-  showModal(
-    `✅ ${prenom} ${nom} créé`,
-    'Copiez ce message et envoyez-le à la personne :',
-    'Copier le message',
-    () => {
-      navigator.clipboard.writeText(msg)
-        .then(() => showToast('Message copié !'))
-        .catch(() => showToast('Sélectionnez et copiez manuellement'));
+    if (!prenom || !nom || !email || !dept) {
+      showAuthMsg('create-admin-msg', 'error', 'Tous les champs sont requis.'); return;
     }
-  );
 
-  // Affiche aussi le message dans la modal pour pouvoir le lire
-  setTimeout(() => {
-    const modalText = document.getElementById('modal-text');
-    if (modalText) {
-      modalText.innerHTML = `
-        <div style="margin-bottom:10px">Copiez ce message et envoyez-le à la personne :</div>
-        <textarea readonly style="
-          width:100%;height:160px;padding:10px;
-          border:1px solid var(--border);border-radius:6px;
-          font-family:'DM Sans',sans-serif;font-size:12px;
-          resize:none;background:var(--bg2,#f5f5f5);
-          color:var(--text);line-height:1.5
-        ">${msg}</textarea>`;
+    const btn = document.getElementById('btn-create-admin');
+    btn.disabled = true;
+    const { error } = await adminCreate(currentProfile.id, {
+      email, nom, prenom, secteur, departement: dept,
+    });
+    btn.disabled = false;
+
+    if (error) {
+      showAuthMsg('create-admin-msg', 'error', error.message);
+    } else {
+      hideCreateAdminPanel();
+      allAdmins = await adminsGetAll();
+      renderAdmins(allAdmins);
+      _showMessageToSend(prenom, nom, email);
     }
-  }, 50);
-}
+  }
 
   function confirmDeleteAdmin(id, name) {
     showModal(
@@ -613,10 +567,10 @@ function _showMessageToSend(prenom, nom, email) {
     if (error) {
       showAuthMsg('create-pilot-msg', 'error', error.message);
     } else {
-      showToast(`Pilote ${prenom} ${nom} créé — PIN provisoire : ${CONFIG.PILOT_DEFAULT_PIN}`);
       hideCreatePilotPanel();
       allPilots = await pilotsGetByDept(currentProfile.id);
       renderPilots(allPilots);
+      _showMessageToSend(prenom, nom, email);
     }
   }
 
