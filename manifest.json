@@ -1,7 +1,7 @@
 {
-  "name": "Vigie Frelon Admin",
-  "short_name": "Vigie Frelon",
-  "description": "Portail administrateur Chrono-Frelon",
+  "name": "Réseau Frelon Admin",
+  "short_name": "Réseau Frelon",
+  "description": "Réseau Frelon Admin — Portail administrateur territorial",
   "start_url": "/Chrono_Frelon_Admin/",
   "scope": "/Chrono_Frelon_Admin/",
   "display": "standalone",
