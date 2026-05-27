@@ -36,22 +36,17 @@ async function dbSignalsDeleteByPhone(phone_id) {
 // ── PROFILS ───────────────────────────────────────────────────
 
 async function dbAdminsGetAll() {
-  const { data } = await db
-    .from('admin_profiles')
-    .select('id, email, nom, prenom, role, departement, canton, secteur, lat, lon, parent_id, trait_length_m, validity_days, created_at')
-    .in('role', ['admin_dept', 'blocked'])
-    .order('created_at', { ascending: false });
-  return data || [];
+  const token = localStorage.getItem(CONFIG.SESSION_KEY);
+  const { data } = await db.rpc('chassnid_get_admins', { p_token: token });
+  const result = data ? (typeof data === 'string' ? JSON.parse(data) : data) : [];
+  return Array.isArray(result) ? result : [];
 }
 
 async function dbPilotsGetByParent(parentId) {
-  const { data } = await db
-    .from('admin_profiles')
-    .select('id, email, nom, prenom, role, departement, canton, secteur, lat, lon, parent_id, trait_length_m, validity_days, created_at')
-    .eq('parent_id', parentId)
-    .in('role', ['pilot', 'blocked'])
-    .order('created_at', { ascending: false });
-  return data || [];
+  const token = localStorage.getItem(CONFIG.SESSION_KEY);
+  const { data } = await db.rpc('chassnid_get_pilots', { p_token: token });
+  const result = data ? (typeof data === 'string' ? JSON.parse(data) : data) : [];
+  return Array.isArray(result) ? result : [];
 }
 
 async function dbProfileCreate({ id, email, nom, prenom, role, departement, secteur, parent_id }) {
