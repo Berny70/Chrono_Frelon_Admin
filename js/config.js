@@ -1,0 +1,14 @@
+const CONFIG = {
+  APP_NAME:          'ChassNid',
+  APP_VERSION:       '1.0.0',
+  APP_DATE:          '2026-05',
+  APP_URL:           'https://berny70.github.io/Chrono_Frelon_Admin/',
+  SUPABASE_URL:      'https://pqozgsgytzntrqscevrt.supabase.co',
+  SUPABASE_KEY:      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBxb3pnc2d5dHpudHJxc2NldnJ0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk0Mjk2NzgsImV4cCI6MjA4NTAwNTY3OH0.yi3FOdkBTi6eZsiAtKMqDyKpzVRnfs_nEJsbjCAgy8A',
+  CHRONO_FRELON_URL: 'https://berny70.github.io/Chrono_Frelon/distrib/',
+  MAX_SIGNALS:       500,
+  PIN_LENGTH:        6,
+  DEFAULT_PIN:       '000000',
+  DEFAULT_RADIUS_KM: 50,
+  SESSION_KEY:       'chassnid_session',
+};

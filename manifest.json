@@ -1,0 +1,14 @@
+{
+  "name": "ChassNid",
+  "short_name": "ChassNid",
+  "description": "Réseau Piste-Frelon — Gestion et distribution",
+  "start_url": "/Chrono_Frelon_Admin/",
+  "scope": "/Chrono_Frelon_Admin/",
+  "display": "standalone",
+  "background_color": "#0f1f0f",
+  "theme_color": "#0f1f0f",
+  "orientation": "portrait",
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml" }
+  ]
+}
