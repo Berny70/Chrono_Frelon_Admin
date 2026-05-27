@@ -37,7 +37,7 @@ const Admins = (() => {
       return;
     }
 
-
+  btn.disabled = false;
 
 
     // 3. Fermer le panneau et rafraîchir
