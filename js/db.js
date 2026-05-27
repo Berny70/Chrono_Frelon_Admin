@@ -6,6 +6,16 @@ const db = createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_KEY, {
   auth: { persistSession: false }
 });
 
+// ── HELPER TOKEN ──────────────────────────────────────────────
+
+function _token() {
+  return localStorage.getItem(CONFIG.SESSION_KEY);
+}
+
+function _parse(data) {
+  return data ? (typeof data === 'string' ? JSON.parse(data) : data) : null;
+}
+
 // ── SIGNALEMENTS ──────────────────────────────────────────────
 
 async function dbSignalsGetAll(lat, lon, radiusKm = 50) {
@@ -33,26 +43,25 @@ async function dbSignalsDeleteByPhone(phone_id) {
   return db.from('chrono_frelon_geo').delete().eq('phone_id', phone_id);
 }
 
-// ── PROFILS ───────────────────────────────────────────────────
+// ── PROFILS — LECTURE ─────────────────────────────────────────
 
 async function dbAdminsGetAll() {
-  const token = localStorage.getItem(CONFIG.SESSION_KEY);
-  const { data } = await db.rpc('chassnid_get_admins', { p_token: token });
-  const result = data ? (typeof data === 'string' ? JSON.parse(data) : data) : [];
+  const { data } = await db.rpc('chassnid_get_admins', { p_token: _token() });
+  const result = _parse(data);
   return Array.isArray(result) ? result : [];
 }
 
-async function dbPilotsGetByParent(parentId) {
-  const token = localStorage.getItem(CONFIG.SESSION_KEY);
-  const { data } = await db.rpc('chassnid_get_pilots', { p_token: token });
-  const result = data ? (typeof data === 'string' ? JSON.parse(data) : data) : [];
+async function dbPilotsGetByParent() {
+  const { data } = await db.rpc('chassnid_get_pilots', { p_token: _token() });
+  const result = _parse(data);
   return Array.isArray(result) ? result : [];
 }
+
+// ── PROFILS — CRÉATION ────────────────────────────────────────
 
 async function dbProfileCreate({ id, email, nom, prenom, role, departement, secteur, parent_id }) {
-  const token = localStorage.getItem(CONFIG.SESSION_KEY);
   const { data, error } = await db.rpc('chassnid_create_profile', {
-    p_token:       token,
+    p_token:       _token(),
     p_id:          id,
     p_email:       email,
     p_nom:         nom,
@@ -63,16 +72,31 @@ async function dbProfileCreate({ id, email, nom, prenom, role, departement, sect
     p_parent_id:   parent_id,
   });
   if (error) return { error };
-  const result = typeof data === 'string' ? JSON.parse(data) : data;
+  const result = _parse(data);
   return result?.error ? { error: { message: result.error } } : { ok: true };
 }
 
+// ── PROFILS — MODIFICATION ────────────────────────────────────
+
 async function dbProfileUpdateRole(id, role) {
-  return db.from('admin_profiles').update({ role }).eq('id', id);
+  const { data, error } = await db.rpc('chassnid_update_role', {
+    p_token:     _token(),
+    p_target_id: id,
+    p_role:      role,
+  });
+  if (error) return { error };
+  const result = _parse(data);
+  return result?.error ? { error: { message: result.error } } : { ok: true };
 }
 
 async function dbProfileDelete(id) {
-  return db.from('admin_profiles').delete().eq('id', id);
+  const { data, error } = await db.rpc('chassnid_delete_profile', {
+    p_token:     _token(),
+    p_target_id: id,
+  });
+  if (error) return { error };
+  const result = _parse(data);
+  return result?.error ? { error: { message: result.error } } : { ok: true };
 }
 
 async function dbProfileUpdateParams(id, { trait_length_m, validity_days }) {
