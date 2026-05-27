@@ -38,8 +38,6 @@ const Pilots = (() => {
     }
 
 
-    btn.disabled = false;
-
     // 3. Fermer le panneau et rafraîchir
     hideOverlay('overlay-new-pilot');
     _clearForm();
