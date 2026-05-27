@@ -50,25 +50,21 @@ async function dbPilotsGetByParent(parentId) {
 }
 
 async function dbProfileCreate({ id, email, nom, prenom, role, departement, secteur, parent_id }) {
-  // Vérifie si l'email existe déjà
-  const { data: existing } = await db
-    .from('admin_profiles')
-    .select('id')
-    .eq('email', email)
-    .maybeSingle();
-  if (existing) return { error: { message: 'Cet email est déjà enregistré.' } };
-
-  const { error } = await db.from('admin_profiles').insert({
-    id,
-    email, nom, prenom,
-    role,
-    departement,
-    canton:    secteur,
-    secteur,
-    parent_id,
-    pin_hash:  null, // sera défini par chassnid_reset_pin via RPC
+  const token = localStorage.getItem(CONFIG.SESSION_KEY);
+  const { data, error } = await db.rpc('chassnid_create_profile', {
+    p_token:       token,
+    p_id:          id,
+    p_email:       email,
+    p_nom:         nom,
+    p_prenom:      prenom,
+    p_role:        role,
+    p_departement: departement || '—',
+    p_secteur:     secteur || '—',
+    p_parent_id:   parent_id,
   });
-  return { error };
+  if (error) return { error };
+  const result = typeof data === 'string' ? JSON.parse(data) : data;
+  return result?.error ? { error: { message: result.error } } : { ok: true };
 }
 
 async function dbProfileUpdateRole(id, role) {
