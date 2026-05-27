@@ -37,11 +37,7 @@ const Admins = (() => {
       return;
     }
 
-    // 2. Initialiser le PIN à 000000 via RPC
-    await db.rpc('chassnid_reset_pin', {
-      p_admin_token:  Auth.getToken(),
-      p_target_email: email,
-    });
+
 
     btn.disabled = false;
 
