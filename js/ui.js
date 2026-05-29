@@ -62,7 +62,7 @@ function showModal(title, text, label, callback) {
   document.getElementById('modal-text').textContent  = text;
   const btn = document.getElementById('modal-ok');
   btn.textContent = label;
-  btn.onclick = () => { hideOverlay('overlay-modal'); callback(); };
+  btn.onclick = async () => { hideOverlay('overlay-modal'); await callback(); };
   showOverlay('overlay-modal');
 }
 

@@ -126,6 +126,7 @@ function _drawSignals(signals, blockedPhones) {
       </div>`;
 
     dot.bindPopup(popupContent, { maxWidth: 220 });
+    dot._signalId = s.id;
     _layers.push(dot);
 
     if (isBlocked) return;
@@ -139,12 +140,14 @@ function _drawSignals(signals, blockedPhones) {
       opacity: 0.85,
     }).addTo(_map);
     line.bindPopup(popupContent, { maxWidth: 220 });
+    line._signalId = s.id;
 
     // Zone de clic invisible élargie (confort tactile)
     const lineHit = L.polyline([[s.lat, s.lon], dest], {
       color: 'transparent', weight: 16, opacity: 0,
     }).addTo(_map);
     lineHit.bindPopup(popupContent, { maxWidth: 220 });
+    lineHit._signalId = s.id;
 
     _layers.push(line);
     _layers.push(lineHit);
@@ -157,6 +160,7 @@ function _drawSignals(signals, blockedPhones) {
       weight:      1,
       fillOpacity: 1,
     }).addTo(_map);
+    arrow._signalId = s.id;
 
     _layers.push(arrow);
     activeSignals.push(s);
@@ -172,7 +176,6 @@ function _drawSignals(signals, blockedPhones) {
 // ── SUPPRESSION DEPUIS LA CARTE ───────────────────────────────
 
 function mapDeleteSignal(id) {
-  // Ferme le popup
   _map.closePopup();
 
   showModal(
@@ -180,9 +183,13 @@ function mapDeleteSignal(id) {
     'Cette action est irréversible.',
     'Supprimer',
     async () => {
+      // Suppression immédiate des layers liés à ce signal
+      _layers = _layers.filter(l => {
+        if (l._signalId === id) { _map.removeLayer(l); return false; }
+        return true;
+      });
       await dbSignalDelete(id);
       showToast('Signalement supprimé.');
-      // Recharge les données via dashboard
       await Dashboard.load();
     }
   );
