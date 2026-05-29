@@ -32,11 +32,16 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 function _migrateSetMode(mode) {
   const isExisting = mode === 'existing';
-  document.getElementById('migrate-section-existing').style.display = isExisting ? '' : 'none';
-  document.getElementById('migrate-section-new').style.display      = isExisting ? 'none' : '';
-  document.getElementById('migrate-mode-existing').style.opacity    = isExisting ? '1' : '0.5';
-  document.getElementById('migrate-mode-new').style.opacity         = isExisting ? '0.5' : '1';
-  document.getElementById('btn-migrate-confirm').dataset.mode       = mode;
+  const secEx  = document.getElementById('migrate-section-existing');
+  const secNew = document.getElementById('migrate-section-new');
+  const btnEx  = document.getElementById('migrate-mode-existing');
+  const btnNew = document.getElementById('migrate-mode-new');
+  const btnOk  = document.getElementById('btn-migrate-confirm');
+  if (secEx)  secEx.style.display  = isExisting ? '' : 'none';
+  if (secNew) secNew.style.display = isExisting ? 'none' : '';
+  if (btnEx)  btnEx.style.opacity  = isExisting ? '1' : '0.5';
+  if (btnNew) btnNew.style.opacity = isExisting ? '0.5' : '1';
+  if (btnOk)  btnOk.dataset.mode   = mode;
 }
 
 function _initMigrateOverlay() {
