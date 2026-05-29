@@ -9,6 +9,6 @@ const CONFIG = {
   MAX_SIGNALS:       500,
   PIN_LENGTH:        6,
   DEFAULT_PIN:       '000000',
-  DEFAULT_RADIUS_KM: 50,
+  DEFAULT_RADIUS_KM: 10,
   SESSION_KEY:       'chassnid_session',
 };
