@@ -76,6 +76,19 @@ async function dbProfileCreate({ id, email, nom, prenom, role, departement, sect
   return result?.error ? { error: { message: result.error } } : { ok: true };
 }
 
+// ── PROFILS — MIGRATION ───────────────────────────────────────
+
+async function dbProfileMigrate(oldId, newId) {
+  const { data, error } = await db.rpc('chassnid_migrate_profile', {
+    p_token:  _token(),
+    p_old_id: oldId,
+    p_new_id: newId,
+  });
+  if (error) return { error };
+  const result = _parse(data);
+  return result?.error ? { error: { message: result.error } } : { ok: true };
+}
+
 // ── PROFILS — MODIFICATION ────────────────────────────────────
 
 async function dbProfileUpdateRole(id, role) {

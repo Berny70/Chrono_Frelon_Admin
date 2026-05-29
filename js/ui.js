@@ -254,12 +254,13 @@ function renderAdmins(admins) {
           <div class="user-meta">📍 ${a.secteur || '—'} · ${a.departement || '—'}</div>
           <div class="user-meta" style="font-size:11px">Créé le ${new Date(a.created_at).toLocaleDateString('fr-FR')}</div>
         </div>
-        <div style="display:flex;gap:6px;flex-shrink:0">
+        <div style="display:flex;gap:6px;flex-shrink:0;flex-wrap:wrap;justify-content:flex-end">
           ${isBlocked
             ? `<button class="btn-unblock" data-admin-id="${a.id}" data-admin-name="${a.prenom} ${a.nom}">Débloquer</button>`
             : `<button class="btn-block"   data-admin-id="${a.id}" data-admin-name="${a.prenom} ${a.nom}">Bloquer</button>`
           }
-          <button class="btn-delete" data-admin-id="${a.id}" data-admin-name="${a.prenom} ${a.nom}" data-admin-email="${a.email}">🗑</button>
+          <button class="btn-migrate" data-admin-id="${a.id}" data-admin-name="${a.prenom} ${a.nom}" data-admin-role="${a.role}" title="Migrer — réattribuer les pilotes à un remplaçant">⇄</button>
+          <button class="btn-delete"  data-admin-id="${a.id}" data-admin-name="${a.prenom} ${a.nom}" data-admin-email="${a.email}">🗑</button>
         </div>
       </div>`;
   }).join('');
@@ -286,12 +287,13 @@ function renderPilots(pilots) {
           <div class="user-meta">📍 ${p.secteur || '—'} · ${p.departement || '—'}</div>
           <div class="user-meta" style="font-size:11px">Créé le ${new Date(p.created_at).toLocaleDateString('fr-FR')}</div>
         </div>
-        <div style="display:flex;gap:6px;flex-shrink:0">
+        <div style="display:flex;gap:6px;flex-shrink:0;flex-wrap:wrap;justify-content:flex-end">
           ${isBlocked
             ? `<button class="btn-unblock" data-pilot-id="${p.id}" data-pilot-name="${p.prenom} ${p.nom}">Débloquer</button>`
             : `<button class="btn-block"   data-pilot-id="${p.id}" data-pilot-name="${p.prenom} ${p.nom}">Bloquer</button>`
           }
-          <button class="btn-delete" data-pilot-id="${p.id}" data-pilot-name="${p.prenom} ${p.nom}" data-pilot-email="${p.email}">🗑</button>
+          <button class="btn-migrate" data-pilot-id="${p.id}" data-pilot-name="${p.prenom} ${p.nom}" data-pilot-role="${p.role}" title="Migrer — réattribuer les utilisateurs à un remplaçant">⇄</button>
+          <button class="btn-delete"  data-pilot-id="${p.id}" data-pilot-name="${p.prenom} ${p.nom}" data-pilot-email="${p.email}">🗑</button>
         </div>
       </div>`;
   }).join('');

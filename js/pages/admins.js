@@ -107,6 +107,34 @@ const Admins = (() => {
     );
   }
 
+  // ── MIGRER UN ADMIN ────────────────────────────────────────
+
+  async function migrate(oldId, oldName) {
+    document.getElementById('migrate-title').textContent = `Migrer ${oldName}`;
+    document.getElementById('migrate-desc').textContent =
+      `Tous les pilotes rattachés à ${oldName} seront réattribués au remplaçant. ${oldName} sera ensuite supprimé.`;
+    document.getElementById('migrate-msg').className   = 'auth-message';
+    document.getElementById('migrate-msg').textContent = '';
+
+    const all = Dashboard.getAdmins().filter(a => a.id !== oldId);
+    const sel = document.getElementById('migrate-select');
+    sel.innerHTML = '<option value="">— Sélectionner —</option>' +
+      all.map(a => `<option value="${a.id}">${a.prenom} ${a.nom} (${a.secteur || a.departement || '—'})</option>`).join('');
+
+    document.getElementById('migrate-dept-group').style.display = '';
+    ['migrate-prenom','migrate-nom','migrate-email','migrate-dept','migrate-secteur']
+      .forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+
+    _migrateSetMode('existing');
+
+    const btn = document.getElementById('btn-migrate-confirm');
+    btn.dataset.oldId   = oldId;
+    btn.dataset.oldName = oldName;
+    btn.dataset.context = 'admin';
+
+    showOverlay('overlay-migrate');
+  }
+
   // ── SUPPRIMER UN ADMIN ─────────────────────────────────────
 
   async function remove(id, name) {
@@ -152,13 +180,15 @@ const Admins = (() => {
       const blockBtn   = e.target.closest('.btn-block[data-admin-id]');
       const unblockBtn = e.target.closest('.btn-unblock[data-admin-id]');
       const deleteBtn  = e.target.closest('.btn-delete[data-admin-id]');
+      const migrateBtn = e.target.closest('.btn-migrate[data-admin-id]');
 
       if (blockBtn)   block(blockBtn.dataset.adminId, blockBtn.dataset.adminName);
       if (unblockBtn) unblock(unblockBtn.dataset.adminId, unblockBtn.dataset.adminName);
       if (deleteBtn)  remove(deleteBtn.dataset.adminId, deleteBtn.dataset.adminName);
+      if (migrateBtn) migrate(migrateBtn.dataset.adminId, migrateBtn.dataset.adminName);
     });
   }
 
-  return { init, block, unblock, resetPin, remove };
+  return { init, block, unblock, resetPin, remove, migrate };
 
 })();

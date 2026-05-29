@@ -445,6 +445,59 @@
   </div>
 </div>
 
+<!-- ══ PANNEAU MIGRATION ══════════════════════════════════════ -->
+<div class="overlay" id="overlay-migrate">
+  <div class="panel">
+    <div class="panel-header">
+      <h3 class="panel-title" id="migrate-title">Migrer</h3>
+      <button class="panel-close" data-close="overlay-migrate">✕</button>
+    </div>
+    <p class="form-hint" id="migrate-desc" style="margin-bottom:16px"></p>
+    <div style="display:flex;gap:8px;margin-bottom:16px">
+      <button class="btn-secondary" id="migrate-mode-existing" style="flex:1;font-size:13px">Personne existante</button>
+      <button class="btn-secondary" id="migrate-mode-new" style="flex:1;font-size:13px">Nouveau compte</button>
+    </div>
+    <div id="migrate-section-existing">
+      <div class="form-group">
+        <label class="form-label">Choisir le remplaçant</label>
+        <select id="migrate-select" class="form-input">
+          <option value="">— Sélectionner —</option>
+        </select>
+      </div>
+    </div>
+    <div id="migrate-section-new" style="display:none">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Prénom</label>
+          <input type="text" id="migrate-prenom" class="form-input" placeholder="Jean">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Nom</label>
+          <input type="text" id="migrate-nom" class="form-input" placeholder="Martin">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Email</label>
+        <input type="email" id="migrate-email" class="form-input" placeholder="jean.martin@gmail.com">
+      </div>
+      <div class="form-group" id="migrate-dept-group">
+        <label class="form-label">Département</label>
+        <input type="text" id="migrate-dept" class="form-input" placeholder="Isère (38)">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Territoire / secteur</label>
+        <input type="text" id="migrate-secteur" class="form-input" placeholder="ex : Grenoble Alpes Métropole">
+      </div>
+      <p class="form-hint">PIN provisoire : <strong>000000</strong></p>
+    </div>
+    <div class="auth-message" id="migrate-msg"></div>
+    <div class="panel-actions">
+      <button class="btn-cancel" data-close="overlay-migrate">Annuler</button>
+      <button class="btn-primary" id="btn-migrate-confirm">Migrer</button>
+    </div>
+  </div>
+</div>
+
 <!-- ══ MODAL CONFIRMATION ════════════════════════════════════ -->
 <div class="overlay" id="overlay-modal">
   <div class="panel panel--sm">

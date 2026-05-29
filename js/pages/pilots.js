@@ -118,6 +118,34 @@ const Pilots = (() => {
     );
   }
 
+  // ── MIGRER UN PILOTE ───────────────────────────────────────
+
+  async function migrate(oldId, oldName) {
+    document.getElementById('migrate-title').textContent = `Migrer ${oldName}`;
+    document.getElementById('migrate-desc').textContent =
+      `Tous les utilisateurs rattachés à ${oldName} seront réattribués au remplaçant. ${oldName} sera ensuite supprimé.`;
+    document.getElementById('migrate-msg').className   = 'auth-message';
+    document.getElementById('migrate-msg').textContent = '';
+
+    const all = Dashboard.getPilots().filter(p => p.id !== oldId);
+    const sel = document.getElementById('migrate-select');
+    sel.innerHTML = '<option value="">— Sélectionner —</option>' +
+      all.map(p => `<option value="${p.id}">${p.prenom} ${p.nom} (${p.secteur || '—'})</option>`).join('');
+
+    document.getElementById('migrate-dept-group').style.display = 'none';
+    ['migrate-prenom','migrate-nom','migrate-email','migrate-secteur']
+      .forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+
+    _migrateSetMode('existing');
+
+    const btn = document.getElementById('btn-migrate-confirm');
+    btn.dataset.oldId   = oldId;
+    btn.dataset.oldName = oldName;
+    btn.dataset.context = 'pilot';
+
+    showOverlay('overlay-migrate');
+  }
+
   // ── RAFRAÎCHIR LA LISTE ────────────────────────────────────
 
   async function _refresh() {
@@ -155,13 +183,15 @@ const Pilots = (() => {
       const blockBtn   = e.target.closest('.btn-block[data-pilot-id]');
       const unblockBtn = e.target.closest('.btn-unblock[data-pilot-id]');
       const deleteBtn  = e.target.closest('.btn-delete[data-pilot-id]');
+      const migrateBtn = e.target.closest('.btn-migrate[data-pilot-id]');
 
       if (blockBtn)   block(blockBtn.dataset.pilotId, blockBtn.dataset.pilotName);
       if (unblockBtn) unblock(unblockBtn.dataset.pilotId, unblockBtn.dataset.pilotName);
       if (deleteBtn)  remove(deleteBtn.dataset.pilotId, deleteBtn.dataset.pilotName);
+      if (migrateBtn) migrate(migrateBtn.dataset.pilotId, migrateBtn.dataset.pilotName);
     });
   }
 
-  return { init, block, unblock, resetPin, remove };
+  return { init, block, unblock, resetPin, remove, migrate };
 
 })();

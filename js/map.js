@@ -1,9 +1,46 @@
 // ── map.js — Carte Leaflet + traits directionnels + convergence
 // Dépend de : config.js, Leaflet CDN
 
-let _map        = null;
-let _layers     = [];
+let _map         = null;
+let _layers      = [];
 let _convergence = null;
+let _currentBasemap = null;
+
+// ── FONDS DE CARTE ────────────────────────────────────────────
+
+const BASEMAPS = {
+  osm:       { label: '🗺 Standard',  url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',                                                                        opts: { attribution: '© OpenStreetMap', maxZoom: 19 } },
+  topo:      { label: '🏔 Topo',      url: 'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',                                                                          opts: { attribution: '© OpenTopoMap',   maxZoom: 17 } },
+  relief:    { label: '🌄 Relief',    url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Shaded_Relief/MapServer/tile/{z}/{y}/{x}',                        opts: { attribution: '© Esri',          maxZoom: 13 } },
+  satellite: { label: '🛰 Satellite', url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',                              opts: { attribution: '© Esri',          maxZoom: 19 } },
+};
+
+function _applyBasemap(key) {
+  const bm = BASEMAPS[key] || BASEMAPS.osm;
+  if (_currentBasemap) _map.removeLayer(_currentBasemap);
+  _currentBasemap = L.tileLayer(bm.url, bm.opts).addTo(_map);
+  localStorage.setItem('chassnid_basemap', key);
+  document.querySelectorAll('.basemap-btn').forEach(btn => {
+    btn.classList.toggle('basemap-btn--active', btn.dataset.basemap === key);
+  });
+}
+
+function _addBasemapControl() {
+  const ctrl = L.control({ position: 'bottomright' });
+  ctrl.onAdd = () => {
+    const div = L.DomUtil.create('div', 'basemap-control');
+    div.innerHTML = Object.entries(BASEMAPS).map(([key, bm]) =>
+      `<button class="basemap-btn${key === (localStorage.getItem('chassnid_basemap') || 'osm') ? ' basemap-btn--active' : ''}" data-basemap="${key}">${bm.label}</button>`
+    ).join('');
+    L.DomEvent.disableClickPropagation(div);
+    div.addEventListener('click', e => {
+      const btn = e.target.closest('.basemap-btn');
+      if (btn) _applyBasemap(btn.dataset.basemap);
+    });
+    return div;
+  };
+  ctrl.addTo(_map);
+}
 
 // ── INITIALISATION ────────────────────────────────────────────
 
@@ -15,10 +52,9 @@ function mapInit(signals, blockedPhones) {
       zoomControl: true,
     });
 
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '© OpenStreetMap',
-      maxZoom: 19,
-    }).addTo(_map);
+    const saved = localStorage.getItem('chassnid_basemap') || 'osm';
+    _applyBasemap(saved);
+    _addBasemapControl();
   }
 
   _clearLayers();
@@ -99,11 +135,19 @@ function _drawSignals(signals, blockedPhones) {
 
     const line = L.polyline([[s.lat, s.lon], dest], {
       color:   colorLight,
-      weight:  2,
+      weight:  2.5,
       opacity: 0.85,
     }).addTo(_map);
+    line.bindPopup(popupContent, { maxWidth: 220 });
+
+    // Zone de clic invisible élargie (confort tactile)
+    const lineHit = L.polyline([[s.lat, s.lon], dest], {
+      color: 'transparent', weight: 16, opacity: 0,
+    }).addTo(_map);
+    lineHit.bindPopup(popupContent, { maxWidth: 220 });
 
     _layers.push(line);
+    _layers.push(lineHit);
 
     // Flèche au bout du trait
     const arrow = L.circleMarker(dest, {
