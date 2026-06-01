@@ -45,6 +45,8 @@ function _addBasemapControl() {
 // ── INITIALISATION ────────────────────────────────────────────
 
 function mapInit(signals, blockedPhones) {
+  const isFirstInit = !_map;
+
   if (!_map) {
     _map = L.map('map', {
       center: [46.8, 2.3],
@@ -59,7 +61,11 @@ function mapInit(signals, blockedPhones) {
 
   _clearLayers();
   _drawSignals(signals, blockedPhones);
-  _fitBounds(signals);
+
+  // Ne recentrer que lors de la première initialisation
+  if (isFirstInit) {
+    _fitBounds(signals);
+  }
 }
 
 function mapInvalidate() {
