@@ -259,8 +259,8 @@ function renderAdmins(admins) {
             ? `<button class="btn-unblock" data-admin-id="${a.id}" data-admin-name="${a.prenom} ${a.nom}">Débloquer</button>`
             : `<button class="btn-block"   data-admin-id="${a.id}" data-admin-name="${a.prenom} ${a.nom}">Bloquer</button>`
           }
-          <button class="btn-view"    data-admin-id="${a.id}" data-admin-name="${a.prenom} ${a.nom}" title="Voir les pilotes">👁</button>
-          <button class="btn-migrate" data-admin-id="${a.id}" data-admin-name="${a.prenom} ${a.nom}" data-admin-role="${a.role}" title="Migrer — réattribuer les pilotes à un remplaçant">⇄</button>
+          <button class="btn-view"    data-admin-id="${a.id}" data-admin-name="${a.prenom} ${a.nom}" title="Voir les pilotes">Voir</button>
+          <button class="btn-migrate" data-admin-id="${a.id}" data-admin-name="${a.prenom} ${a.nom}" data-admin-role="${a.role}" title="Migrer — réattribuer les pilotes à un remplaçant">Migrer</button>
           <button class="btn-delete"  data-admin-id="${a.id}" data-admin-name="${a.prenom} ${a.nom}" data-admin-email="${a.email}">🗑</button>
         </div>
       </div>`;
@@ -293,8 +293,8 @@ function renderPilots(pilots) {
             ? `<button class="btn-unblock" data-pilot-id="${p.id}" data-pilot-name="${p.prenom} ${p.nom}">Débloquer</button>`
             : `<button class="btn-block"   data-pilot-id="${p.id}" data-pilot-name="${p.prenom} ${p.nom}">Bloquer</button>`
           }
-          <button class="btn-view"    data-pilot-id="${p.id}" data-pilot-name="${p.prenom} ${p.nom}" title="Voir les utilisateurs">👁</button>
-          <button class="btn-migrate" data-pilot-id="${p.id}" data-pilot-name="${p.prenom} ${p.nom}" data-pilot-role="${p.role}" title="Migrer — réattribuer les utilisateurs à un remplaçant">⇄</button>
+          <button class="btn-view"    data-pilot-id="${p.id}" data-pilot-name="${p.prenom} ${p.nom}" title="Voir les utilisateurs">Voir</button>
+          <button class="btn-migrate" data-pilot-id="${p.id}" data-pilot-name="${p.prenom} ${p.nom}" data-pilot-role="${p.role}" title="Migrer — réattribuer les utilisateurs à un remplaçant">Migrer</button>
           <button class="btn-delete"  data-pilot-id="${p.id}" data-pilot-name="${p.prenom} ${p.nom}" data-pilot-email="${p.email}">🗑</button>
         </div>
       </div>`;
