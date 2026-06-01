@@ -11,7 +11,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   Pilots.init();
   Signals.init();
   _initMigrateOverlay();
-  _initSentinelOverlay();
 
   // ── VÉRIFICATION DE SESSION AU DÉMARRAGE ──────────────────
   const profile = await Auth.verify();
@@ -137,52 +136,3 @@ function _initMigrateOverlay() {
   });
 }
 
-// ── OVERLAY NOUVELLE SENTINELLE ───────────────────────────────
-
-function _initSentinelOverlay() {
-  document.getElementById('btn-new-sentinel')?.addEventListener('click', () => {
-    ['sentinel-prenom','sentinel-nom','sentinel-email','sentinel-secteur']
-      .forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
-    document.getElementById('sentinel-msg').className   = 'auth-message';
-    document.getElementById('sentinel-msg').textContent = '';
-    showOverlay('overlay-new-sentinel');
-  });
-
-  document.getElementById('btn-create-sentinel')?.addEventListener('click', async () => {
-    const btn     = document.getElementById('btn-create-sentinel');
-    const prenom  = document.getElementById('sentinel-prenom').value.trim();
-    const nom     = document.getElementById('sentinel-nom').value.trim();
-    const email   = document.getElementById('sentinel-email').value.trim();
-    const secteur = document.getElementById('sentinel-secteur').value.trim();
-
-    if (!prenom || !nom || !email || !secteur) {
-      showAuthMsg('sentinel-msg', 'error', 'Tous les champs sont requis.');
-      return;
-    }
-
-    btn.disabled = true;
-    const profile = Auth.getProfile();
-    const newId   = crypto.randomUUID();
-
-    const { error } = await dbProfileCreate({
-      id:          newId,
-      email, nom, prenom,
-      role:        'pilot',
-      departement: profile.departement || '—',
-      canton:      secteur,
-      secteur,
-      parent_id:   profile.id,
-    });
-
-    btn.disabled = false;
-
-    if (error) {
-      showAuthMsg('sentinel-msg', 'error', error.message || 'Erreur lors de la création.');
-      return;
-    }
-
-    hideOverlay('overlay-new-sentinel');
-    showToast(`${prenom} ${nom} créé(e) avec succès.`);
-    await Dashboard.load();
-  });
-}

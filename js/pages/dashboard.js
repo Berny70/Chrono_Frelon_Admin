@@ -89,7 +89,6 @@ const Dashboard = (() => {
       document.getElementById('pilot-sentinels-section').style.display  = 'none';
       document.getElementById('my-sentinels-section').style.display     = '';
       document.getElementById('pilots-sentinels-section').style.display = '';
-      document.getElementById('btn-new-sentinel').style.display         = '';
 
       // Mes sentinelles directes
       renderUsersList(_pilotUsers, 'my-sentinels-list');
@@ -102,7 +101,6 @@ const Dashboard = (() => {
       document.getElementById('pilot-sentinels-section').style.display  = '';
       document.getElementById('my-sentinels-section').style.display     = 'none';
       document.getElementById('pilots-sentinels-section').style.display = 'none';
-      document.getElementById('btn-new-sentinel').style.display         = 'none';
       renderUsers(_users);
     }
 
