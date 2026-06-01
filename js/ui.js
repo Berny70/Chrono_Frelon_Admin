@@ -216,7 +216,7 @@ function renderUsers(users) {
   const el = document.getElementById('users-list');
   if (!el) return;
   if (!users.length) {
-    el.innerHTML = '<div class="empty"><div class="empty-icon">👤</div>Aucun utilisateur dans ce secteur.</div>';
+    el.innerHTML = '<div class="empty"><div class="empty-icon">👤</div>Aucune sentinelle dans ce secteur.</div>';
     return;
   }
   el.innerHTML = users.map(u => `
@@ -293,8 +293,8 @@ function renderPilots(pilots) {
             ? `<button class="btn-unblock" data-pilot-id="${p.id}" data-pilot-name="${p.prenom} ${p.nom}">Débloquer</button>`
             : `<button class="btn-block"   data-pilot-id="${p.id}" data-pilot-name="${p.prenom} ${p.nom}">Bloquer</button>`
           }
-          <button class="btn-view"    data-pilot-id="${p.id}" data-pilot-name="${p.prenom} ${p.nom}" title="Voir les utilisateurs">Voir</button>
-          <button class="btn-migrate" data-pilot-id="${p.id}" data-pilot-name="${p.prenom} ${p.nom}" data-pilot-role="${p.role}" title="Migrer — réattribuer les utilisateurs à un remplaçant">Migrer</button>
+          <button class="btn-view"    data-pilot-id="${p.id}" data-pilot-name="${p.prenom} ${p.nom}" title="Voir les sentinelles">Voir</button>
+          <button class="btn-migrate" data-pilot-id="${p.id}" data-pilot-name="${p.prenom} ${p.nom}" data-pilot-role="${p.role}" title="Migrer — réattribuer les sentinelles à un remplaçant">Migrer</button>
           <button class="btn-delete"  data-pilot-id="${p.id}" data-pilot-name="${p.prenom} ${p.nom}" data-pilot-email="${p.email}">🗑</button>
         </div>
       </div>`;

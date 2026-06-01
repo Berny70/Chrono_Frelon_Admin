@@ -108,7 +108,7 @@ const Pilots = (() => {
   async function remove(id, name) {
     showModal(
       'Supprimer ce pilote',
-      `Supprimer ${name} et tous ses utilisateurs rattachés ? Cette action est irréversible.`,
+      `Supprimer ${name} et tous ses sentinelles rattachées ? Cette action est irréversible.`,
       'Supprimer',
       async () => {
         await dbProfileDelete(id);
@@ -121,14 +121,14 @@ const Pilots = (() => {
   // ── VOIR LES UTILISATEURS D'UN PILOTE ─────────────────────
 
   async function view(pilotId, pilotName) {
-    document.getElementById('view-title').textContent = `Utilisateurs de ${pilotName}`;
+    document.getElementById('view-title').textContent = `Sentinelles de ${pilotName}`;
     const list = document.getElementById('view-list');
     list.innerHTML = '<p class="form-hint">Chargement…</p>';
     showOverlay('overlay-view');
 
     const users = await dbPilotUsersGet(pilotId);
     if (users.length === 0) {
-      list.innerHTML = '<p class="form-hint">Aucun utilisateur rattaché.</p>';
+      list.innerHTML = '<p class="form-hint">Aucune sentinelle rattachée.</p>';
     } else {
       list.innerHTML = users.map(u => `
         <div class="list-item" style="display:flex;align-items:center;gap:10px">
@@ -146,7 +146,7 @@ const Pilots = (() => {
   async function migrate(oldId, oldName) {
     document.getElementById('migrate-title').textContent = `Migrer ${oldName}`;
     document.getElementById('migrate-desc').textContent =
-      `Tous les utilisateurs rattachés à ${oldName} seront réattribués au remplaçant. ${oldName} sera ensuite supprimé.`;
+      `Toutes les sentinelles rattachées à ${oldName} seront réattribués au remplaçant. ${oldName} sera ensuite supprimé.`;
     document.getElementById('migrate-msg').className   = 'auth-message';
     document.getElementById('migrate-msg').textContent = '';
 

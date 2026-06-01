@@ -126,8 +126,8 @@ const Dashboard = (() => {
 
   async function blockUser(phone_id) {
     showModal(
-      'Bloquer cet utilisateur',
-      'Cet utilisateur ne pourra plus soumettre de signalements.',
+      'Bloquer cette sentinelle',
+      'Cette sentinelle ne pourra plus soumettre de signalements.',
       'Bloquer',
       async () => {
         const profile = Auth.getProfile();
@@ -140,7 +140,7 @@ const Dashboard = (() => {
           await dbBlockedAdd(phone_id, profile.id);
           _blockedPhones.add(phone_id);
         }
-        showToast('Utilisateur bloqué.');
+        showToast('Sentinelle bloquée.');
         _buildUsers();
         _refresh();
       }
@@ -149,8 +149,8 @@ const Dashboard = (() => {
 
   async function unblockUser(phone_id) {
     showModal(
-      'Débloquer cet utilisateur',
-      'Cet utilisateur pourra à nouveau soumettre des signalements.',
+      'Débloquer cette sentinelle',
+      'Cette sentinelle pourra à nouveau soumettre des signalements.',
       'Débloquer',
       async () => {
         const profile = Auth.getProfile();
@@ -163,7 +163,7 @@ const Dashboard = (() => {
           await dbBlockedRemove(phone_id);
           _blockedPhones.delete(phone_id);
         }
-        showToast('Utilisateur débloqué.');
+        showToast('Sentinelle débloquée.');
         _buildUsers();
         _refresh();
       }
