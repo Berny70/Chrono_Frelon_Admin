@@ -144,6 +144,21 @@ async function dbPilotUsersGet(pilotId) {
   return data || [];
 }
 
+// Sentinelles de tous les pilotes d'un admin (groupées par pilote)
+async function dbPilotUsersGetByAdmin(adminId, pilots) {
+  const results = await Promise.all(
+    pilots.map(async p => {
+      const { data } = await db
+        .from('pilot_user_stats')
+        .select('*')
+        .eq('pilot_id', p.id)
+        .order('rattachement_date', { ascending: false });
+      return { pilot: p, users: data || [] };
+    })
+  );
+  return results;
+}
+
 async function dbPilotUserBlock(phone_id, pilotId) {
   return db.from('pilot_users')
     .update({ blocked: true })

@@ -37,6 +37,8 @@ const Dashboard = (() => {
       _signals       = await dbSignalsGetAll(profile.lat, profile.lon, _radius);
       _blockedPhones = await dbBlockedGetAll();
       _pilots        = await dbPilotsGetByParent(profile.id);
+      // Sentinelles directes de l'admin
+      _pilotUsers    = await dbPilotUsersGet(profile.id);
       await _loadPending();
     }
 
@@ -74,13 +76,35 @@ const Dashboard = (() => {
 
   // ── RAFRAÎCHISSEMENT ──────────────────────────────────────
 
-  function _refresh() {
-    const role = Auth.getProfile()?.role;
+  async function _refresh() {
+    const role    = Auth.getProfile()?.role;
+    const profile = Auth.getProfile();
 
     renderSignals(_signals, _blockedPhones);
-    renderUsers(_users);
     updateStats(_signals, _users);
     mapInit(_signals, _blockedPhones);
+
+    if (role === 'admin_dept') {
+      // Afficher les deux sous-groupes sentinelles
+      document.getElementById('pilot-sentinels-section').style.display  = 'none';
+      document.getElementById('my-sentinels-section').style.display     = '';
+      document.getElementById('pilots-sentinels-section').style.display = '';
+      document.getElementById('btn-new-sentinel').style.display         = '';
+
+      // Mes sentinelles directes
+      renderUsersList(_pilotUsers, 'my-sentinels-list');
+
+      // Sentinelles de mes pilotes (groupées)
+      const grouped = await dbPilotUsersGetByAdmin(profile.id, _pilots);
+      renderSentinelsByPilot(grouped);
+
+    } else {
+      document.getElementById('pilot-sentinels-section').style.display  = '';
+      document.getElementById('my-sentinels-section').style.display     = 'none';
+      document.getElementById('pilots-sentinels-section').style.display = 'none';
+      document.getElementById('btn-new-sentinel').style.display         = 'none';
+      renderUsers(_users);
+    }
 
     if (role === 'superadmin') renderAdmins(_admins);
     if (['superadmin', 'admin_dept'].includes(role)) renderPilots(_pilots);

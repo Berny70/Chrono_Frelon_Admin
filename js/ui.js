@@ -233,6 +233,56 @@ function renderUsers(users) {
     </div>`).join('');
 }
 
+// Liste sentinelles dans un conteneur donné (mes sentinelles directes)
+function renderUsersList(users, containerId) {
+  const el = document.getElementById(containerId);
+  if (!el) return;
+  if (!users.length) {
+    el.innerHTML = '<div class="empty"><div class="empty-icon">👤</div>Aucune sentinelle directe.</div>';
+    return;
+  }
+  el.innerHTML = users.map(u => `
+    <div class="user-card ${u.blocked ? 'blocked' : ''}">
+      <div class="user-info">
+        <div class="user-phone">${u.prenom ? u.prenom + ' ' + u.nom : u.phone_id}</div>
+        <div class="user-meta">${u.nb_observations || 0} signalement${(u.nb_observations || 0) > 1 ? 's' : ''} · ${u.derniere_observation ? new Date(u.derniere_observation).toLocaleDateString('fr-FR') : '—'}</div>
+      </div>
+      <span class="badge ${u.blocked ? 'badge-blocked' : 'badge-active'}">${u.blocked ? 'Bloqué' : 'Actif'}</span>
+      ${u.blocked
+        ? `<button class="btn-unblock" data-phone="${u.phone_id}">Débloquer</button>`
+        : `<button class="btn-block"   data-phone="${u.phone_id}">Bloquer</button>`
+      }
+    </div>`).join('');
+}
+
+// Sentinelles groupées par pilote
+function renderSentinelsByPilot(grouped) {
+  const el = document.getElementById('pilots-sentinels-list');
+  if (!el) return;
+  if (!grouped.length || grouped.every(g => g.users.length === 0)) {
+    el.innerHTML = '<div class="empty"><div class="empty-icon">👤</div>Aucune sentinelle chez vos pilotes.</div>';
+    return;
+  }
+  el.innerHTML = grouped.map(g => {
+    if (g.users.length === 0) return '';
+    return `
+      <div style="margin-bottom:16px">
+        <div style="font-size:13px;font-weight:600;color:var(--text-muted);margin-bottom:8px;padding:0 4px">
+          ${g.pilot.prenom} ${g.pilot.nom} — ${g.pilot.secteur || '—'}
+          <span style="font-weight:400">(${g.users.length})</span>
+        </div>
+        ${g.users.map(u => `
+          <div class="user-card ${u.blocked ? 'blocked' : ''}">
+            <div class="user-info">
+              <div class="user-phone">${u.prenom ? u.prenom + ' ' + u.nom : u.phone_id}</div>
+              <div class="user-meta">${u.nb_observations || 0} signalement${(u.nb_observations || 0) > 1 ? 's' : ''} · ${u.derniere_observation ? new Date(u.derniere_observation).toLocaleDateString('fr-FR') : '—'}</div>
+            </div>
+            <span class="badge ${u.blocked ? 'badge-blocked' : 'badge-active'}">${u.blocked ? 'Bloqué' : 'Actif'}</span>
+          </div>`).join('')}
+      </div>`;
+  }).join('');
+}
+
 // ── RENDU ADMINS ──────────────────────────────────────────────
 
 function renderAdmins(admins) {

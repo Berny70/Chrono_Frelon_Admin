@@ -220,10 +220,31 @@
     <div id="tab-users" class="tab-panel">
       <div class="tab-header">
         <h2 class="tab-title">Sentinelles</h2>
-        <input type="search" id="search-users" class="search-input" placeholder="Rechercher…">
+        <div style="display:flex;gap:8px;align-items:center">
+          <input type="search" id="search-users" class="search-input" placeholder="Rechercher…">
+          <button class="btn-primary" id="btn-new-sentinel" style="display:none;white-space:nowrap">+ Nouvelle sentinelle</button>
+        </div>
       </div>
-      <div class="list-container" id="users-list">
-        <div class="loading"><div class="spinner"></div></div>
+
+      <!-- Sous-groupe : mes sentinelles directes (admin_dept uniquement) -->
+      <div id="my-sentinels-section" style="display:none">
+        <h3 class="section-subtitle">Mes sentinelles</h3>
+        <div class="list-container" id="my-sentinels-list">
+          <div class="loading"><div class="spinner"></div></div>
+        </div>
+      </div>
+
+      <!-- Sous-groupe : sentinelles des pilotes -->
+      <div id="pilots-sentinels-section" style="display:none">
+        <h3 class="section-subtitle">Sentinelles de mes pilotes</h3>
+        <div id="pilots-sentinels-list"></div>
+      </div>
+
+      <!-- Vue pilote (liste simple) -->
+      <div id="pilot-sentinels-section">
+        <div class="list-container" id="users-list">
+          <div class="loading"><div class="spinner"></div></div>
+        </div>
       </div>
     </div>
 
@@ -441,6 +462,40 @@
     </div>
     <div class="panel-actions" style="justify-content:center">
       <button class="btn-cancel" data-close="overlay-aide">Fermer</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ PANNEAU NOUVELLE SENTINELLE ════════════════════════════ -->
+<div class="overlay" id="overlay-new-sentinel">
+  <div class="panel">
+    <div class="panel-header">
+      <h3 class="panel-title">Nouvelle sentinelle</h3>
+      <button class="panel-close" data-close="overlay-new-sentinel">✕</button>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Prénom</label>
+        <input type="text" id="sentinel-prenom" class="form-input" placeholder="Jean">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Nom</label>
+        <input type="text" id="sentinel-nom" class="form-input" placeholder="Martin">
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Email</label>
+      <input type="email" id="sentinel-email" class="form-input" placeholder="jean.martin@gmail.com">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Secteur</label>
+      <input type="text" id="sentinel-secteur" class="form-input" placeholder="ex : Herbeys">
+    </div>
+    <p class="form-hint">PIN provisoire : <strong>000000</strong> — à changer à la première connexion.</p>
+    <div class="auth-message" id="sentinel-msg"></div>
+    <div class="panel-actions">
+      <button class="btn-cancel" data-close="overlay-new-sentinel">Annuler</button>
+      <button class="btn-primary" id="btn-create-sentinel">Créer</button>
     </div>
   </div>
 </div>

@@ -907,3 +907,15 @@ h1, h2, h3, h4 { font-family: 'Playfair Display', serif; font-weight: 700; }
   .search-input { width: 140px; }
   .panel       { padding: 22px 18px; }
 }
+
+/* ── SOUS-TITRES DE SECTION ──────────────────────────────────── */
+.section-subtitle {
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  margin: 16px 0 8px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--border);
+}
