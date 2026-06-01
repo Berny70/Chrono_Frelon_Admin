@@ -107,6 +107,27 @@ const Admins = (() => {
     );
   }
 
+  // ── VOIR LES PILOTES D'UN ADMIN ────────────────────────────
+
+  function view(adminId, adminName) {
+    const pilots = Dashboard.getPilots().filter(p => p.parent_id === adminId);
+    document.getElementById('view-title').textContent = `Pilotes de ${adminName}`;
+    const list = document.getElementById('view-list');
+    if (pilots.length === 0) {
+      list.innerHTML = '<p class="form-hint">Aucun pilote rattaché.</p>';
+    } else {
+      list.innerHTML = pilots.map(p => `
+        <div class="list-item" style="display:flex;align-items:center;gap:10px">
+          <div class="avatar" style="width:36px;height:36px;font-size:13px">${p.prenom[0]}${p.nom[0]}</div>
+          <div>
+            <div style="font-weight:600;font-size:14px">${p.prenom} ${p.nom}</div>
+            <div style="font-size:12px;color:var(--text-muted)">${p.secteur || '—'}</div>
+          </div>
+        </div>`).join('');
+    }
+    showOverlay('overlay-view');
+  }
+
   // ── MIGRER UN ADMIN ────────────────────────────────────────
 
   async function migrate(oldId, oldName) {
@@ -181,14 +202,16 @@ const Admins = (() => {
       const unblockBtn = e.target.closest('.btn-unblock[data-admin-id]');
       const deleteBtn  = e.target.closest('.btn-delete[data-admin-id]');
       const migrateBtn = e.target.closest('.btn-migrate[data-admin-id]');
+      const viewBtn    = e.target.closest('.btn-view[data-admin-id]');
 
       if (blockBtn)   block(blockBtn.dataset.adminId, blockBtn.dataset.adminName);
       if (unblockBtn) unblock(unblockBtn.dataset.adminId, unblockBtn.dataset.adminName);
       if (deleteBtn)  remove(deleteBtn.dataset.adminId, deleteBtn.dataset.adminName);
       if (migrateBtn) migrate(migrateBtn.dataset.adminId, migrateBtn.dataset.adminName);
+      if (viewBtn)    view(viewBtn.dataset.adminId, viewBtn.dataset.adminName);
     });
   }
 
-  return { init, block, unblock, resetPin, remove, migrate };
+  return { init, block, unblock, resetPin, remove, migrate, view };
 
 })();

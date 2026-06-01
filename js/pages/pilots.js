@@ -118,6 +118,29 @@ const Pilots = (() => {
     );
   }
 
+  // ── VOIR LES UTILISATEURS D'UN PILOTE ─────────────────────
+
+  async function view(pilotId, pilotName) {
+    document.getElementById('view-title').textContent = `Utilisateurs de ${pilotName}`;
+    const list = document.getElementById('view-list');
+    list.innerHTML = '<p class="form-hint">Chargement…</p>';
+    showOverlay('overlay-view');
+
+    const users = await dbPilotUsersGet(pilotId);
+    if (users.length === 0) {
+      list.innerHTML = '<p class="form-hint">Aucun utilisateur rattaché.</p>';
+    } else {
+      list.innerHTML = users.map(u => `
+        <div class="list-item" style="display:flex;align-items:center;gap:10px">
+          <div class="avatar" style="width:36px;height:36px;font-size:13px">👤</div>
+          <div>
+            <div style="font-weight:600;font-size:14px">${u.phone_id}</div>
+            <div style="font-size:12px;color:var(--text-muted)">${u.signal_count ?? 0} signalement(s) · ${u.blocked ? '🔴 Bloqué' : '🟢 Actif'}</div>
+          </div>
+        </div>`).join('');
+    }
+  }
+
   // ── MIGRER UN PILOTE ───────────────────────────────────────
 
   async function migrate(oldId, oldName) {
@@ -184,14 +207,16 @@ const Pilots = (() => {
       const unblockBtn = e.target.closest('.btn-unblock[data-pilot-id]');
       const deleteBtn  = e.target.closest('.btn-delete[data-pilot-id]');
       const migrateBtn = e.target.closest('.btn-migrate[data-pilot-id]');
+      const viewBtn    = e.target.closest('.btn-view[data-pilot-id]');
 
       if (blockBtn)   block(blockBtn.dataset.pilotId, blockBtn.dataset.pilotName);
       if (unblockBtn) unblock(unblockBtn.dataset.pilotId, unblockBtn.dataset.pilotName);
       if (deleteBtn)  remove(deleteBtn.dataset.pilotId, deleteBtn.dataset.pilotName);
       if (migrateBtn) migrate(migrateBtn.dataset.pilotId, migrateBtn.dataset.pilotName);
+      if (viewBtn)    view(viewBtn.dataset.pilotId, viewBtn.dataset.pilotName);
     });
   }
 
-  return { init, block, unblock, resetPin, remove, migrate };
+  return { init, block, unblock, resetPin, remove, migrate, view };
 
 })();

@@ -284,6 +284,18 @@ h1, h2, h3, h4 { font-family: 'Playfair Display', serif; font-weight: 700; }
 }
 .btn-migrate:hover { background: #5b8fc9; color: #fff; }
 
+.btn-view {
+  padding: 5px 10px;
+  border: 1.5px solid #888;
+  border-radius: 6px;
+  background: transparent;
+  color: #888;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.btn-view:hover { border-color: var(--primary); color: var(--primary); background: rgba(60,100,60,0.08); }
+
 /* ── SÉLECTEUR FOND DE CARTE ─────────────────────────────────── */
 .basemap-control {
   display: flex;
