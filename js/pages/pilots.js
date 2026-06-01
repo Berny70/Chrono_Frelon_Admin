@@ -108,7 +108,7 @@ const Pilots = (() => {
   async function remove(id, name) {
     showModal(
       'Supprimer ce pilote',
-      `Supprimer ${name} et tous ses sentinelles rattachées ? Cette action est irréversible.`,
+      `Supprimer ${name} et toutes ses sentinelles rattachées ? Cette action est irréversible.`,
       'Supprimer',
       async () => {
         await dbProfileDelete(id);
@@ -146,7 +146,7 @@ const Pilots = (() => {
   async function migrate(oldId, oldName) {
     document.getElementById('migrate-title').textContent = `Migrer ${oldName}`;
     document.getElementById('migrate-desc').textContent =
-      `Toutes les sentinelles rattachées à ${oldName} seront réattribués au remplaçant. ${oldName} sera ensuite supprimé.`;
+      `Toutes les sentinelles rattachées à ${oldName} seront réattribuées au remplaçant. ${oldName} sera ensuite supprimé.`;
     document.getElementById('migrate-msg').className   = 'auth-message';
     document.getElementById('migrate-msg').textContent = '';
 

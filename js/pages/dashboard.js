@@ -353,7 +353,7 @@ const Dashboard = (() => {
       showScreen('login');
     });
 
-    // Filtres recherche signalements / utilisateurs
+    // Filtres recherche signalements / sentinelles
     document.getElementById('search-signals')?.addEventListener('input', e => {
       const q = e.target.value.toLowerCase();
       renderSignals(
