@@ -114,6 +114,9 @@ function _initMigrateOverlay() {
         btn.disabled = false;
         return;
       }
+
+      // Petit délai pour s'assurer que le profil est bien visible en base
+      await new Promise(resolve => setTimeout(resolve, 500));
     }
 
     const { error } = await dbProfileMigrate(oldId, newId);
