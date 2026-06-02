@@ -268,7 +268,6 @@ const Pilots = (() => {
       const pilots = await dbPilotsGetByParent();
       Dashboard.setPilots(pilots);
     });
-    });
   }
 
   return { init, block, unblock, resetPin, remove, migrate, view };
