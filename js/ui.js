@@ -345,6 +345,7 @@ function renderPilots(pilots) {
             : `<button class="btn-block"   data-pilot-id="${p.id}" data-pilot-name="${p.prenom} ${p.nom}">Bloquer</button>`
           }
           <button class="btn-view"      data-pilot-id="${p.id}" data-pilot-name="${p.prenom} ${p.nom}" title="Voir les sentinelles">Voir</button>
+          <button class="btn-params"    data-pilot-id="${p.id}" data-pilot-name="${p.prenom} ${p.nom}" data-trait="${p.trait_length_m || 500}" data-validity="${p.validity_days || 30}" title="Paramètres du pilote">Param</button>
           <button class="btn-reset-pin" data-pilot-id="${p.id}" data-pilot-name="${p.prenom} ${p.nom}" data-pilot-email="${p.email}" title="Réinitialiser le PIN à 000000">PIN</button>
           <button class="btn-migrate"   data-pilot-id="${p.id}" data-pilot-name="${p.prenom} ${p.nom}" data-pilot-role="${p.role}" title="Migrer — réattribuer les sentinelles à un remplaçant">Migrer</button>
           <button class="btn-delete"    data-pilot-id="${p.id}" data-pilot-name="${p.prenom} ${p.nom}" data-pilot-email="${p.email}">🗑</button>

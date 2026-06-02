@@ -141,6 +141,30 @@ const Pilots = (() => {
     }
   }
 
+  // ── PARAMÈTRES D'UN PILOTE ────────────────────────────────
+
+  function params(pilotId, pilotName, traitM, validityDays) {
+    document.getElementById('params-title').textContent = `Paramètres — ${pilotName}`;
+    document.getElementById('params-msg').className   = 'auth-message';
+    document.getElementById('params-msg').textContent = '';
+
+    const traitSlider    = document.getElementById('params-trait');
+    const validitySlider = document.getElementById('params-validity');
+    const traitVal       = document.getElementById('params-trait-val');
+    const validityVal    = document.getElementById('params-validity-val');
+
+    traitSlider.value    = traitM;
+    validitySlider.value = validityDays;
+    traitVal.textContent    = `${traitM} m`;
+    validityVal.textContent = `${validityDays} jour${validityDays > 1 ? 's' : ''}`;
+
+    traitSlider.oninput    = () => traitVal.textContent    = `${traitSlider.value} m`;
+    validitySlider.oninput = () => validityVal.textContent = `${validitySlider.value} jour${validitySlider.value > 1 ? 's' : ''}`;
+
+    document.getElementById('btn-params-save').dataset.pilotId = pilotId;
+    showOverlay('overlay-params');
+  }
+
   // ── MIGRER UN PILOTE ───────────────────────────────────────
 
   async function migrate(oldId, oldName) {
@@ -206,6 +230,7 @@ const Pilots = (() => {
       const blockBtn   = e.target.closest('.btn-block[data-pilot-id]');
       const unblockBtn = e.target.closest('.btn-unblock[data-pilot-id]');
       const deleteBtn  = e.target.closest('.btn-delete[data-pilot-id]');
+      const paramsBtn  = e.target.closest('.btn-params[data-pilot-id]');
       const resetBtn   = e.target.closest('.btn-reset-pin[data-pilot-id]');
       const migrateBtn = e.target.closest('.btn-migrate[data-pilot-id]');
       const viewBtn    = e.target.closest('.btn-view[data-pilot-id]');
@@ -213,9 +238,36 @@ const Pilots = (() => {
       if (blockBtn)   block(blockBtn.dataset.pilotId, blockBtn.dataset.pilotName);
       if (unblockBtn) unblock(unblockBtn.dataset.pilotId, unblockBtn.dataset.pilotName);
       if (deleteBtn)  remove(deleteBtn.dataset.pilotId, deleteBtn.dataset.pilotName);
+      if (paramsBtn)  params(paramsBtn.dataset.pilotId, paramsBtn.dataset.pilotName, parseInt(paramsBtn.dataset.trait), parseInt(paramsBtn.dataset.validity));
       if (resetBtn)   resetPin(resetBtn.dataset.pilotEmail, resetBtn.dataset.pilotName);
       if (migrateBtn) migrate(migrateBtn.dataset.pilotId, migrateBtn.dataset.pilotName);
       if (viewBtn)    view(viewBtn.dataset.pilotId, viewBtn.dataset.pilotName);
+    });
+
+    // Sauvegarder les paramètres
+    document.getElementById('btn-params-save')?.addEventListener('click', async () => {
+      const btn      = document.getElementById('btn-params-save');
+      const pilotId  = btn.dataset.pilotId;
+      const traitM   = parseInt(document.getElementById('params-trait').value);
+      const validity = parseInt(document.getElementById('params-validity').value);
+
+      btn.disabled = true;
+      const { error } = await dbProfileUpdateParams(pilotId, {
+        trait_length_m: traitM,
+        validity_days:  validity,
+      });
+      btn.disabled = false;
+
+      if (error) {
+        showAuthMsg('params-msg', 'error', error.message || 'Erreur lors de la sauvegarde.');
+        return;
+      }
+
+      hideOverlay('overlay-params');
+      showToast('Paramètres enregistrés.');
+      const pilots = await dbPilotsGetByParent();
+      Dashboard.setPilots(pilots);
+    });
     });
   }
 

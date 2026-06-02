@@ -465,7 +465,45 @@
   </div>
 </div>
 
-<!-- ══ PANNEAU VOIR SOUS-FIFRES ═══════════════════════════════ -->
+<!-- ══ PANNEAU PARAMÈTRES PILOTE ══════════════════════════════ -->
+<div class="overlay" id="overlay-params">
+  <div class="panel">
+    <div class="panel-header">
+      <h3 class="panel-title" id="params-title">Paramètres</h3>
+      <button class="panel-close" data-close="overlay-params">✕</button>
+    </div>
+
+    <div class="form-group" style="margin-bottom:24px">
+      <label class="form-label">Longueur des traits
+        <span id="params-trait-val" style="float:right;color:var(--accent);font-weight:600">500 m</span>
+      </label>
+      <input type="range" id="params-trait" min="100" max="3000" step="100" value="500"
+             style="width:100%;margin-top:8px;accent-color:var(--primary)">
+      <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text-muted);margin-top:4px">
+        <span>100 m</span><span>3 000 m</span>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Durée de validité des signalements
+        <span id="params-validity-val" style="float:right;color:var(--accent);font-weight:600">30 jours</span>
+      </label>
+      <input type="range" id="params-validity" min="1" max="90" step="1" value="30"
+             style="width:100%;margin-top:8px;accent-color:var(--primary)">
+      <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text-muted);margin-top:4px">
+        <span>1 jour</span><span>90 jours</span>
+      </div>
+    </div>
+
+    <div class="auth-message" id="params-msg"></div>
+    <div class="panel-actions">
+      <button class="btn-cancel" data-close="overlay-params">Annuler</button>
+      <button class="btn-primary" id="btn-params-save">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ PANNEAU NOUVELLE SENTINELLE ════════════════════════════ -->
 <div class="overlay" id="overlay-view">
   <div class="panel">
     <div class="panel-header">
