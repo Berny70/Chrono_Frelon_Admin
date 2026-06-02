@@ -113,9 +113,15 @@ async function dbProfileDelete(id) {
 }
 
 async function dbProfileUpdateParams(id, { trait_length_m, validity_days }) {
-  return db.from('admin_profiles')
-    .update({ trait_length_m, validity_days })
-    .eq('id', id);
+  const { data, error } = await db.rpc('chassnid_update_params', {
+    p_token:        _token(),
+    p_pilot_id:     id,
+    p_trait_length: trait_length_m,
+    p_validity:     validity_days,
+  });
+  if (error) return { error };
+  const result = _parse(data);
+  return result?.error ? { error: { message: result.error } } : { ok: true };
 }
 
 // ── UTILISATEURS BLOQUÉS ──────────────────────────────────────
