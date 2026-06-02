@@ -296,6 +296,19 @@ h1, h2, h3, h4 { font-family: 'Playfair Display', serif; font-weight: 700; }
 }
 .btn-view:hover { border-color: var(--primary); color: var(--primary); background: rgba(60,100,60,0.08); }
 
+.btn-reset-pin {
+  padding: 5px 10px;
+  border: 1.5px solid #e0a030;
+  border-radius: 6px;
+  background: transparent;
+  color: #e0a030;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.btn-reset-pin:hover { background: #e0a030; color: #fff; }
+
 /* ── SÉLECTEUR FOND DE CARTE ─────────────────────────────────── */
 .basemap-control {
   display: flex;

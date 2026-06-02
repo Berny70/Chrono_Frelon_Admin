@@ -201,12 +201,14 @@ const Admins = (() => {
       const blockBtn   = e.target.closest('.btn-block[data-admin-id]');
       const unblockBtn = e.target.closest('.btn-unblock[data-admin-id]');
       const deleteBtn  = e.target.closest('.btn-delete[data-admin-id]');
+      const resetBtn   = e.target.closest('.btn-reset-pin[data-admin-id]');
       const migrateBtn = e.target.closest('.btn-migrate[data-admin-id]');
       const viewBtn    = e.target.closest('.btn-view[data-admin-id]');
 
       if (blockBtn)   block(blockBtn.dataset.adminId, blockBtn.dataset.adminName);
       if (unblockBtn) unblock(unblockBtn.dataset.adminId, unblockBtn.dataset.adminName);
       if (deleteBtn)  remove(deleteBtn.dataset.adminId, deleteBtn.dataset.adminName);
+      if (resetBtn)   resetPin(resetBtn.dataset.adminEmail, resetBtn.dataset.adminName);
       if (migrateBtn) migrate(migrateBtn.dataset.adminId, migrateBtn.dataset.adminName);
       if (viewBtn)    view(viewBtn.dataset.adminId, viewBtn.dataset.adminName);
     });

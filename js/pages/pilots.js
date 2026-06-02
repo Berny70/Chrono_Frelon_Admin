@@ -206,12 +206,14 @@ const Pilots = (() => {
       const blockBtn   = e.target.closest('.btn-block[data-pilot-id]');
       const unblockBtn = e.target.closest('.btn-unblock[data-pilot-id]');
       const deleteBtn  = e.target.closest('.btn-delete[data-pilot-id]');
+      const resetBtn   = e.target.closest('.btn-reset-pin[data-pilot-id]');
       const migrateBtn = e.target.closest('.btn-migrate[data-pilot-id]');
       const viewBtn    = e.target.closest('.btn-view[data-pilot-id]');
 
       if (blockBtn)   block(blockBtn.dataset.pilotId, blockBtn.dataset.pilotName);
       if (unblockBtn) unblock(unblockBtn.dataset.pilotId, unblockBtn.dataset.pilotName);
       if (deleteBtn)  remove(deleteBtn.dataset.pilotId, deleteBtn.dataset.pilotName);
+      if (resetBtn)   resetPin(resetBtn.dataset.pilotEmail, resetBtn.dataset.pilotName);
       if (migrateBtn) migrate(migrateBtn.dataset.pilotId, migrateBtn.dataset.pilotName);
       if (viewBtn)    view(viewBtn.dataset.pilotId, viewBtn.dataset.pilotName);
     });
