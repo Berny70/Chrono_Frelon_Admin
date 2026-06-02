@@ -104,6 +104,7 @@ function _initMigrateOverlay() {
       const { error } = await dbProfileCreate({
         id: newId, email, nom, prenom, role,
         departement: dept || profile.departement || '—',
+        canton:      secteur,
         secteur,
         parent_id: profile.id,
       });
