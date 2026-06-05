@@ -31,9 +31,11 @@ body {
   background: var(--cream);
   color: var(--text);
   min-height: 100vh;
+  min-height: -webkit-fill-available;
   font-size: 15px;
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
+  padding-bottom: env(safe-area-inset-bottom);
 }
 
 h1, h2, h3, h4 { font-family: 'Playfair Display', serif; font-weight: 700; }
@@ -444,10 +446,12 @@ h1, h2, h3, h4 { font-family: 'Playfair Display', serif; font-weight: 700; }
   background: var(--forest);
   color: #fff;
   padding: 0 16px;
-  height: 58px;
+  padding-top: env(safe-area-inset-top);
+  height: calc(58px + env(safe-area-inset-top));
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   justify-content: space-between;
+  padding-bottom: 8px;
   flex-shrink: 0;
   position: sticky;
   top: 0;
