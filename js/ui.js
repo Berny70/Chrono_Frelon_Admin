@@ -310,6 +310,8 @@ function renderAdmins(admins) {
             : `<button class="btn-block"   data-admin-id="${a.id}" data-admin-name="${a.prenom} ${a.nom}">Bloquer</button>`
           }
           <button class="btn-view"      data-admin-id="${a.id}" data-admin-name="${a.prenom} ${a.nom}" title="Voir les pilotes">Voir</button>
+          <button class="btn-message"   data-admin-id="${a.id}" data-admin-name="${a.prenom} ${a.nom}" data-admin-email="${a.email}" data-admin-prenom="${a.prenom}" data-admin-nom="${a.nom}" title="Message de bienvenue">✉</button>
+          <button class="btn-params"    data-admin-id="${a.id}" data-admin-name="${a.prenom} ${a.nom}" data-trait="${a.trait_length_m || 500}" data-validity="${a.validity_days || 30}" title="Paramètres">Param</button>
           <button class="btn-reset-pin" data-admin-id="${a.id}" data-admin-name="${a.prenom} ${a.nom}" data-admin-email="${a.email}" title="Réinitialiser le PIN à 000000">PIN</button>
           <button class="btn-migrate"   data-admin-id="${a.id}" data-admin-name="${a.prenom} ${a.nom}" data-admin-role="${a.role}" title="Migrer — réattribuer les pilotes à un remplaçant">Migrer</button>
           <button class="btn-delete"    data-admin-id="${a.id}" data-admin-name="${a.prenom} ${a.nom}" data-admin-email="${a.email}">🗑</button>
@@ -345,6 +347,7 @@ function renderPilots(pilots) {
             : `<button class="btn-block"   data-pilot-id="${p.id}" data-pilot-name="${p.prenom} ${p.nom}">Bloquer</button>`
           }
           <button class="btn-view"      data-pilot-id="${p.id}" data-pilot-name="${p.prenom} ${p.nom}" title="Voir les sentinelles">Voir</button>
+          <button class="btn-message"   data-pilot-id="${p.id}" data-pilot-email="${p.email}" data-pilot-prenom="${p.prenom}" data-pilot-nom="${p.nom}" title="Message de bienvenue">✉</button>
           <button class="btn-params"    data-pilot-id="${p.id}" data-pilot-name="${p.prenom} ${p.nom}" data-trait="${p.trait_length_m || 500}" data-validity="${p.validity_days || 30}" title="Paramètres du pilote">Param</button>
           <button class="btn-reset-pin" data-pilot-id="${p.id}" data-pilot-name="${p.prenom} ${p.nom}" data-pilot-email="${p.email}" title="Réinitialiser le PIN à 000000">PIN</button>
           <button class="btn-migrate"   data-pilot-id="${p.id}" data-pilot-name="${p.prenom} ${p.nom}" data-pilot-role="${p.role}" title="Migrer — réattribuer les sentinelles à un remplaçant">Migrer</button>

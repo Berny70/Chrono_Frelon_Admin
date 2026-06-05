@@ -234,6 +234,7 @@ const Pilots = (() => {
       const resetBtn   = e.target.closest('.btn-reset-pin[data-pilot-id]');
       const migrateBtn = e.target.closest('.btn-migrate[data-pilot-id]');
       const viewBtn    = e.target.closest('.btn-view[data-pilot-id]');
+      const messageBtn = e.target.closest('.btn-message[data-pilot-id]');
 
       if (blockBtn)   block(blockBtn.dataset.pilotId, blockBtn.dataset.pilotName);
       if (unblockBtn) unblock(unblockBtn.dataset.pilotId, unblockBtn.dataset.pilotName);
@@ -242,6 +243,7 @@ const Pilots = (() => {
       if (resetBtn)   resetPin(resetBtn.dataset.pilotEmail, resetBtn.dataset.pilotName);
       if (migrateBtn) migrate(migrateBtn.dataset.pilotId, migrateBtn.dataset.pilotName);
       if (viewBtn)    view(viewBtn.dataset.pilotId, viewBtn.dataset.pilotName);
+      if (messageBtn) showCreationMessage(messageBtn.dataset.pilotPrenom, messageBtn.dataset.pilotNom, messageBtn.dataset.pilotEmail);
     });
 
     // Sauvegarder les paramètres

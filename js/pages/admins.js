@@ -107,6 +107,31 @@ const Admins = (() => {
     );
   }
 
+  // ── PARAMÈTRES D'UN ADMIN ────────────────────────────────
+
+  function paramsAdmin(adminId, adminName, traitM, validityDays) {
+    document.getElementById('params-title').textContent = `Paramètres — ${adminName}`;
+    document.getElementById('params-msg').className   = 'auth-message';
+    document.getElementById('params-msg').textContent = '';
+
+    const traitSlider    = document.getElementById('params-trait');
+    const validitySlider = document.getElementById('params-validity');
+    const traitVal       = document.getElementById('params-trait-val');
+    const validityVal    = document.getElementById('params-validity-val');
+
+    traitSlider.value    = traitM || 500;
+    validitySlider.value = validityDays || 30;
+    traitVal.textContent    = `${traitSlider.value} m`;
+    validityVal.textContent = `${validitySlider.value} jour${validitySlider.value > 1 ? 's' : ''}`;
+
+    traitSlider.oninput    = () => traitVal.textContent    = `${traitSlider.value} m`;
+    validitySlider.oninput = () => validityVal.textContent = `${validitySlider.value} jour${validitySlider.value > 1 ? 's' : ''}`;
+
+    document.getElementById('btn-params-save').dataset.pilotId  = adminId;
+    document.getElementById('btn-params-save').dataset.context  = 'admin';
+    showOverlay('overlay-params');
+  }
+
   // ── VOIR LES PILOTES D'UN ADMIN ────────────────────────────
 
   function view(adminId, adminName) {
@@ -204,6 +229,8 @@ const Admins = (() => {
       const resetBtn   = e.target.closest('.btn-reset-pin[data-admin-id]');
       const migrateBtn = e.target.closest('.btn-migrate[data-admin-id]');
       const viewBtn    = e.target.closest('.btn-view[data-admin-id]');
+      const messageBtn = e.target.closest('.btn-message[data-admin-id]');
+      const paramsBtn  = e.target.closest('.btn-params[data-admin-id]');
 
       if (blockBtn)   block(blockBtn.dataset.adminId, blockBtn.dataset.adminName);
       if (unblockBtn) unblock(unblockBtn.dataset.adminId, unblockBtn.dataset.adminName);
@@ -211,9 +238,11 @@ const Admins = (() => {
       if (resetBtn)   resetPin(resetBtn.dataset.adminEmail, resetBtn.dataset.adminName);
       if (migrateBtn) migrate(migrateBtn.dataset.adminId, migrateBtn.dataset.adminName);
       if (viewBtn)    view(viewBtn.dataset.adminId, viewBtn.dataset.adminName);
+      if (messageBtn) showCreationMessage(messageBtn.dataset.adminPrenom, messageBtn.dataset.adminNom, messageBtn.dataset.adminEmail);
+      if (paramsBtn)  paramsAdmin(paramsBtn.dataset.adminId, paramsBtn.dataset.adminName, parseInt(paramsBtn.dataset.trait), parseInt(paramsBtn.dataset.validity));
     });
   }
 
-  return { init, block, unblock, resetPin, remove, migrate, view };
+  return { init, block, unblock, resetPin, remove, migrate, view, paramsAdmin };
 
 })();
