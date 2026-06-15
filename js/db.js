@@ -180,6 +180,18 @@ async function dbPilotUserUnblock(phone_id, pilotId) {
     .eq('pilot_id', pilotId);
 }
 
+async function dbUpdatePseudo(phone_id, pilotId, pseudo) {
+  const { data, error } = await db.rpc('chassnid_update_pseudo', {
+    p_token:    _token(),
+    p_phone_id: phone_id,
+    p_pilot_id: pilotId,
+    p_pseudo:   pseudo,
+  });
+  if (error) return { error };
+  const result = _parse(data);
+  return result?.error ? { error: { message: result.error } } : { ok: true };
+}
+
 // ── DEMANDES EN ATTENTE ───────────────────────────────────────
 
 async function dbPendingGetAll() {

@@ -244,7 +244,7 @@ function renderUsersList(users, containerId) {
   el.innerHTML = users.map(u => `
     <div class="user-card ${u.blocked ? 'blocked' : ''}">
       <div class="user-info">
-        <div class="user-phone">${u.prenom ? u.prenom + ' ' + u.nom : u.phone_id}</div>
+        <div class="user-phone">${u.pseudo || u.phone_id.substring(0,8) + '…'}</div>
         <div class="user-meta">${u.nb_observations || 0} signalement${(u.nb_observations || 0) > 1 ? 's' : ''} · ${u.derniere_observation ? new Date(u.derniere_observation).toLocaleDateString('fr-FR') : '—'}</div>
       </div>
       <span class="badge ${u.blocked ? 'badge-blocked' : 'badge-active'}">${u.blocked ? 'Bloqué' : 'Actif'}</span>

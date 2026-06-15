@@ -131,13 +131,29 @@ const Pilots = (() => {
       list.innerHTML = '<p class="form-hint">Aucune sentinelle rattachée.</p>';
     } else {
       list.innerHTML = users.map(u => `
-        <div class="list-item" style="display:flex;align-items:center;gap:10px">
-          <div class="avatar" style="width:36px;height:36px;font-size:13px">👤</div>
-          <div>
-            <div style="font-weight:600;font-size:14px">${u.phone_id}</div>
-            <div style="font-size:12px;color:var(--text-muted)">${u.signal_count ?? 0} signalement(s) · ${u.blocked ? '🔴 Bloqué' : '🟢 Actif'}</div>
+        <div class="list-item" style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)">
+          <div class="avatar" style="width:36px;height:36px;font-size:13px;flex-shrink:0">👤</div>
+          <div style="flex:1;min-width:0">
+            <div style="font-size:11px;color:var(--text-muted);margin-bottom:3px">${u.phone_id.substring(0,8)}…</div>
+            <input type="text"
+              class="pseudo-input"
+              data-phone="${u.phone_id}"
+              data-pilot="${pilotId}"
+              value="${u.pseudo || ''}"
+              placeholder="Donner un pseudo…"
+              style="width:100%;border:1px solid var(--border);border-radius:6px;padding:4px 8px;font-size:13px;font-family:inherit">
+            <div style="font-size:11px;color:var(--text-muted);margin-top:3px">${u.nb_observations ?? 0} signalement(s) · ${u.blocked ? '🔴 Bloqué' : '🟢 Actif'}</div>
           </div>
         </div>`).join('');
+
+      // Sauvegarder le pseudo au blur
+      list.querySelectorAll('.pseudo-input').forEach(input => {
+        input.addEventListener('blur', async () => {
+          const { error } = await dbUpdatePseudo(input.dataset.phone, input.dataset.pilot, input.value);
+          if (error) showToast('Erreur : ' + (error.message || error));
+          else showToast('Pseudo enregistré.');
+        });
+      });
     }
   }
 
