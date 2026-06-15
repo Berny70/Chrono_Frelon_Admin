@@ -309,7 +309,8 @@ function renderAdmins(admins) {
             ? `<button class="btn-unblock" data-admin-id="${a.id}" data-admin-name="${a.prenom} ${a.nom}">Débloquer</button>`
             : `<button class="btn-block"   data-admin-id="${a.id}" data-admin-name="${a.prenom} ${a.nom}">Bloquer</button>`
           }
-          <button class="btn-view"      data-admin-id="${a.id}" data-admin-name="${a.prenom} ${a.nom}" title="Voir les pilotes">Voir</button>
+          <button class="btn-view"      data-admin-id="${a.id}" data-admin-name="${a.prenom} ${a.nom}" title="Voir les pilotes">Pilotes</button>
+          <button class="btn-view-sent" data-admin-id="${a.id}" data-admin-name="${a.prenom} ${a.nom}" title="Voir les sentinelles directes">Sentinelles</button>
           <button class="btn-message"   data-admin-id="${a.id}" data-admin-name="${a.prenom} ${a.nom}" data-admin-email="${a.email}" data-admin-prenom="${a.prenom}" data-admin-nom="${a.nom}" title="Message de bienvenue">✉</button>
           <button class="btn-params"    data-admin-id="${a.id}" data-admin-name="${a.prenom} ${a.nom}" data-trait="${a.trait_length_m || 500}" data-validity="${a.validity_days || 30}" title="Paramètres">Param</button>
           <button class="btn-reset-pin" data-admin-id="${a.id}" data-admin-name="${a.prenom} ${a.nom}" data-admin-email="${a.email}" title="Réinitialiser le PIN à 000000">PIN</button>

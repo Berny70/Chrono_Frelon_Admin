@@ -132,6 +132,44 @@ const Admins = (() => {
     showOverlay('overlay-params');
   }
 
+  // ── VOIR LES SENTINELLES DIRECTES D'UN ADMIN ──────────────
+
+  async function viewSentinelles(adminId, adminName) {
+    document.getElementById('view-title').textContent = `Sentinelles de ${adminName}`;
+    const list = document.getElementById('view-list');
+    list.innerHTML = '<p class="form-hint">Chargement…</p>';
+    showOverlay('overlay-view');
+
+    const users = await dbPilotUsersGet(adminId);
+    if (users.length === 0) {
+      list.innerHTML = '<p class="form-hint">Aucune sentinelle directe.</p>';
+    } else {
+      list.innerHTML = users.map(u => `
+        <div class="list-item" style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)">
+          <div class="avatar" style="width:36px;height:36px;font-size:13px;flex-shrink:0">👤</div>
+          <div style="flex:1;min-width:0">
+            <div style="font-size:11px;color:var(--text-muted);margin-bottom:3px">${u.phone_id.substring(0,8)}…</div>
+            <input type="text"
+              class="pseudo-input"
+              data-phone="${u.phone_id}"
+              data-pilot="${adminId}"
+              value="${u.pseudo || ''}"
+              placeholder="Donner un pseudo…"
+              style="width:100%;border:1px solid var(--border);border-radius:6px;padding:4px 8px;font-size:13px;font-family:inherit">
+            <div style="font-size:11px;color:var(--text-muted);margin-top:3px">${u.nb_observations ?? 0} signalement(s) · ${u.blocked ? '🔴 Bloqué' : '🟢 Actif'}</div>
+          </div>
+        </div>`).join('');
+
+      list.querySelectorAll('.pseudo-input').forEach(input => {
+        input.addEventListener('blur', async () => {
+          const { error } = await dbUpdatePseudo(input.dataset.phone, input.dataset.pilot, input.value);
+          if (error) showToast('Erreur : ' + (error.message || error));
+          else showToast('Pseudo enregistré.');
+        });
+      });
+    }
+  }
+
   // ── VOIR LES PILOTES D'UN ADMIN ────────────────────────────
 
   function view(adminId, adminName) {
@@ -223,26 +261,28 @@ const Admins = (() => {
 
     // Délégation événements sur la liste
     document.getElementById('admins-list')?.addEventListener('click', e => {
-      const blockBtn   = e.target.closest('.btn-block[data-admin-id]');
-      const unblockBtn = e.target.closest('.btn-unblock[data-admin-id]');
-      const deleteBtn  = e.target.closest('.btn-delete[data-admin-id]');
-      const resetBtn   = e.target.closest('.btn-reset-pin[data-admin-id]');
-      const migrateBtn = e.target.closest('.btn-migrate[data-admin-id]');
-      const viewBtn    = e.target.closest('.btn-view[data-admin-id]');
-      const messageBtn = e.target.closest('.btn-message[data-admin-id]');
-      const paramsBtn  = e.target.closest('.btn-params[data-admin-id]');
+      const blockBtn    = e.target.closest('.btn-block[data-admin-id]');
+      const unblockBtn  = e.target.closest('.btn-unblock[data-admin-id]');
+      const deleteBtn   = e.target.closest('.btn-delete[data-admin-id]');
+      const resetBtn    = e.target.closest('.btn-reset-pin[data-admin-id]');
+      const migrateBtn  = e.target.closest('.btn-migrate[data-admin-id]');
+      const viewBtn     = e.target.closest('.btn-view[data-admin-id]');
+      const viewSentBtn = e.target.closest('.btn-view-sent[data-admin-id]');
+      const messageBtn  = e.target.closest('.btn-message[data-admin-id]');
+      const paramsBtn   = e.target.closest('.btn-params[data-admin-id]');
 
-      if (blockBtn)   block(blockBtn.dataset.adminId, blockBtn.dataset.adminName);
-      if (unblockBtn) unblock(unblockBtn.dataset.adminId, unblockBtn.dataset.adminName);
-      if (deleteBtn)  remove(deleteBtn.dataset.adminId, deleteBtn.dataset.adminName);
-      if (resetBtn)   resetPin(resetBtn.dataset.adminEmail, resetBtn.dataset.adminName);
-      if (migrateBtn) migrate(migrateBtn.dataset.adminId, migrateBtn.dataset.adminName);
-      if (viewBtn)    view(viewBtn.dataset.adminId, viewBtn.dataset.adminName);
-      if (messageBtn) showCreationMessage(messageBtn.dataset.adminPrenom, messageBtn.dataset.adminNom, messageBtn.dataset.adminEmail);
-      if (paramsBtn)  paramsAdmin(paramsBtn.dataset.adminId, paramsBtn.dataset.adminName, parseInt(paramsBtn.dataset.trait), parseInt(paramsBtn.dataset.validity));
+      if (blockBtn)    block(blockBtn.dataset.adminId, blockBtn.dataset.adminName);
+      if (unblockBtn)  unblock(unblockBtn.dataset.adminId, unblockBtn.dataset.adminName);
+      if (deleteBtn)   remove(deleteBtn.dataset.adminId, deleteBtn.dataset.adminName);
+      if (resetBtn)    resetPin(resetBtn.dataset.adminEmail, resetBtn.dataset.adminName);
+      if (migrateBtn)  migrate(migrateBtn.dataset.adminId, migrateBtn.dataset.adminName);
+      if (viewBtn)     view(viewBtn.dataset.adminId, viewBtn.dataset.adminName);
+      if (viewSentBtn) viewSentinelles(viewSentBtn.dataset.adminId, viewSentBtn.dataset.adminName);
+      if (messageBtn)  showCreationMessage(messageBtn.dataset.adminPrenom, messageBtn.dataset.adminNom, messageBtn.dataset.adminEmail);
+      if (paramsBtn)   paramsAdmin(paramsBtn.dataset.adminId, paramsBtn.dataset.adminName, parseInt(paramsBtn.dataset.trait), parseInt(paramsBtn.dataset.validity));
     });
   }
 
-  return { init, block, unblock, resetPin, remove, migrate, view, paramsAdmin };
+  return { init, block, unblock, resetPin, remove, migrate, view, viewSentinelles, paramsAdmin };
 
 })();
