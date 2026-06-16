@@ -243,8 +243,14 @@ function renderUsersList(users, containerId) {
   }
   el.innerHTML = users.map(u => `
     <div class="user-card ${u.blocked ? 'blocked' : ''}">
-      <div class="user-info">
-        <div class="user-phone">${u.pseudo || u.phone_id.substring(0,8) + '…'}</div>
+      <div class="user-info" style="flex:1;min-width:0">
+        <input type="text"
+          class="pseudo-input"
+          data-phone="${u.phone_id}"
+          data-pilot="${u.pilot_id || ''}"
+          value="${u.pseudo || ''}"
+          placeholder="${u.phone_id.substring(0,8)}… — pseudo"
+          style="width:100%;max-width:220px;border:1px solid var(--border);border-radius:6px;padding:4px 8px;font-size:13px;font-family:inherit;margin-bottom:3px">
         <div class="user-meta">${u.nb_observations || 0} signalement${(u.nb_observations || 0) > 1 ? 's' : ''} · ${u.derniere_observation ? new Date(u.derniere_observation).toLocaleDateString('fr-FR') : '—'}</div>
       </div>
       <span class="badge ${u.blocked ? 'badge-blocked' : 'badge-active'}">${u.blocked ? 'Bloqué' : 'Actif'}</span>
@@ -253,6 +259,14 @@ function renderUsersList(users, containerId) {
         : `<button class="btn-block"   data-phone="${u.phone_id}">Bloquer</button>`
       }
     </div>`).join('');
+
+  el.querySelectorAll('.pseudo-input').forEach(input => {
+    input.addEventListener('blur', async () => {
+      const { error } = await dbUpdatePseudo(input.dataset.phone, input.dataset.pilot, input.value);
+      if (error) showToast('Erreur : ' + (error.message || error));
+      else showToast('Pseudo enregistré.');
+    });
+  });
 }
 
 // Sentinelles groupées par pilote
@@ -273,14 +287,28 @@ function renderSentinelsByPilot(grouped) {
         </div>
         ${g.users.map(u => `
           <div class="user-card ${u.blocked ? 'blocked' : ''}">
-            <div class="user-info">
-              <div class="user-phone">${u.prenom ? u.prenom + ' ' + u.nom : u.phone_id}</div>
+            <div class="user-info" style="flex:1;min-width:0">
+              <input type="text"
+                class="pseudo-input"
+                data-phone="${u.phone_id}"
+                data-pilot="${g.pilot.id}"
+                value="${u.pseudo || ''}"
+                placeholder="${u.phone_id.substring(0,8)}… — pseudo"
+                style="width:100%;max-width:220px;border:1px solid var(--border);border-radius:6px;padding:4px 8px;font-size:13px;font-family:inherit;margin-bottom:3px">
               <div class="user-meta">${u.nb_observations || 0} signalement${(u.nb_observations || 0) > 1 ? 's' : ''} · ${u.derniere_observation ? new Date(u.derniere_observation).toLocaleDateString('fr-FR') : '—'}</div>
             </div>
             <span class="badge ${u.blocked ? 'badge-blocked' : 'badge-active'}">${u.blocked ? 'Bloqué' : 'Actif'}</span>
           </div>`).join('')}
       </div>`;
   }).join('');
+
+  el.querySelectorAll('.pseudo-input').forEach(input => {
+    input.addEventListener('blur', async () => {
+      const { error } = await dbUpdatePseudo(input.dataset.phone, input.dataset.pilot, input.value);
+      if (error) showToast('Erreur : ' + (error.message || error));
+      else showToast('Pseudo enregistré.');
+    });
+  });
 }
 
 // ── RENDU ADMINS ──────────────────────────────────────────────
