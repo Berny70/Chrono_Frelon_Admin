@@ -10,5 +10,6 @@ const CONFIG = {
   PIN_LENGTH:        6,
   DEFAULT_PIN:       '000000',
   DEFAULT_RADIUS_KM: 10,
+  DEFAULT_TRAIT_LENGTH_M: 1000,
   SESSION_KEY:       'chassnid_session',
 };

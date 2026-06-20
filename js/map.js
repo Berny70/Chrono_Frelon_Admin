@@ -137,38 +137,21 @@ function _drawSignals(signals, blockedPhones) {
 
     if (isBlocked) return;
 
-    // Trait directionnel
-    const dest = _destPoint(s.lat, s.lon, s.direction || 0, s.distance || 1000);
+    // Fuseau directionnel (secteur angulaire ±5° autour de la direction)
+    const fuseauLength = (s.trait_length_m || CONFIG.DEFAULT_TRAIT_LENGTH_M);
+    const fuseauPoints = _buildFuseau(s.lat, s.lon, s.direction || 0, fuseauLength, 5);
 
-    const line = L.polyline([[s.lat, s.lon], dest], {
-      color:   colorLight,
-      weight:  2.5,
-      opacity: 0.85,
-    }).addTo(_map);
-    line.bindPopup(popupContent, { maxWidth: 220 });
-    line._signalId = s.id;
-
-    // Zone de clic invisible élargie (confort tactile)
-    const lineHit = L.polyline([[s.lat, s.lon], dest], {
-      color: 'transparent', weight: 16, opacity: 0,
-    }).addTo(_map);
-    lineHit.bindPopup(popupContent, { maxWidth: 220 });
-    lineHit._signalId = s.id;
-
-    _layers.push(line);
-    _layers.push(lineHit);
-
-    // Flèche au bout du trait
-    const arrow = L.circleMarker(dest, {
-      radius:      3,
-      fillColor:   colorLight,
+    const fuseau = L.polygon(fuseauPoints, {
       color:       colorLight,
-      weight:      1,
-      fillOpacity: 1,
+      weight:      1.5,
+      opacity:     0.8,
+      fillColor:   colorLight,
+      fillOpacity: 0.22,
     }).addTo(_map);
-    arrow._signalId = s.id;
+    fuseau.bindPopup(popupContent, { maxWidth: 220 });
+    fuseau._signalId = s.id;
 
-    _layers.push(arrow);
+    _layers.push(fuseau);
     activeSignals.push(s);
   });
 
@@ -217,6 +200,21 @@ function _destPoint(lat, lon, bearing, distanceM) {
   );
 
   return [lat2 * 180 / Math.PI, lon2 * 180 / Math.PI];
+}
+
+// ── CONSTRUCTION DU FUSEAU (secteur angulaire ±N°) ──────────────
+
+function _buildFuseau(lat, lon, bearing, lengthM, halfAngleDeg) {
+  const steps  = 8; // segments d'arc pour un rendu lisse
+  const points = [[lat, lon]];
+
+  for (let i = 0; i <= steps; i++) {
+    const a = bearing - halfAngleDeg + (2 * halfAngleDeg * i / steps);
+    points.push(_destPoint(lat, lon, a, lengthM));
+  }
+
+  points.push([lat, lon]);
+  return points;
 }
 
 // ── CALCUL DE CONVERGENCE ─────────────────────────────────────
