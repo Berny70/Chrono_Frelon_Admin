@@ -545,7 +545,7 @@ h1, h2, h3, h4 { font-family: 'Playfair Display', serif; font-weight: 700; }
 .tab-panel.active { display: flex; }
 
 /* ── CARTE ──────────────────────────────────────────────────── */
-#tab-map { overflow: hidden; }
+#tab-map { overflow: hidden; position: relative; }
 
 #map {
   flex: 1;
