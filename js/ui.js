@@ -128,6 +128,24 @@ function initRadiusSelector(onChange) {
   el.addEventListener('change', () => onChange(parseInt(el.value)));
 }
 
+// ── FILTRE DATE ──────────────────────────────────────────────
+
+function initDateFilterSelectors(onChange) {
+  ['date-filter-map', 'date-filter-signals'].forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.addEventListener('change', () => {
+      const val = el.value === 'all' ? 'all' : parseInt(el.value);
+      // Synchroniser les deux sélecteurs
+      ['date-filter-map', 'date-filter-signals'].forEach(otherId => {
+        const other = document.getElementById(otherId);
+        if (other && other.value !== el.value) other.value = el.value;
+      });
+      onChange(val);
+    });
+  });
+}
+
 // ── RÔLE LABEL ────────────────────────────────────────────────
 
 function roleLabel(role) {

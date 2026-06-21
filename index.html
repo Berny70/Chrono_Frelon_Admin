@@ -202,6 +202,14 @@
             <option value="100">100 km</option>
           </select>
         </div>
+        <div class="stat-item stat-item--radius">
+          <label class="stat-label">Période</label>
+          <select id="date-filter-map" class="radius-select">
+            <option value="7">1 semaine</option>
+            <option value="14">2 semaines</option>
+            <option value="all" selected>Tout</option>
+          </select>
+        </div>
       </div>
     </div>
 
@@ -209,7 +217,14 @@
     <div id="tab-signals" class="tab-panel">
       <div class="tab-header">
         <h2 class="tab-title">Signalements</h2>
-        <input type="search" id="search-signals" class="search-input" placeholder="Rechercher…">
+        <div style="display:flex;gap:8px;align-items:center">
+          <select id="date-filter-signals" class="radius-select">
+            <option value="7">1 semaine</option>
+            <option value="14">2 semaines</option>
+            <option value="all" selected>Tout</option>
+          </select>
+          <input type="search" id="search-signals" class="search-input" placeholder="Rechercher…">
+        </div>
       </div>
       <div class="list-container" id="signals-list">
         <div class="loading"><div class="spinner"></div></div>

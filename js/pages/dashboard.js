@@ -10,6 +10,7 @@ const Dashboard = (() => {
   let _pilotUsers   = [];
   let _blockedPhones = new Set();
   let _radius       = CONFIG.DEFAULT_RADIUS_KM;
+  let _dateFilterDays = 'all'; // 'all' | 7 | 14
 
   // ── CHARGEMENT PRINCIPAL ───────────────────────────────────
 
@@ -74,15 +75,24 @@ const Dashboard = (() => {
     }
   }
 
+  // ── FILTRE DATE ────────────────────────────────────────────
+
+  function _applyDateFilter(signals) {
+    if (_dateFilterDays === 'all') return signals;
+    const cutoff = Date.now() - (_dateFilterDays * 24 * 60 * 60 * 1000);
+    return signals.filter(s => new Date(s.created_at).getTime() >= cutoff);
+  }
+
   // ── RAFRAÎCHISSEMENT ──────────────────────────────────────
 
   async function _refresh() {
     const role    = Auth.getProfile()?.role;
     const profile = Auth.getProfile();
+    const filteredSignals = _applyDateFilter(_signals);
 
-    renderSignals(_signals, _blockedPhones);
-    updateStats(_signals, _users);
-    mapInit(_signals, _blockedPhones);
+    renderSignals(filteredSignals, _blockedPhones);
+    updateStats(filteredSignals, _users);
+    mapInit(filteredSignals, _blockedPhones);
 
     if (role === 'admin_dept') {
       // Afficher les deux sous-groupes sentinelles
@@ -124,6 +134,11 @@ const Dashboard = (() => {
 
     _blockedPhones = await dbBlockedGetAll();
     _buildUsers();
+    _refresh();
+  }
+
+  function onDateFilterChange(value) {
+    _dateFilterDays = value;
     _refresh();
   }
 
@@ -334,6 +349,9 @@ const Dashboard = (() => {
 
     // Rayon
     initRadiusSelector(onRadiusChange);
+
+    // Filtre date
+    initDateFilterSelectors(onDateFilterChange);
 
     // Profil
     document.getElementById('btn-profile')?.addEventListener('click', showProfile);
