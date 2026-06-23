@@ -259,14 +259,16 @@ function renderUsers(users) {
 }
 
 // Liste sentinelles dans un conteneur donné (mes sentinelles directes)
-function renderUsersList(users, containerId) {
+function renderUsersList(users, containerId, pilotIndex = {}) {
   const el = document.getElementById(containerId);
   if (!el) return;
   if (!users.length) {
     el.innerHTML = '<div class="empty"><div class="empty-icon">👤</div>Aucune sentinelle directe.</div>';
     return;
   }
-  el.innerHTML = users.map(u => `
+  el.innerHTML = users.map(u => {
+    const piloteName = pilotIndex[u.pilot_id] ? `<div style="font-size:11px;color:var(--text-muted);margin-top:2px">🧭 ${pilotIndex[u.pilot_id]}</div>` : '';
+    return `
     <div class="user-card ${u.blocked ? 'blocked' : ''}">
       <div class="user-info" style="flex:1;min-width:0">
         <input type="text"
@@ -276,6 +278,7 @@ function renderUsersList(users, containerId) {
           value="${u.pseudo || ''}"
           placeholder="${u.phone_id.substring(0,8)}… — pseudo"
           style="width:100%;max-width:220px;border:1px solid var(--border);border-radius:6px;padding:4px 8px;font-size:13px;font-family:inherit;margin-bottom:3px">
+        ${piloteName}
         <div class="user-meta">${u.nb_observations || 0} signalement${(u.nb_observations || 0) > 1 ? 's' : ''} · ${u.derniere_observation ? new Date(u.derniere_observation).toLocaleDateString('fr-FR') : '—'}</div>
       </div>
       <span class="badge ${u.blocked ? 'badge-blocked' : 'badge-active'}">${u.blocked ? 'Bloqué' : 'Actif'}</span>
@@ -283,7 +286,8 @@ function renderUsersList(users, containerId) {
         ? `<button class="btn-unblock" data-phone="${u.phone_id}">Débloquer</button>`
         : `<button class="btn-block"   data-phone="${u.phone_id}">Bloquer</button>`
       }
-    </div>`).join('');
+    </div>`;
+  }).join('');
 
   el.querySelectorAll('.pseudo-input').forEach(input => {
     input.addEventListener('blur', async () => {

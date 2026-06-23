@@ -173,7 +173,10 @@ const Dashboard = (() => {
       document.getElementById('pilots-sentinels-section').style.display = '';
 
       // Mes sentinelles directes
-      renderUsersList(_pilotUsers, 'my-sentinels-list');
+      const pilotIndex = {};
+      (_pilots || []).forEach(p => { pilotIndex[p.id] = p.prenom + ' ' + p.nom; });
+      (_admins || []).forEach(a => { pilotIndex[a.id] = a.prenom + ' ' + a.nom; });
+      renderUsersList(_pilotUsers, 'my-sentinels-list', pilotIndex);
 
       // Sentinelles de mes pilotes (groupées) — réutilise _allSentinels si déjà chargé
       const grouped = await dbPilotUsersGetByAdmin(profile.id, _pilots);
