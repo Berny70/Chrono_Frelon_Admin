@@ -207,7 +207,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // ── RENDU SIGNALEMENTS ────────────────────────────────────────
 
-function renderSignals(signals, blockedSet) {
+function renderSignals(signals, blockedSet, sentinelMap = {}) {
   const el = document.getElementById('signals-list');
   if (!el) return;
   if (!signals.length) {
@@ -216,12 +216,19 @@ function renderSignals(signals, blockedSet) {
   }
   el.innerHTML = signals.map(s => {
     const isBlocked = blockedSet.has(s.phone_id);
+    const sentinel  = sentinelMap[s.phone_id];
+    const label     = sentinel?.pseudo
+      ? `🏷️ ${sentinel.pseudo}`
+      : `📱 ${(s.phone_id || '—').substring(0, 8)}…`;
+    const pilotLabel = sentinel?.pilote
+      ? `<span style="font-size:11px;color:var(--text-muted)">Pilote : ${sentinel.pilote}</span>`
+      : '';
     return `
       <div class="signal-card ${isBlocked ? 'blocked-user' : ''}">
         <div class="signal-info">
           <div class="signal-date">${new Date(s.created_at).toLocaleString('fr-FR')}</div>
           <div class="signal-meta">${(s.lat||0).toFixed(5)}, ${(s.lon||0).toFixed(5)} · ${s.distance||0}m · ${s.direction||0}°</div>
-          <div class="signal-phone">${s.phone_id || '—'}</div>
+          <div class="signal-phone">${label} ${pilotLabel}</div>
         </div>
         <button class="btn-delete" data-signal-id="${s.id}">🗑</button>
       </div>`;

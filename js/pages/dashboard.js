@@ -9,8 +9,21 @@ const Dashboard = (() => {
   let _pilots       = [];
   let _pilotUsers   = [];
   let _blockedPhones = new Set();
-  let _radius       = CONFIG.DEFAULT_RADIUS_KM;
-  let _dateFilterDays = 'all'; // 'all' | 7 | 14
+  let _radius         = CONFIG.DEFAULT_RADIUS_KM;
+  let _dateFilterDays = 'all';
+  let _allSentinels   = []; // toutes les sentinelles visibles (directes + celles des pilotes)
+
+  // ── CONSTRUCTION DU MAP phone_id → {pseudo, pilote} ──────
+  function _buildSentinelMap() {
+    const map = {};
+    _allSentinels.forEach(u => {
+      map[u.phone_id] = {
+        pseudo: u.pseudo || null,
+        pilote: u.pilote_nom || null,
+      };
+    });
+    return map;
+  }
 
   // ── CHARGEMENT PRINCIPAL ───────────────────────────────────
 
@@ -90,7 +103,36 @@ const Dashboard = (() => {
     const profile = Auth.getProfile();
     const filteredSignals = _applyDateFilter(_signals);
 
-    renderSignals(filteredSignals, _blockedPhones);
+    // Construire _allSentinels selon le rôle
+    if (role === 'pilot') {
+      _allSentinels = _pilotUsers.map(u => ({
+        phone_id:   u.phone_id,
+        pseudo:     u.pseudo,
+        pilote_nom: null,
+      }));
+    } else if (role === 'admin_dept') {
+      // Mes sentinelles directes
+      const directes = _pilotUsers.map(u => ({
+        phone_id:   u.phone_id,
+        pseudo:     u.pseudo,
+        pilote_nom: profile.prenom + ' ' + profile.nom + ' (direct)',
+      }));
+      // Sentinelles des pilotes
+      const grouped = await dbPilotUsersGetByAdmin(profile.id, _pilots);
+      const desPilotes = grouped.flatMap(g =>
+        g.users.map(u => ({
+          phone_id:   u.phone_id,
+          pseudo:     u.pseudo,
+          pilote_nom: g.pilot.prenom + ' ' + g.pilot.nom,
+        }))
+      );
+      _allSentinels = [...directes, ...desPilotes];
+    }
+
+    const sentinelMap = _buildSentinelMap();
+    let _groupedSentinels = null; // sera rempli si admin_dept
+
+    renderSignals(filteredSignals, _blockedPhones, sentinelMap);
     updateStats(filteredSignals, _users);
     mapInit(filteredSignals, _blockedPhones);
 
@@ -103,7 +145,7 @@ const Dashboard = (() => {
       // Mes sentinelles directes
       renderUsersList(_pilotUsers, 'my-sentinels-list');
 
-      // Sentinelles de mes pilotes (groupées)
+      // Sentinelles de mes pilotes (groupées) — réutilise _allSentinels si déjà chargé
       const grouped = await dbPilotUsersGetByAdmin(profile.id, _pilots);
       renderSentinelsByPilot(grouped);
 
