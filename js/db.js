@@ -151,6 +151,15 @@ async function dbPilotUsersGet(pilotId) {
   return data || [];
 }
 
+// Toutes les sentinelles (pour superadmin) avec jointure pilote
+async function dbAllSentinelsGet() {
+  const { data } = await db
+    .from('pilot_user_stats')
+    .select('*')
+    .order('rattachement_date', { ascending: false });
+  return data || [];
+}
+
 // Sentinelles de tous les pilotes d'un admin (groupées par pilote)
 async function dbPilotUsersGetByAdmin(adminId, pilots) {
   const results = await Promise.all(

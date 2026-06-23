@@ -110,6 +110,18 @@ const Dashboard = (() => {
         pseudo:     u.pseudo,
         pilote_nom: null,
       }));
+    } else if (role === 'superadmin') {
+      // Toutes les sentinelles de tous les pilotes
+      const allRaw = await dbAllSentinelsGet();
+      // Construire un index pilote_id → nom
+      const pilotIndex = {};
+      (_pilots || []).forEach(p => { pilotIndex[p.id] = p.prenom + ' ' + p.nom; });
+      (_admins || []).forEach(a => { pilotIndex[a.id] = a.prenom + ' ' + a.nom; });
+      _allSentinels = allRaw.map(u => ({
+        phone_id:   u.phone_id,
+        pseudo:     u.pseudo,
+        pilote_nom: pilotIndex[u.pilot_id] || null,
+      }));
     } else if (role === 'admin_dept') {
       // Mes sentinelles directes
       const directes = _pilotUsers.map(u => ({
