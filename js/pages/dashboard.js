@@ -468,10 +468,14 @@ const Dashboard = (() => {
     // Filtres recherche signalements / sentinelles
     document.getElementById('search-signals')?.addEventListener('input', e => {
       const q = e.target.value.toLowerCase();
-      renderSignals(
-        _signals.filter(s => (s.phone_id || '').toLowerCase().includes(q)),
-        _blockedPhones
-      );
+      const sentinelMap = _buildSentinelMap();
+      const filtered = _applyDateFilter(_signals).filter(s => {
+        const sentinel = sentinelMap[s.phone_id];
+        return (s.phone_id || '').toLowerCase().includes(q)
+          || (sentinel?.pseudo || '').toLowerCase().includes(q)
+          || (sentinel?.pilote || '').toLowerCase().includes(q);
+      });
+      renderSignals(filtered, _blockedPhones, sentinelMap);
     });
 
     document.getElementById('search-users')?.addEventListener('input', e => {
