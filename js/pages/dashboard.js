@@ -186,7 +186,7 @@ const Dashboard = (() => {
       document.getElementById('pilot-sentinels-section').style.display  = '';
       document.getElementById('my-sentinels-section').style.display     = 'none';
       document.getElementById('pilots-sentinels-section').style.display = 'none';
-      renderUsers(_users);
+      renderUsers(_users, _buildSentinelMap());
     }
 
     if (role === 'superadmin') renderAdmins(_admins);
@@ -483,7 +483,7 @@ const Dashboard = (() => {
 
     document.getElementById('search-users')?.addEventListener('input', e => {
       const q = e.target.value.toLowerCase();
-      renderUsers(_users.filter(u => u.phone_id.toLowerCase().includes(q)));
+      renderUsers(_users.filter(u => u.phone_id.toLowerCase().includes(q)), _buildSentinelMap());
     });
 
     // Délégation des événements sur les listes

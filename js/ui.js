@@ -237,17 +237,22 @@ function renderSignals(signals, blockedSet, sentinelMap = {}) {
 
 // ── RENDU UTILISATEURS ────────────────────────────────────────
 
-function renderUsers(users) {
+function renderUsers(users, sentinelMap = {}) {
   const el = document.getElementById('users-list');
   if (!el) return;
   if (!users.length) {
     el.innerHTML = '<div class="empty"><div class="empty-icon">👤</div>Aucune sentinelle dans ce secteur.</div>';
     return;
   }
-  el.innerHTML = users.map(u => `
+  el.innerHTML = users.map(u => {
+    const sentinel   = sentinelMap[u.phone_id];
+    const label      = sentinel?.pseudo ? `🏷️ ${sentinel.pseudo}` : `📱 ${(u.phone_id || '—').substring(0, 8)}…`;
+    const pilotLabel = sentinel?.pilote ? `<div style="font-size:11px;color:var(--text-muted)">🧭 ${sentinel.pilote}</div>` : '';
+    return `
     <div class="user-card ${u.blocked ? 'blocked' : ''}">
       <div class="user-info">
-        <div class="user-phone">${u.phone_id}</div>
+        <div class="user-phone">${label}</div>
+        ${pilotLabel}
         <div class="user-meta">${u.count} signalement${u.count > 1 ? 's' : ''} · ${u.last ? new Date(u.last).toLocaleDateString('fr-FR') : '—'}</div>
       </div>
       <span class="badge ${u.blocked ? 'badge-blocked' : 'badge-active'}">${u.blocked ? 'Bloqué' : 'Actif'}</span>
@@ -255,7 +260,8 @@ function renderUsers(users) {
         ? `<button class="btn-unblock" data-phone="${u.phone_id}">Débloquer</button>`
         : `<button class="btn-block"   data-phone="${u.phone_id}">Bloquer</button>`
       }
-    </div>`).join('');
+    </div>`;
+  }).join('');
 }
 
 // Liste sentinelles dans un conteneur donné (mes sentinelles directes)
