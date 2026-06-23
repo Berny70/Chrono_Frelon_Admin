@@ -22,6 +22,24 @@ const Dashboard = (() => {
         pilote: u.pilote_nom || null,
       };
     });
+    // Ajouter les pilotes/admins qui ont enregistré leur phone_id
+    const profiles = [...(_pilots || []), ...(_admins || [])];
+    profiles.forEach(p => {
+      if (p.phone_id) {
+        map[p.phone_id] = {
+          pseudo: p.prenom + ' ' + p.nom,
+          pilote: null,
+        };
+      }
+    });
+    // Inclure le profil courant lui-même
+    const me = Auth.getProfile();
+    if (me?.phone_id) {
+      map[me.phone_id] = {
+        pseudo: me.prenom + ' ' + me.nom,
+        pilote: null,
+      };
+    }
     return map;
   }
 
