@@ -319,11 +319,18 @@ const Dashboard = (() => {
 
   function showProfile() {
     const p = Auth.getProfile();
+    const sentinelMap = _buildSentinelMap();
+    const pseudo = p.phone_id ? (sentinelMap[p.phone_id]?.pseudo || null) : null;
+    const pseudoLine = pseudo
+      ? `<span style="color:var(--accent)">🏷️ ${pseudo}</span><br>`
+      : (p.phone_id ? `<span style="opacity:0.5;font-size:12px">🏷️ Aucun pseudo Chrono_Frelon</span><br>` : '');
+
     document.getElementById('profile-info').innerHTML =
       `<strong>${p.prenom} ${p.nom}</strong><br>` +
       `${p.email}<br>` +
       `${roleLabel(p.role)}<br>` +
-      `${p.secteur || p.canton || '—'} · ${p.departement || '—'}`;
+      `${p.secteur || p.canton || '—'} · ${p.departement || '—'}<br>` +
+      pseudoLine;
 
     _profPin = ['', ''];
     _updateProfDots();
