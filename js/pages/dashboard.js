@@ -11,7 +11,8 @@ const Dashboard = (() => {
   let _blockedPhones = new Set();
   let _radius         = CONFIG.DEFAULT_RADIUS_KM;
   let _dateFilterDays = 'all';
-  let _allSentinels   = []; // toutes les sentinelles visibles (directes + celles des pilotes)
+  let _allSentinels   = [];
+  let _sentinelMap    = {}; // mis à jour dans _refresh
 
   // ── CONSTRUCTION DU MAP phone_id → {pseudo, pilote} ──────
   function _buildSentinelMap() {
@@ -163,7 +164,7 @@ const Dashboard = (() => {
     }
 
     const sentinelMap = _buildSentinelMap();
-    let _groupedSentinels = null; // sera rempli si admin_dept
+    _sentinelMap = sentinelMap; // cache pour la recherche
 
     renderSignals(filteredSignals, _blockedPhones, sentinelMap);
     updateStats(filteredSignals, _users);
@@ -494,11 +495,9 @@ const Dashboard = (() => {
     document.getElementById('search-users')?.addEventListener('input', e => {
       const q = e.target.value.toLowerCase();
       const role = Auth.getProfile()?.role;
-      const sentinelMap = _buildSentinelMap();
 
       let filtered;
       if (role === 'pilot') {
-        // Pour les pilotes, _pilotUsers a directement les pseudos
         const filteredPilotUsers = _pilotUsers.filter(u =>
           (u.phone_id || '').toLowerCase().includes(q)
           || (u.pseudo || '').toLowerCase().includes(q)
@@ -511,13 +510,13 @@ const Dashboard = (() => {
         }));
       } else {
         filtered = _users.filter(u => {
-          const sentinel = sentinelMap[u.phone_id];
+          const sentinel = _sentinelMap[u.phone_id];
           return (u.phone_id || '').toLowerCase().includes(q)
             || (sentinel?.pseudo || '').toLowerCase().includes(q)
             || (sentinel?.pilote || '').toLowerCase().includes(q);
         });
       }
-      renderUsers(filtered, sentinelMap);
+      renderUsers(filtered, _sentinelMap);
     });
 
     // Délégation des événements sur les listes
