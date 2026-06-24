@@ -26,8 +26,10 @@ const Dashboard = (() => {
     const profiles = [...(_pilots || []), ...(_admins || [])];
     profiles.forEach(p => {
       if (p.phone_id) {
+        // Chercher si cette sentinelle a un pseudo dans pilot_users
+        const sentinel = _allSentinels.find(s => s.phone_id === p.phone_id);
         map[p.phone_id] = {
-          pseudo: p.prenom + ' ' + p.nom,
+          pseudo: sentinel?.pseudo || null,
           pilote: null,
         };
       }
@@ -35,8 +37,9 @@ const Dashboard = (() => {
     // Inclure le profil courant lui-même
     const me = Auth.getProfile();
     if (me?.phone_id) {
+      const sentinel = _allSentinels.find(s => s.phone_id === me.phone_id);
       map[me.phone_id] = {
-        pseudo: me.prenom + ' ' + me.nom,
+        pseudo: sentinel?.pseudo || null,
         pilote: null,
       };
     }
