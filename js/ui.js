@@ -164,6 +164,8 @@ function updateTopbar(profile) {
   const sub = (profile.secteur || profile.canton || '—') +
               ' · ' + (profile.departement || '—');
   document.getElementById('topbar-sub').textContent = sub;
+  const vEl = document.getElementById('topbar-version');
+  if (vEl) vEl.textContent = 'v' + CONFIG.APP_VERSION;
   document.getElementById('login-version') &&
     (document.getElementById('login-version').textContent = '');
 }
