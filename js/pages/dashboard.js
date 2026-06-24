@@ -493,7 +493,14 @@ const Dashboard = (() => {
 
     document.getElementById('search-users')?.addEventListener('input', e => {
       const q = e.target.value.toLowerCase();
-      renderUsers(_users.filter(u => u.phone_id.toLowerCase().includes(q)), _buildSentinelMap());
+      const sentinelMap = _buildSentinelMap();
+      const filtered = _users.filter(u => {
+        const sentinel = sentinelMap[u.phone_id];
+        return (u.phone_id || '').toLowerCase().includes(q)
+          || (sentinel?.pseudo || '').toLowerCase().includes(q)
+          || (sentinel?.pilote || '').toLowerCase().includes(q);
+      });
+      renderUsers(filtered, sentinelMap);
     });
 
     // Délégation des événements sur les listes
