@@ -493,13 +493,30 @@ const Dashboard = (() => {
 
     document.getElementById('search-users')?.addEventListener('input', e => {
       const q = e.target.value.toLowerCase();
+      const role = Auth.getProfile()?.role;
       const sentinelMap = _buildSentinelMap();
-      const filtered = _users.filter(u => {
-        const sentinel = sentinelMap[u.phone_id];
-        return (u.phone_id || '').toLowerCase().includes(q)
-          || (sentinel?.pseudo || '').toLowerCase().includes(q)
-          || (sentinel?.pilote || '').toLowerCase().includes(q);
-      });
+
+      let filtered;
+      if (role === 'pilot') {
+        // Pour les pilotes, _pilotUsers a directement les pseudos
+        const filteredPilotUsers = _pilotUsers.filter(u =>
+          (u.phone_id || '').toLowerCase().includes(q)
+          || (u.pseudo || '').toLowerCase().includes(q)
+        );
+        filtered = filteredPilotUsers.map(u => ({
+          phone_id: u.phone_id,
+          count:    u.nb_observations || 0,
+          last:     u.derniere_observation || u.rattachement_date,
+          blocked:  u.blocked,
+        }));
+      } else {
+        filtered = _users.filter(u => {
+          const sentinel = sentinelMap[u.phone_id];
+          return (u.phone_id || '').toLowerCase().includes(q)
+            || (sentinel?.pseudo || '').toLowerCase().includes(q)
+            || (sentinel?.pilote || '').toLowerCase().includes(q);
+        });
+      }
       renderUsers(filtered, sentinelMap);
     });
 
