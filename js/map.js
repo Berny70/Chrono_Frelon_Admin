@@ -7,6 +7,7 @@ let _convergence = null;
 let _currentBasemap = null;
 let _nests       = [];
 let _nestLayers  = [];
+let _nestsVisible = true;
 
 // ── FONDS DE CARTE ────────────────────────────────────────────
 
@@ -31,13 +32,24 @@ function _addBasemapControl() {
   const ctrl = L.control({ position: 'bottomright' });
   ctrl.onAdd = () => {
     const div = L.DomUtil.create('div', 'basemap-control');
-    div.innerHTML = Object.entries(BASEMAPS).map(([key, bm]) =>
-      `<button class="basemap-btn${key === (localStorage.getItem('chassnid_basemap') || 'osm') ? ' basemap-btn--active' : ''}" data-basemap="${key}">${bm.label}</button>`
-    ).join('');
+    div.innerHTML =
+      `<button id="btn-toggle-nests" style="
+        width:100%;margin-bottom:6px;padding:6px 10px;
+        background:${_nestsVisible ? '#7b3f00' : 'var(--card)'};
+        color:${_nestsVisible ? '#fff' : 'var(--text-muted)'};
+        border:1px solid var(--border);border-radius:8px;
+        font-family:'DM Sans',sans-serif;font-size:13px;
+        font-weight:600;cursor:pointer;text-align:left">
+        🪺 Nids ${_nestsVisible ? 'visibles' : 'masqués'}
+      </button>` +
+      Object.entries(BASEMAPS).map(([key, bm]) =>
+        `<button class="basemap-btn${key === (localStorage.getItem('chassnid_basemap') || 'osm') ? ' basemap-btn--active' : ''}" data-basemap="${key}">${bm.label}</button>`
+      ).join('');
     L.DomEvent.disableClickPropagation(div);
     div.addEventListener('click', e => {
-      const btn = e.target.closest('.basemap-btn');
-      if (btn) _applyBasemap(btn.dataset.basemap);
+      const bm = e.target.closest('.basemap-btn');
+      if (bm) _applyBasemap(bm.dataset.basemap);
+      if (e.target.closest('#btn-toggle-nests')) _toggleNests();
     });
     return div;
   };
@@ -344,7 +356,8 @@ function _clearNestLayers() {
 
 function _drawNests(nests) {
   nests.forEach(n => {
-    const marker = L.marker([n.lat, n.lon], { icon: NEST_ICON }).addTo(_map);
+    const marker = L.marker([n.lat, n.lon], { icon: NEST_ICON });
+    if (_nestsVisible) marker.addTo(_map);
     const date   = n.found_at ? new Date(n.found_at).toLocaleDateString('fr-FR') : '—';
     const pilote = n.pilot_nom || '—';
 
@@ -426,4 +439,24 @@ function mapDeleteNest(id) {
       showToast('Nid supprimé.');
     }
   );
+}
+
+// ── TOGGLE NIDS ───────────────────────────────────────────────
+
+function _toggleNests() {
+  _nestsVisible = !_nestsVisible;
+
+  // Mettre à jour le bouton
+  const btn = document.getElementById('btn-toggle-nests');
+  if (btn) {
+    btn.style.background = _nestsVisible ? '#7b3f00' : 'var(--card)';
+    btn.style.color      = _nestsVisible ? '#fff'    : 'var(--text-muted)';
+    btn.textContent      = `🪺 Nids ${_nestsVisible ? 'visibles' : 'masqués'}`;
+  }
+
+  // Afficher ou masquer les marqueurs nids
+  _nestLayers.forEach(l => {
+    if (_nestsVisible) l.addTo(_map);
+    else _map.removeLayer(l);
+  });
 }
