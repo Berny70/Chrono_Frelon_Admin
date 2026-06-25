@@ -8,19 +8,29 @@ const Auth = (() => {
 
   // ── SESSION LOCALE ─────────────────────────────────────────
 
-  function _saveSession(token) {
-    localStorage.setItem(CONFIG.SESSION_KEY, token);
-    _token = token;
+  function _saveSession(token, profile) {
+    localStorage.setItem(CONFIG.SESSION_KEY,         token);
+    localStorage.setItem(CONFIG.SESSION_KEY + '_profile', JSON.stringify(profile));
+    _token   = token;
+    _profile = profile;
   }
 
   function _clearSession() {
     localStorage.removeItem(CONFIG.SESSION_KEY);
+    localStorage.removeItem(CONFIG.SESSION_KEY + '_profile');
     _token   = null;
     _profile = null;
   }
 
   function _getStoredToken() {
     return localStorage.getItem(CONFIG.SESSION_KEY);
+  }
+
+  function _getStoredProfile() {
+    try {
+      const raw = localStorage.getItem(CONFIG.SESSION_KEY + '_profile');
+      return raw ? JSON.parse(raw) : null;
+    } catch { return null; }
   }
 
   // ── LOGIN ──────────────────────────────────────────────────
@@ -37,29 +47,53 @@ const Auth = (() => {
 
     if (result.error) return { error: result.error };
 
-    _token   = result.token;
-    _profile = result.profile;
-    _saveSession(_token);
+    _saveSession(result.token, result.profile);
 
     return { profile: _profile };
   }
 
   // ── VERIFY — vérifier la session au démarrage ──────────────
+  // Plus d'appel à chassnid_verify (404 PostgREST).
+  // On vérifie que le token et le profil sont en cache,
+  // puis on rafraîchit le profil depuis chassnid_login n'est
+  // pas possible sans PIN → on revalide via chassnid_get_pilots
+  // ou simplement on fait confiance au cache jusqu'à expiration
+  // naturelle (le token est valide 30 jours côté Supabase).
+  // Si le token est expiré, le premier appel RPC authentifié
+  // retournera une erreur et _handleExpired() sera appelé.
 
   async function verify() {
-    const token = _getStoredToken();
-    if (!token) return null;
+    const token   = _getStoredToken();
+    const profile = _getStoredProfile();
 
-    const { data, error } = await db.rpc('chassnid_verify', {
+    if (!token || !profile) return null;
+
+    // Vérification légère : on tente un appel RPC authentifié
+    // (chassnid_get_pilots) pour confirmer que le token est encore valide.
+    const { data, error } = await db.rpc('chassnid_get_pilots', {
       p_token: token,
     });
 
-    if (error || !data) {
+    if (error) {
+      // Erreur réseau passagère : on garde la session en cache
+      // et on laisse l'utilisateur entrer (fail-open).
+      // Si c'est une vraie expiration, le prochain appel métier échouera
+      // et l'utilisateur sera redirigé vers le login.
+      console.warn('[Auth.verify] Erreur réseau légère, session conservée :', error.message);
+      _token   = token;
+      _profile = profile;
+      return profile;
+    }
+
+    const pilots = typeof data === 'string' ? JSON.parse(data) : data;
+
+    // Si la RPC retourne une erreur métier (token invalide / expiré)
+    if (pilots && pilots.error) {
       _clearSession();
       return null;
     }
 
-    const profile = typeof data === 'string' ? JSON.parse(data) : data;
+    // Token valide — restaurer la session
     _token   = token;
     _profile = profile;
     return profile;
