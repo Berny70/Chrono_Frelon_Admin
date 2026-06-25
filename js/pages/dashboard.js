@@ -316,9 +316,30 @@ const Dashboard = (() => {
 
   let _profPin = ['', ''];
 
-  function showProfile() {
+  async function showProfile() {
     const p = Auth.getProfile();
-    const pseudo = p.phone_id ? (_sentinelMap[p.phone_id]?.pseudo || null) : null;
+
+    // Affichage immédiat sans pseudo (en attente du fetch)
+    document.getElementById('profile-info').innerHTML =
+      `<strong>${p.prenom} ${p.nom}</strong><br>` +
+      `${p.email}<br>` +
+      `${roleLabel(p.role)}<br>` +
+      `${p.secteur || p.canton || '—'} · ${p.departement || '—'}<br>` +
+      `<span style="opacity:0.4;font-size:12px">🏷️ Chargement…</span>`;
+
+    _profPin = ['', ''];
+    _updateProfDots();
+    clearAuthMsg('profile-msg');
+    showOverlay('overlay-profile');
+
+    // Relire le pseudo depuis la base (peut avoir changé depuis Chrono_Frelon)
+    let pseudo = null;
+    if (p.phone_id) {
+      const users = await dbPilotUsersGet(p.id);
+      const me = users.find(u => u.phone_id === p.phone_id);
+      pseudo = me?.pseudo || _sentinelMap[p.phone_id]?.pseudo || null;
+    }
+
     const pseudoLine = pseudo
       ? `<span style="color:var(--accent)">🏷️ ${pseudo}</span><br>`
       : (p.phone_id ? `<span style="opacity:0.5;font-size:12px">🏷️ Aucun pseudo Chrono_Frelon</span><br>` : '');
@@ -329,11 +350,6 @@ const Dashboard = (() => {
       `${roleLabel(p.role)}<br>` +
       `${p.secteur || p.canton || '—'} · ${p.departement || '—'}<br>` +
       pseudoLine;
-
-    _profPin = ['', ''];
-    _updateProfDots();
-    clearAuthMsg('profile-msg');
-    showOverlay('overlay-profile');
   }
 
   function _updateProfDots() {
