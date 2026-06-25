@@ -319,7 +319,7 @@ const Dashboard = (() => {
   async function showProfile() {
     const p = Auth.getProfile();
 
-    // Affichage immédiat sans pseudo (en attente du fetch)
+    // Affichage immédiat en attente du fetch
     document.getElementById('profile-info').innerHTML =
       `<strong>${p.prenom} ${p.nom}</strong><br>` +
       `${p.email}<br>` +
@@ -332,24 +332,51 @@ const Dashboard = (() => {
     clearAuthMsg('profile-msg');
     showOverlay('overlay-profile');
 
-    // Relire le pseudo depuis la base (peut avoir changé depuis Chrono_Frelon)
+    // Relire le pseudo directement par phone_id dans pilot_user_stats
     let pseudo = null;
     if (p.phone_id) {
-      const users = await dbPilotUsersGet(p.id);
-      const me = users.find(u => u.phone_id === p.phone_id);
-      pseudo = me?.pseudo || _sentinelMap[p.phone_id]?.pseudo || null;
+      const { data } = await db
+        .from('pilot_user_stats')
+        .select('pseudo')
+        .eq('phone_id', p.phone_id)
+        .limit(1)
+        .maybeSingle();
+      pseudo = data?.pseudo || null;
     }
 
-    const pseudoLine = pseudo
-      ? `<span style="color:var(--accent)">🏷️ ${pseudo}</span><br>`
-      : (p.phone_id ? `<span style="opacity:0.5;font-size:12px">🏷️ Aucun pseudo Chrono_Frelon</span><br>` : '');
-
-    document.getElementById('profile-info').innerHTML =
+    const infoBase =
       `<strong>${p.prenom} ${p.nom}</strong><br>` +
       `${p.email}<br>` +
       `${roleLabel(p.role)}<br>` +
-      `${p.secteur || p.canton || '—'} · ${p.departement || '—'}<br>` +
-      pseudoLine;
+      `${p.secteur || p.canton || '—'} · ${p.departement || '—'}<br>`;
+
+    const pseudoHtml = p.phone_id
+      ? `<div style="margin-top:6px;display:flex;align-items:center;gap:6px">` +
+        `<span style="font-size:13px">🏷️</span>` +
+        `<input type="text" id="profile-pseudo-input"` +
+        ` value="${(pseudo || '').replace(/"/g, '&quot;')}"` +
+        ` placeholder="Définir un pseudo…"` +
+        ` style="flex:1;border:1px solid var(--border);border-radius:6px;` +
+        `padding:4px 8px;font-size:13px;font-family:inherit">` +
+        `<button id="btn-pseudo-save" style="padding:4px 10px;border-radius:6px;` +
+        `background:var(--accent);color:#fff;border:none;font-size:12px;cursor:pointer">` +
+        `💾</button></div>`
+      : '';
+
+    document.getElementById('profile-info').innerHTML = infoBase + pseudoHtml;
+
+    // Sauvegarder le pseudo au clic sur 💾
+    document.getElementById('btn-pseudo-save')?.addEventListener('click', async () => {
+      const val = document.getElementById('profile-pseudo-input').value.trim();
+      if (!val) return;
+      const { error } = await db.rpc('chassnid_sentinel_set_pseudo', {
+        p_phone_id: p.phone_id,
+        p_pilot_id: p.id,
+        p_pseudo:   val,
+      });
+      if (error) showToast('Erreur : ' + error.message);
+      else       showToast('Pseudo mis à jour !');
+    });
   }
 
   function _updateProfDots() {
