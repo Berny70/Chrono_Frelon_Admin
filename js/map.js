@@ -35,8 +35,7 @@ function _addBasemapControl() {
     div.innerHTML =
       `<button id="btn-toggle-nests" style="
         width:100%;margin-bottom:6px;padding:6px 10px;
-        background:${_nestsVisible ? '#7b3f00' : 'var(--card)'};
-        color:${_nestsVisible ? '#fff' : 'var(--text-muted)'};
+        background:#7b3f00;color:#fff;
         border:1px solid var(--border);border-radius:8px;
         font-family:'DM Sans',sans-serif;font-size:13px;
         font-weight:600;cursor:pointer;text-align:left">
@@ -449,9 +448,7 @@ function _toggleNests() {
   // Mettre à jour le bouton
   const btn = document.getElementById('btn-toggle-nests');
   if (btn) {
-    btn.style.background = _nestsVisible ? '#7b3f00' : 'var(--card)';
-    btn.style.color      = _nestsVisible ? '#fff'    : 'var(--text-muted)';
-    btn.textContent      = `🪺 Nids ${_nestsVisible ? 'visibles' : 'masqués'}`;
+    btn.textContent = `🪺 Nids ${_nestsVisible ? 'visibles' : 'masqués'}`;
   }
 
   // Afficher ou masquer les marqueurs nids
