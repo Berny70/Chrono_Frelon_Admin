@@ -5,6 +5,8 @@ let _map         = null;
 let _layers      = [];
 let _convergence = null;
 let _currentBasemap = null;
+let _nests       = [];
+let _nestLayers  = [];
 
 // ── FONDS DE CARTE ────────────────────────────────────────────
 
@@ -44,7 +46,7 @@ function _addBasemapControl() {
 
 // ── INITIALISATION ────────────────────────────────────────────
 
-function mapInit(signals, blockedPhones, sentinelMap) {
+function mapInit(signals, blockedPhones, sentinelMap, nests, canAddNest) {
   const isFirstInit = !_map;
 
   if (!_map) {
@@ -61,7 +63,11 @@ function mapInit(signals, blockedPhones, sentinelMap) {
   }
 
   _clearLayers();
+  _clearNestLayers();
   _drawSignals(signals, blockedPhones, sentinelMap);
+  _nests = nests || [];
+  _drawNests(_nests);
+  _setupNestClick(canAddNest);
 
   // Ne recentrer que lors de la première initialisation
   if (isFirstInit) {
@@ -317,4 +323,99 @@ function _fitBounds(signals) {
 
   const bounds = L.latLngBounds(valid.map(s => [s.lat, s.lon]));
   _map.fitBounds(bounds, { padding: [40, 40], maxZoom: 16 });
+}
+
+// ── NIDS TROUVÉS ──────────────────────────────────────────────
+
+const NEST_ICON = L.divIcon({
+  html: '<div style="font-size:28px;line-height:1;filter:drop-shadow(0 2px 3px rgba(0,0,0,0.4))">🪺</div>',
+  className: '',
+  iconSize:   [32, 32],
+  iconAnchor: [16, 28],
+  popupAnchor:[0, -28],
+});
+
+function _clearNestLayers() {
+  _nestLayers.forEach(l => _map.removeLayer(l));
+  _nestLayers = [];
+  // Retirer le listener de clic pour ajout nid
+  _map.off('click', _onMapClickAddNest);
+}
+
+function _drawNests(nests) {
+  nests.forEach(n => {
+    const marker = L.marker([n.lat, n.lon], { icon: NEST_ICON }).addTo(_map);
+    const date   = n.found_at ? new Date(n.found_at).toLocaleDateString('fr-FR') : '—';
+    const pilote = n.pilot_nom || '—';
+
+    marker.bindPopup(`
+      <div style="font-family:'DM Sans',sans-serif;font-size:13px;min-width:160px">
+        <div style="font-weight:700;color:#7b3f00;margin-bottom:4px">🪺 Nid trouvé</div>
+        <div style="color:#555;margin-bottom:2px">📅 ${date}</div>
+        <div style="color:#555;margin-bottom:8px">👤 ${pilote}</div>
+        <button onclick="mapDeleteNest('${n.id}')" style="
+          width:100%;padding:6px;
+          background:#c0392b;color:#fff;
+          border:none;border-radius:6px;
+          font-family:'DM Sans',sans-serif;font-size:12px;
+          font-weight:600;cursor:pointer">
+          🗑 Supprimer
+        </button>
+      </div>`, { maxWidth: 220 });
+
+    _nestLayers.push(marker);
+  });
+}
+
+// Clic sur la carte pour ajouter un nid
+function _onMapClickAddNest(e) {
+  const { lat, lng } = e.latlng;
+  const today = new Date().toISOString().split('T')[0];
+
+  showModal(
+    '🪺 Marquer un nid trouvé',
+    `Position : ${lat.toFixed(5)}, ${lng.toFixed(5)}<br><br>` +
+    `Date : <input type="date" id="nest-date-input" value="${today}" ` +
+    `style="border:1px solid #ccc;border-radius:6px;padding:4px 8px;font-size:14px">`,
+    'Confirmer',
+    async () => {
+      const foundAt = document.getElementById('nest-date-input')?.value || today;
+      const { ok, error } = await dbNestAdd(lat, lng, foundAt);
+      if (error) {
+        showToast('Erreur : ' + (error.message || error));
+      } else {
+        showToast('Nid enregistré !');
+        // Recharger les nids
+        const nests = await dbNestsGetAll();
+        _clearNestLayers();
+        _nests = nests;
+        _drawNests(nests);
+        _setupNestClick(true);
+      }
+    }
+  );
+}
+
+function _setupNestClick(canAdd) {
+  _map.off('click', _onMapClickAddNest);
+  if (canAdd) {
+    _map.on('click', _onMapClickAddNest);
+  }
+}
+
+function mapDeleteNest(id) {
+  _map.closePopup();
+  showModal(
+    'Supprimer ce nid',
+    'Cette action est irréversible.',
+    'Supprimer',
+    async () => {
+      await dbNestDelete(id);
+      _nests = _nests.filter(n => n.id !== id);
+      _clearNestLayers();
+      _drawNests(_nests);
+      _setupNestClick(true);
+      showToast('Nid supprimé.');
+    }
+  );
 }

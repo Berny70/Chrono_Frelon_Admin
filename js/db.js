@@ -232,3 +232,35 @@ async function dbPendingReject(id) {
 function dbQrCodeBuildUrl(pilotId) {
   return `${CONFIG.CHRONO_FRELON_URL}?pilot=${pilotId}`;
 }
+
+// ── NIDS TROUVÉS ──────────────────────────────────────────────
+
+async function dbNestsGetAll() {
+  const { data } = await db
+    .from('nests')
+    .select('*')
+    .order('found_at', { ascending: false });
+  return data || [];
+}
+
+async function dbNestAdd(lat, lon, foundAt) {
+  const { data, error } = await db.rpc('chassnid_nest_add', {
+    p_token:    _token(),
+    p_lat:      lat,
+    p_lon:      lon,
+    p_found_at: foundAt,
+  });
+  if (error) return { error };
+  const result = _parse(data);
+  return result?.error ? { error: { message: result.error } } : { ok: true, id: result.id };
+}
+
+async function dbNestDelete(nestId) {
+  const { data, error } = await db.rpc('chassnid_nest_delete', {
+    p_token:   _token(),
+    p_nest_id: nestId,
+  });
+  if (error) return { error };
+  const result = _parse(data);
+  return result?.error ? { error: { message: result.error } } : { ok: true };
+}

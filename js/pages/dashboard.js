@@ -14,6 +14,7 @@ const Dashboard = (() => {
   let _allSentinels  = [];   // [{ phone_id, pseudo, pilote_nom }]
   let _sentinelMap   = {};   // phone_id → { pseudo, pilote }
   let _groupedSentinels = []; // [{ pilot, users }] — pour admin_dept, chargé une seule fois
+  let _nests = [];
 
   // ── CONSTRUCTION DU MAP phone_id → {pseudo, pilote} ──────
 
@@ -55,29 +56,32 @@ const Dashboard = (() => {
     setLoading('users-list');
 
     if (role === 'superadmin') {
-      [_signals, _blockedPhones, _admins, _pilots] = await Promise.all([
+      [_signals, _blockedPhones, _admins, _pilots, _nests] = await Promise.all([
         dbSignalsGetAll(),
         dbBlockedGetAll(),
         dbAdminsGetAll(),
         dbPilotsGetByParent(),
+        dbNestsGetAll(),
       ]);
       await _loadPending();
 
     } else if (role === 'pilot') {
-      [_signals, _pilotUsers] = await Promise.all([
+      [_signals, _pilotUsers, _nests] = await Promise.all([
         dbSignalsGetAll(profile.lat, profile.lon, _radius),
         dbPilotUsersGet(profile.id),
+        dbNestsGetAll(),
       ]);
       _blockedPhones = new Set(_pilotUsers.filter(u => u.blocked).map(u => u.phone_id));
 
     } else {
       // admin_dept — 1 seul appel pour les sentinelles groupées
-      [_signals, _blockedPhones, _pilots, _pilotUsers, _groupedSentinels] = await Promise.all([
+      [_signals, _blockedPhones, _pilots, _pilotUsers, _groupedSentinels, _nests] = await Promise.all([
         dbSignalsGetAll(profile.lat, profile.lon, _radius),
         dbBlockedGetAll(),
         dbPilotsGetByParent(),
         dbPilotUsersGet(profile.id),
         dbPilotUsersGetByAdmin(),   // RPC SQL unique — plus de N requêtes
+        dbNestsGetAll(),
       ]);
       await _loadPending();
     }
@@ -172,7 +176,8 @@ const Dashboard = (() => {
 
     renderSignals(filteredSignals, _blockedPhones, _sentinelMap);
     updateStats(filteredSignals, _users);
-    mapInit(filteredSignals, _blockedPhones, _sentinelMap);
+    const canAddNest = ['pilot', 'admin_dept', 'superadmin'].includes(role);
+    mapInit(filteredSignals, _blockedPhones, _sentinelMap, _nests, canAddNest);
 
     if (role === 'admin_dept') {
       document.getElementById('pilot-sentinels-section').style.display  = 'none';
