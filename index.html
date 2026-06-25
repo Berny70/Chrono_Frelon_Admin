@@ -639,41 +639,73 @@
   }
 </script>
 
-<!-- Capture d'écran de la carte via leaflet-image -->
-<script src="https://cdn.jsdelivr.net/npm/leaflet-image@0.4.0/leaflet-image.js"></script>
+<!-- Capture d'écran de la carte -->
 <script>
-document.getElementById("btnCaptMap")?.addEventListener("click", () => {
+document.getElementById("btnCaptMap")?.addEventListener("click", async () => {
   const btn = document.getElementById("btnCaptMap");
   btn.disabled = true;
   btn.textContent = "⏳ ...";
 
-  // leafletImage capture tous les layers (tuiles + SVG fuseaux + markers)
-  leafletImage(window._leafletMap, (err, canvas) => {
-    btn.disabled = false;
-    btn.textContent = "📸 Capture";
+  try {
+    const mapEl  = document.getElementById("map");
+    const rect   = mapEl.getBoundingClientRect();
+    const W      = Math.round(rect.width);
+    const H      = Math.round(rect.height);
+    const out    = document.createElement("canvas");
+    out.width    = W;
+    out.height   = H;
+    const ctx    = out.getContext("2d");
 
-    if (err) {
-      alert("Capture impossible : " + err);
-      return;
+    // 1. Copier les canvas de tuiles (fond de carte)
+    mapEl.querySelectorAll("canvas").forEach(c => {
+      try {
+        const cr = c.getBoundingClientRect();
+        ctx.drawImage(c, cr.left - rect.left, cr.top - rect.top, cr.width, cr.height);
+      } catch(e) {}
+    });
+
+    // 2. Copier le SVG Leaflet (fuseaux, polygones, markers)
+    const svgEl = mapEl.querySelector("svg.leaflet-zoom-animated");
+    if (svgEl) {
+      const svgRect = svgEl.getBoundingClientRect();
+      const svgStr  = new XMLSerializer().serializeToString(svgEl);
+      const blob    = new Blob([svgStr], { type: "image/svg+xml" });
+      const url     = URL.createObjectURL(blob);
+      await new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => {
+          ctx.drawImage(img, svgRect.left - rect.left, svgRect.top - rect.top, svgRect.width, svgRect.height);
+          URL.revokeObjectURL(url);
+          resolve();
+        };
+        img.onerror = reject;
+        img.src = url;
+      });
     }
 
-    // Ajouter la date en bas à gauche
-    const ctx = canvas.getContext("2d");
+    // 3. Tampon date
     const label = "ChassNid · " + new Date().toLocaleString("fr-FR");
     ctx.font = "bold 13px sans-serif";
+    const tw = ctx.measureText(label).width;
     ctx.fillStyle = "rgba(0,0,0,0.55)";
-    ctx.fillRect(8, canvas.height - 28, ctx.measureText(label).width + 16, 22);
+    ctx.fillRect(8, H - 28, tw + 16, 22);
     ctx.fillStyle = "#fff";
-    ctx.fillText(label, 16, canvas.height - 11);
+    ctx.fillText(label, 16, H - 11);
 
     const filename = "ChassNid_carte_" + new Date().toISOString().replace(/[:.]/g, "-") + ".png";
     const a = document.createElement("a");
-    a.href = canvas.toDataURL("image/png");
+    a.href = out.toDataURL("image/png");
     a.download = filename;
     document.body.appendChild(a);
     a.click();
     a.remove();
-  });
+
+  } catch(e) {
+    alert("Capture impossible : " + e.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "📸 Capture";
+  }
 });
 </script>
 
