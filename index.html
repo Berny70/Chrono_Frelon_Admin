@@ -641,6 +641,7 @@
 
 <!-- Capture d'écran de la carte -->
 <script>
+document.addEventListener("DOMContentLoaded", () => {
 document.getElementById("btnCaptMap")?.addEventListener("click", async () => {
   const btn = document.getElementById("btnCaptMap");
   btn.disabled = true;
@@ -707,6 +708,7 @@ document.getElementById("btnCaptMap")?.addEventListener("click", async () => {
     btn.textContent = "📸 Capture";
   }
 });
+}); // DOMContentLoaded
 </script>
 
 </body>
