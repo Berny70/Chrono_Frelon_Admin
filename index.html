@@ -639,37 +639,41 @@
   }
 </script>
 
-<!-- Capture d'écran de la carte -->
-<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<!-- Capture d'écran de la carte via leaflet-image -->
+<script src="https://cdn.jsdelivr.net/npm/leaflet-image@0.4.0/leaflet-image.js"></script>
 <script>
-document.getElementById("btnCaptMap")?.addEventListener("click", async () => {
+document.getElementById("btnCaptMap")?.addEventListener("click", () => {
   const btn = document.getElementById("btnCaptMap");
-  const originalText = btn.textContent;
   btn.disabled = true;
   btn.textContent = "⏳ ...";
 
-  try {
-    const canvas = await html2canvas(document.getElementById("map"), {
-      scale: 2,
-      useCORS: true,
-      allowTaint: true,
-    });
+  // leafletImage capture tous les layers (tuiles + SVG fuseaux + markers)
+  leafletImage(window._leafletMap, (err, canvas) => {
+    btn.disabled = false;
+    btn.textContent = "📸 Capture";
 
-    const blob = await new Promise(resolve => canvas.toBlob(resolve, "image/png"));
+    if (err) {
+      alert("Capture impossible : " + err);
+      return;
+    }
+
+    // Ajouter la date en bas à gauche
+    const ctx = canvas.getContext("2d");
+    const label = "ChassNid · " + new Date().toLocaleString("fr-FR");
+    ctx.font = "bold 13px sans-serif";
+    ctx.fillStyle = "rgba(0,0,0,0.55)";
+    ctx.fillRect(8, canvas.height - 28, ctx.measureText(label).width + 16, 22);
+    ctx.fillStyle = "#fff";
+    ctx.fillText(label, 16, canvas.height - 11);
+
     const filename = "ChassNid_carte_" + new Date().toISOString().replace(/[:.]/g, "-") + ".png";
-
     const a = document.createElement("a");
-    a.href = URL.createObjectURL(blob);
+    a.href = canvas.toDataURL("image/png");
     a.download = filename;
     document.body.appendChild(a);
     a.click();
     a.remove();
-  } catch (e) {
-    alert("Capture impossible : " + e.message);
-  } finally {
-    btn.disabled = false;
-    btn.textContent = originalText;
-  }
+  });
 });
 </script>
 

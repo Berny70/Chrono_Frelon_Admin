@@ -57,6 +57,7 @@ function mapInit(signals, blockedPhones) {
     const saved = localStorage.getItem('chassnid_basemap') || 'osm';
     _applyBasemap(saved);
     _addBasemapControl();
+    window._leafletMap = _map; // exposé pour leaflet-image
   }
 
   _clearLayers();
