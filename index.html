@@ -161,6 +161,7 @@
   <nav class="nav-tabs" id="nav-tabs">
     <button class="nav-tab active" data-tab="map">Carte</button>
     <button class="nav-tab" data-tab="signals">Signalements</button>
+    <button class="nav-tab" data-tab="nests">Nids 🪺</button>
     <button class="nav-tab" data-tab="users">Sentinelles</button>
     <button class="nav-tab" data-tab="admins" id="tab-btn-admins" style="display:none">Mes admins</button>
     <button class="nav-tab" data-tab="pilots" id="tab-btn-pilots" style="display:none">Mes pilotes</button>
@@ -229,6 +230,16 @@
         </div>
       </div>
       <div class="list-container" id="signals-list">
+        <div class="loading"><div class="spinner"></div></div>
+      </div>
+    </div>
+
+    <!-- Nids trouvés -->
+    <div id="tab-nests" class="tab-panel">
+      <div class="tab-header">
+        <h2 class="tab-title">Nids trouvés 🪺</h2>
+      </div>
+      <div class="list-container" id="nests-list">
         <div class="loading"><div class="spinner"></div></div>
       </div>
     </div>

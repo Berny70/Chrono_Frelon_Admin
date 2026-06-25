@@ -198,6 +198,8 @@ const Dashboard = (() => {
 
     if (role === 'superadmin') renderAdmins(_admins);
     if (['superadmin', 'admin_dept'].includes(role)) renderPilots(_pilots);
+
+    renderNests(_nests);
   }
 
   // ── CHANGEMENT DE RAYON ────────────────────────────────────
@@ -468,6 +470,64 @@ const Dashboard = (() => {
   function setPilots(pilots) {
     _pilots = pilots;
     renderPilots(_pilots);
+  }
+
+  // ── RENDU LISTE NIDS ──────────────────────────────────────
+
+  function renderNests(nests) {
+    const list = document.getElementById('nests-list');
+    if (!list) return;
+
+    if (!nests || nests.length === 0) {
+      list.innerHTML = '<p class="form-hint" style="padding:20px">Aucun nid enregistré.</p>';
+      return;
+    }
+
+    list.innerHTML = nests.map(n => {
+      const date   = n.found_at
+        ? new Date(n.found_at).toLocaleDateString('fr-FR')
+        : '—';
+      const pilote = n.pilot_nom || '—';
+      const lat    = n.lat ? n.lat.toFixed(5) : '—';
+      const lon    = n.lon ? n.lon.toFixed(5) : '—';
+      const gps    = `${lat}, ${lon}`;
+      const mapsUrl = `https://www.google.com/maps?q=${lat},${lon}`;
+
+      return `
+        <div class="list-item" style="display:flex;align-items:flex-start;gap:12px;padding:12px 0;border-bottom:1px solid var(--border)">
+          <div style="font-size:28px;line-height:1;flex-shrink:0">🪺</div>
+          <div style="flex:1;min-width:0">
+            <div style="font-weight:600;font-size:14px;margin-bottom:2px">📅 ${date}</div>
+            <div style="font-size:13px;color:var(--text-muted);margin-bottom:2px">👤 ${pilote}</div>
+            <a href="${mapsUrl}" target="_blank"
+               style="font-size:12px;font-family:monospace;color:var(--accent);text-decoration:none">
+              📍 ${gps}
+            </a>
+          </div>
+          <button class="btn-delete-nest" data-nest-id="${n.id}"
+            style="padding:6px 10px;border-radius:6px;background:#c0392b;color:#fff;border:none;font-size:12px;cursor:pointer;flex-shrink:0">
+            🗑
+          </button>
+        </div>`;
+    }).join('');
+
+    // Délégation suppression
+    list.querySelectorAll('.btn-delete-nest').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        showModal(
+          'Supprimer ce nid',
+          'Cette action est irréversible.',
+          'Supprimer',
+          async () => {
+            await dbNestDelete(btn.dataset.nestId);
+            _nests = _nests.filter(n => n.id !== btn.dataset.nestId);
+            renderNests(_nests);
+            mapInit(_applyDateFilter(_signals), _blockedPhones, _sentinelMap, _nests, true);
+            showToast('Nid supprimé.');
+          }
+        );
+      });
+    });
   }
 
   // ── INIT ──────────────────────────────────────────────────
