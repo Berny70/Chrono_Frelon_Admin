@@ -176,9 +176,7 @@
     <!-- Carte -->
     <div id="tab-map" class="tab-panel active">
       <div id="map"></div>
-      <button id="btnCaptMap" style="position:absolute;top:12px;right:12px;z-index:1000;background:#c8a44a;color:#fff;border:none;border-radius:8px;padding:8px 14px;font-size:14px;font-weight:600;cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,0.25)">
-        📸 Capture
-      </button>
+
       <div class="map-stats">
         <div class="stat-item">
           <div class="stat-value" id="stat-total">—</div>
@@ -639,26 +637,7 @@
   }
 </script>
 
-<!-- Capture d'écran de la carte — guide raccourci clavier -->
-<script>
-document.addEventListener("DOMContentLoaded", () => {
-  document.getElementById("btnCaptMap")?.addEventListener("click", () => {
-    const isWin  = navigator.userAgent.includes("Windows");
-    const isMac  = navigator.userAgent.includes("Mac");
-    const isAndroid = navigator.userAgent.includes("Android");
 
-    let msg;
-    if (isAndroid) {
-      msg = "📸 Capture d'écran\n\nAppuyez simultanément sur :\n  Power + Volume bas";
-    } else if (isMac) {
-      msg = "📸 Capture d'écran\n\nAppuyez sur :\n  Cmd + Shift + 4\npuis sélectionnez la carte";
-    } else {
-      msg = "📸 Capture d'écran\n\nAppuyez sur :\n  Win + Shift + S\npuis sélectionnez la carte";
-    }
-    alert(msg);
-  });
-});
-</script>
 
 </body>
 </html>
