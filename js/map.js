@@ -348,11 +348,19 @@ function _drawNests(nests) {
     const date   = n.found_at ? new Date(n.found_at).toLocaleDateString('fr-FR') : '—';
     const pilote = n.pilot_nom || '—';
 
+    const lat    = n.lat.toFixed(5);
+    const lon    = n.lon.toFixed(5);
+    const mapsUrl = `https://www.google.com/maps?q=${lat},${lon}`;
+
     marker.bindPopup(`
-      <div style="font-family:'DM Sans',sans-serif;font-size:13px;min-width:160px">
+      <div style="font-family:'DM Sans',sans-serif;font-size:13px;min-width:180px">
         <div style="font-weight:700;color:#7b3f00;margin-bottom:4px">🪺 Nid trouvé</div>
         <div style="color:#555;margin-bottom:2px">📅 ${date}</div>
-        <div style="color:#555;margin-bottom:8px">👤 ${pilote}</div>
+        <div style="color:#555;margin-bottom:4px">👤 ${pilote}</div>
+        <a href="${mapsUrl}" target="_blank"
+           style="display:block;font-family:monospace;font-size:11px;color:#2563eb;margin-bottom:8px;text-decoration:none">
+          📍 ${lat}, ${lon}
+        </a>
         <button onclick="mapDeleteNest('${n.id}')" style="
           width:100%;padding:6px;
           background:#c0392b;color:#fff;
@@ -361,7 +369,7 @@ function _drawNests(nests) {
           font-weight:600;cursor:pointer">
           🗑 Supprimer
         </button>
-      </div>`, { maxWidth: 220 });
+      </div>`, { maxWidth: 240 });
 
     _nestLayers.push(marker);
   });
