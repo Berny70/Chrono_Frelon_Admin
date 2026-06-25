@@ -140,7 +140,7 @@ async function dbBlockedRemove(phone_id) {
   return db.from('blocked_phones').delete().eq('phone_id', phone_id);
 }
 
-// ── UTILISATEURS PILOTE ───────────────────────────────────────
+// ── SENTINELLES ───────────────────────────────────────────────
 
 async function dbPilotUsersGet(pilotId) {
   const { data } = await db
@@ -151,7 +151,7 @@ async function dbPilotUsersGet(pilotId) {
   return data || [];
 }
 
-// Toutes les sentinelles (pour superadmin) avec jointure pilote
+// Toutes les sentinelles (pour superadmin)
 async function dbAllSentinelsGet() {
   const { data } = await db
     .from('pilot_user_stats')
@@ -160,33 +160,40 @@ async function dbAllSentinelsGet() {
   return data || [];
 }
 
-// Sentinelles de tous les pilotes d'un admin (groupées par pilote)
-async function dbPilotUsersGetByAdmin(adminId, pilots) {
-  const results = await Promise.all(
-    pilots.map(async p => {
-      const { data } = await db
-        .from('pilot_user_stats')
-        .select('*')
-        .eq('pilot_id', p.id)
-        .order('rattachement_date', { ascending: false });
-      return { pilot: p, users: data || [] };
-    })
-  );
-  return results;
+// Sentinelles de tous les pilotes d'un admin — 1 seule RPC SQL
+// Retourne : [{ pilot: {...}, users: [...] }, ...]
+async function dbPilotUsersGetByAdmin() {
+  const { data, error } = await db.rpc('chassnid_get_sentinels_by_admin', {
+    p_token: _token(),
+  });
+  if (error) return [];
+  const result = _parse(data);
+  return Array.isArray(result) ? result : [];
 }
 
+// Bloquer / débloquer une sentinelle via RPC (contourne RLS)
 async function dbPilotUserBlock(phone_id, pilotId) {
-  return db.from('pilot_users')
-    .update({ blocked: true })
-    .eq('phone_id', phone_id)
-    .eq('pilot_id', pilotId);
+  const { data, error } = await db.rpc('chassnid_set_sentinel_blocked', {
+    p_token:    _token(),
+    p_phone_id: phone_id,
+    p_pilot_id: pilotId,
+    p_blocked:  true,
+  });
+  if (error) return { error };
+  const result = _parse(data);
+  return result?.error ? { error: { message: result.error } } : { ok: true };
 }
 
 async function dbPilotUserUnblock(phone_id, pilotId) {
-  return db.from('pilot_users')
-    .update({ blocked: false })
-    .eq('phone_id', phone_id)
-    .eq('pilot_id', pilotId);
+  const { data, error } = await db.rpc('chassnid_set_sentinel_blocked', {
+    p_token:    _token(),
+    p_phone_id: phone_id,
+    p_pilot_id: pilotId,
+    p_blocked:  false,
+  });
+  if (error) return { error };
+  const result = _parse(data);
+  return result?.error ? { error: { message: result.error } } : { ok: true };
 }
 
 async function dbUpdatePseudo(phone_id, pilotId, pseudo) {
