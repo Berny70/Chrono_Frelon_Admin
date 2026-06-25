@@ -3,47 +3,45 @@
 
 const Dashboard = (() => {
 
-  let _signals      = [];
-  let _users        = [];
-  let _admins       = [];
-  let _pilots       = [];
-  let _pilotUsers   = [];
+  let _signals       = [];
+  let _users         = [];
+  let _admins        = [];
+  let _pilots        = [];
+  let _pilotUsers    = [];
   let _blockedPhones = new Set();
-  let _radius         = CONFIG.DEFAULT_RADIUS_KM;
+  let _radius        = CONFIG.DEFAULT_RADIUS_KM;
   let _dateFilterDays = 'all';
-  let _allSentinels   = [];
-  let _sentinelMap    = {}; // mis à jour dans _refresh
+  let _allSentinels  = [];   // [{ phone_id, pseudo, pilote_nom }]
+  let _sentinelMap   = {};   // phone_id → { pseudo, pilote }
+  let _groupedSentinels = []; // [{ pilot, users }] — pour admin_dept, chargé une seule fois
 
   // ── CONSTRUCTION DU MAP phone_id → {pseudo, pilote} ──────
+
   function _buildSentinelMap() {
     const map = {};
+
     _allSentinels.forEach(u => {
       map[u.phone_id] = {
         pseudo: u.pseudo || null,
         pilote: u.pilote_nom || null,
       };
     });
+
     // Ajouter les pilotes/admins qui ont enregistré leur phone_id
-    const profiles = [...(_pilots || []), ...(_admins || [])];
-    profiles.forEach(p => {
+    [...(_pilots || []), ...(_admins || [])].forEach(p => {
       if (p.phone_id) {
-        // Chercher si cette sentinelle a un pseudo dans pilot_users
         const sentinel = _allSentinels.find(s => s.phone_id === p.phone_id);
-        map[p.phone_id] = {
-          pseudo: sentinel?.pseudo || null,
-          pilote: null,
-        };
+        map[p.phone_id] = { pseudo: sentinel?.pseudo || null, pilote: null };
       }
     });
-    // Inclure le profil courant lui-même
+
+    // Profil courant
     const me = Auth.getProfile();
     if (me?.phone_id) {
       const sentinel = _allSentinels.find(s => s.phone_id === me.phone_id);
-      map[me.phone_id] = {
-        pseudo: sentinel?.pseudo || null,
-        pilote: null,
-      };
+      map[me.phone_id] = { pseudo: sentinel?.pseudo || null, pilote: null };
     }
+
     return map;
   }
 
@@ -57,29 +55,35 @@ const Dashboard = (() => {
     setLoading('users-list');
 
     if (role === 'superadmin') {
-      _signals       = await dbSignalsGetAll();
-      _blockedPhones = await dbBlockedGetAll();
-      _admins        = await dbAdminsGetAll();
-      _pilots        = await dbPilotsGetByParent(profile.id);
+      [_signals, _blockedPhones, _admins, _pilots] = await Promise.all([
+        dbSignalsGetAll(),
+        dbBlockedGetAll(),
+        dbAdminsGetAll(),
+        dbPilotsGetByParent(),
+      ]);
       await _loadPending();
 
     } else if (role === 'pilot') {
-      _signals    = await dbSignalsGetAll(profile.lat, profile.lon, _radius);
-      _pilotUsers = await dbPilotUsersGet(profile.id);
+      [_signals, _pilotUsers] = await Promise.all([
+        dbSignalsGetAll(profile.lat, profile.lon, _radius),
+        dbPilotUsersGet(profile.id),
+      ]);
       _blockedPhones = new Set(_pilotUsers.filter(u => u.blocked).map(u => u.phone_id));
 
     } else {
-      // admin_dept
-      _signals       = await dbSignalsGetAll(profile.lat, profile.lon, _radius);
-      _blockedPhones = await dbBlockedGetAll();
-      _pilots        = await dbPilotsGetByParent(profile.id);
-      // Sentinelles directes de l'admin
-      _pilotUsers    = await dbPilotUsersGet(profile.id);
+      // admin_dept — 1 seul appel pour les sentinelles groupées
+      [_signals, _blockedPhones, _pilots, _pilotUsers, _groupedSentinels] = await Promise.all([
+        dbSignalsGetAll(profile.lat, profile.lon, _radius),
+        dbBlockedGetAll(),
+        dbPilotsGetByParent(),
+        dbPilotUsersGet(profile.id),
+        dbPilotUsersGetByAdmin(),   // RPC SQL unique — plus de N requêtes
+      ]);
       await _loadPending();
     }
 
     _buildUsers();
-    _refresh();
+    await _refresh();
   }
 
   async function _loadPending() {
@@ -119,6 +123,8 @@ const Dashboard = (() => {
   }
 
   // ── RAFRAÎCHISSEMENT ──────────────────────────────────────
+  // Plus d'appels async ici — toutes les données sont déjà chargées dans load().
+  // _refresh() est désormais synchrone sauf pour superadmin (dbAllSentinelsGet).
 
   async function _refresh() {
     const role    = Auth.getProfile()?.role;
@@ -132,10 +138,9 @@ const Dashboard = (() => {
         pseudo:     u.pseudo,
         pilote_nom: null,
       }));
+
     } else if (role === 'superadmin') {
-      // Toutes les sentinelles de tous les pilotes
       const allRaw = await dbAllSentinelsGet();
-      // Construire un index pilote_id → nom
       const pilotIndex = {};
       (_pilots || []).forEach(p => { pilotIndex[p.id] = p.prenom + ' ' + p.nom; });
       (_admins || []).forEach(a => { pilotIndex[a.id] = a.prenom + ' ' + a.nom; });
@@ -144,6 +149,7 @@ const Dashboard = (() => {
         pseudo:     u.pseudo,
         pilote_nom: pilotIndex[u.pilot_id] || null,
       }));
+
     } else if (role === 'admin_dept') {
       // Mes sentinelles directes
       const directes = _pilotUsers.map(u => ({
@@ -151,9 +157,8 @@ const Dashboard = (() => {
         pseudo:     u.pseudo,
         pilote_nom: profile.prenom + ' ' + profile.nom + ' (direct)',
       }));
-      // Sentinelles des pilotes
-      const grouped = await dbPilotUsersGetByAdmin(profile.id, _pilots);
-      const desPilotes = grouped.flatMap(g =>
+      // Sentinelles des pilotes — déjà chargées dans load(), pas de nouvel appel
+      const desPilotes = _groupedSentinels.flatMap(g =>
         g.users.map(u => ({
           phone_id:   u.phone_id,
           pseudo:     u.pseudo,
@@ -163,34 +168,27 @@ const Dashboard = (() => {
       _allSentinels = [...directes, ...desPilotes];
     }
 
-    const sentinelMap = _buildSentinelMap();
-    _sentinelMap = sentinelMap; // cache pour la recherche
+    _sentinelMap = _buildSentinelMap();
 
-    renderSignals(filteredSignals, _blockedPhones, sentinelMap);
+    renderSignals(filteredSignals, _blockedPhones, _sentinelMap);
     updateStats(filteredSignals, _users);
     mapInit(filteredSignals, _blockedPhones);
 
     if (role === 'admin_dept') {
-      // Afficher les deux sous-groupes sentinelles
       document.getElementById('pilot-sentinels-section').style.display  = 'none';
       document.getElementById('my-sentinels-section').style.display     = '';
       document.getElementById('pilots-sentinels-section').style.display = '';
 
-      // Mes sentinelles directes
       const pilotIndex = {};
       (_pilots || []).forEach(p => { pilotIndex[p.id] = p.prenom + ' ' + p.nom; });
-      (_admins || []).forEach(a => { pilotIndex[a.id] = a.prenom + ' ' + a.nom; });
       renderUsersList(_pilotUsers, 'my-sentinels-list', pilotIndex);
-
-      // Sentinelles de mes pilotes (groupées) — réutilise _allSentinels si déjà chargé
-      const grouped = await dbPilotUsersGetByAdmin(profile.id, _pilots);
-      renderSentinelsByPilot(grouped);
+      renderSentinelsByPilot(_groupedSentinels);  // données déjà en mémoire
 
     } else {
       document.getElementById('pilot-sentinels-section').style.display  = '';
       document.getElementById('my-sentinels-section').style.display     = 'none';
       document.getElementById('pilots-sentinels-section').style.display = 'none';
-      renderUsers(_users, _buildSentinelMap());
+      renderUsers(_users, _sentinelMap);
     }
 
     if (role === 'superadmin') renderAdmins(_admins);
@@ -213,7 +211,7 @@ const Dashboard = (() => {
 
     _blockedPhones = await dbBlockedGetAll();
     _buildUsers();
-    _refresh();
+    await _refresh();
   }
 
   function onDateFilterChange(value) {
@@ -233,7 +231,7 @@ const Dashboard = (() => {
         showToast('Signalement supprimé.');
         _signals = _signals.filter(s => s.id !== id);
         _buildUsers();
-        _refresh();
+        await _refresh();
       }
     );
   }
@@ -258,7 +256,7 @@ const Dashboard = (() => {
         }
         showToast('Sentinelle bloquée.');
         _buildUsers();
-        _refresh();
+        await _refresh();
       }
     );
   }
@@ -281,7 +279,7 @@ const Dashboard = (() => {
         }
         showToast('Sentinelle débloquée.');
         _buildUsers();
-        _refresh();
+        await _refresh();
       }
     );
   }
@@ -320,8 +318,7 @@ const Dashboard = (() => {
 
   function showProfile() {
     const p = Auth.getProfile();
-    const sentinelMap = _buildSentinelMap();
-    const pseudo = p.phone_id ? (sentinelMap[p.phone_id]?.pseudo || null) : null;
+    const pseudo = p.phone_id ? (_sentinelMap[p.phone_id]?.pseudo || null) : null;
     const pseudoLine = pseudo
       ? `<span style="color:var(--accent)">🏷️ ${pseudo}</span><br>`
       : (p.phone_id ? `<span style="opacity:0.5;font-size:12px">🏷️ Aucun pseudo Chrono_Frelon</span><br>` : '');
@@ -409,11 +406,11 @@ const Dashboard = (() => {
     showOverlay('overlay-qrcode');
   }
 
-  // ── GETTERS POUR LES PAGES ────────────────────────────────
+  // ── GETTERS / SETTERS ─────────────────────────────────────
 
-  function getSignals()  { return _signals; }
-  function getAdmins()   { return _admins; }
-  function getPilots()   { return _pilots; }
+  function getSignals() { return _signals; }
+  function getAdmins()  { return _admins; }
+  function getPilots()  { return _pilots; }
 
   function setAdmins(admins) {
     _admins = admins;
@@ -428,22 +425,16 @@ const Dashboard = (() => {
   // ── INIT ──────────────────────────────────────────────────
 
   function init() {
-    // Navigation par onglets
     document.querySelectorAll('.nav-tab').forEach(btn => {
       btn.addEventListener('click', () => switchTab(btn.dataset.tab));
     });
 
-    // Rayon
     initRadiusSelector(onRadiusChange);
-
-    // Filtre date
     initDateFilterSelectors(onDateFilterChange);
 
-    // Profil
     document.getElementById('btn-profile')?.addEventListener('click', showProfile);
     document.getElementById('btn-save-pin')?.addEventListener('click', savePin);
 
-    // PIN profil — clavier
     document.querySelectorAll('.pin-key[data-ctx="prof"]').forEach(btn => {
       if (btn.dataset.digit !== undefined) {
         btn.addEventListener('click', () => profPinPress(btn.dataset.digit));
@@ -452,11 +443,9 @@ const Dashboard = (() => {
       }
     });
 
-    // QR Code
     document.getElementById('btn-qrcode')?.addEventListener('click', showQrCode);
     document.getElementById('btn-share-whatsapp')?.addEventListener('click', () => {
       const url = document.getElementById('qrcode-url').textContent;
-      const profile = Auth.getProfile();
       window.open(
         'https://wa.me/?text=' + encodeURIComponent(
           `Installez ChassNid pour rejoindre le réseau Piste-Frelon :\n${url}`
@@ -470,26 +459,22 @@ const Dashboard = (() => {
         .catch(() => showToast('Copiez manuellement le lien'));
     });
 
-    // Aide
     document.getElementById('btn-aide')?.addEventListener('click', () => showOverlay('overlay-aide'));
 
-    // Logout
     document.getElementById('btn-logout')?.addEventListener('click', async () => {
       await Auth.logout();
       showScreen('login');
     });
 
-    // Filtres recherche signalements / sentinelles
     document.getElementById('search-signals')?.addEventListener('input', e => {
       const q = e.target.value.toLowerCase();
-      const sentinelMap = _buildSentinelMap();
       const filtered = _applyDateFilter(_signals).filter(s => {
-        const sentinel = sentinelMap[s.phone_id];
+        const sentinel = _sentinelMap[s.phone_id];
         return (s.phone_id || '').toLowerCase().includes(q)
           || (sentinel?.pseudo || '').toLowerCase().includes(q)
           || (sentinel?.pilote || '').toLowerCase().includes(q);
       });
-      renderSignals(filtered, _blockedPhones, sentinelMap);
+      renderSignals(filtered, _blockedPhones, _sentinelMap);
     });
 
     document.getElementById('search-users')?.addEventListener('input', e => {
@@ -519,7 +504,6 @@ const Dashboard = (() => {
       renderUsers(filtered, _sentinelMap);
     });
 
-    // Délégation des événements sur les listes
     document.getElementById('signals-list')?.addEventListener('click', e => {
       const btn = e.target.closest('[data-signal-id]');
       if (btn) deleteSignal(parseInt(btn.dataset.signalId));
