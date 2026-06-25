@@ -44,7 +44,7 @@ function _addBasemapControl() {
 
 // ── INITIALISATION ────────────────────────────────────────────
 
-function mapInit(signals, blockedPhones) {
+function mapInit(signals, blockedPhones, sentinelMap) {
   const isFirstInit = !_map;
 
   if (!_map) {
@@ -61,7 +61,7 @@ function mapInit(signals, blockedPhones) {
   }
 
   _clearLayers();
-  _drawSignals(signals, blockedPhones);
+  _drawSignals(signals, blockedPhones, sentinelMap);
 
   // Ne recentrer que lors de la première initialisation
   if (isFirstInit) {
@@ -86,7 +86,7 @@ function _clearLayers() {
 
 // ── DESSIN DES SIGNAUX ────────────────────────────────────────
 
-function _drawSignals(signals, blockedPhones) {
+function _drawSignals(signals, blockedPhones, sentinelMap) {
   if (!signals.length) return;
 
   const activeSignals = [];
@@ -119,8 +119,8 @@ function _drawSignals(signals, blockedPhones) {
         <div style="color:#888;margin-bottom:2px;font-family:monospace;font-size:11px">
           ${s.distance||0}m · ${s.direction||0}°
         </div>
-        <div style="color:#888;margin-bottom:8px;font-family:monospace;font-size:11px">
-          ${s.phone_id || '—'}
+        <div style="color:#888;margin-bottom:8px;font-size:11px">
+          ${(sentinelMap && sentinelMap[s.phone_id]?.pseudo) ? '🏷️ ' + sentinelMap[s.phone_id].pseudo : s.phone_id?.substring(0,8) + '…'}
         </div>
         <button onclick="mapDeleteSignal(${s.id})" style="
           width:100%;padding:6px;

@@ -172,7 +172,7 @@ const Dashboard = (() => {
 
     renderSignals(filteredSignals, _blockedPhones, _sentinelMap);
     updateStats(filteredSignals, _users);
-    mapInit(filteredSignals, _blockedPhones);
+    mapInit(filteredSignals, _blockedPhones, _sentinelMap);
 
     if (role === 'admin_dept') {
       document.getElementById('pilot-sentinels-section').style.display  = 'none';
