@@ -230,6 +230,7 @@ function renderSignals(signals, blockedSet, sentinelMap = {}) {
         <div class="signal-info">
           <div class="signal-date">${new Date(s.created_at).toLocaleString('fr-FR')}</div>
           <div class="signal-meta">${(s.lat||0).toFixed(5)}, ${(s.lon||0).toFixed(5)} · ${s.distance||0}m · ${s.direction||0}°</div>
+          ${(s.destination || s.frequentation) ? `<div class="signal-tags">${s.destination ? '🌿 ' + s.destination : ''} ${s.frequentation ? '· 🐝 ' + s.frequentation : ''}</div>` : ''}
           <div class="signal-phone">${label} ${pilotLabel}</div>
         </div>
         <button class="btn-delete" data-signal-id="${s.id}">🗑</button>
