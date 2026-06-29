@@ -150,6 +150,12 @@ const Pilots = (() => {
               style="width:100%;border:1px solid var(--border);border-radius:6px;padding:4px 8px;font-size:13px;font-family:inherit">
             <div style="font-size:11px;color:var(--text-muted);margin-top:3px">${u.nb_observations ?? 0} signalement(s) · ${u.blocked ? '🔴 Bloqué' : '🟢 Actif'}</div>
           </div>
+          <button class="btn-delete-sentinel"
+            data-phone="${u.phone_id}"
+            data-pilot="${pilotId}"
+            data-pseudo="${u.pseudo || u.phone_id.substring(0,8)}"
+            style="background:none;border:none;font-size:18px;cursor:pointer;padding:4px;flex-shrink:0;"
+            title="Supprimer cette sentinelle">🗑</button>
         </div>`).join('');
 
       // Sauvegarder le pseudo au blur
@@ -158,6 +164,25 @@ const Pilots = (() => {
           const { error } = await dbUpdatePseudo(input.dataset.phone, input.dataset.pilot, input.value);
           if (error) showToast('Erreur : ' + (error.message || error));
           else showToast('Pseudo enregistré.');
+        });
+      });
+
+      // Supprimer une sentinelle
+      list.querySelectorAll('.btn-delete-sentinel').forEach(btn => {
+        btn.addEventListener('click', () => {
+          showModal(
+            'Supprimer cette sentinelle',
+            `Supprimer la sentinelle "${btn.dataset.pseudo}" ? Cette action est irréversible.`,
+            'Supprimer',
+            async () => {
+              const { error } = await dbSentinelDelete(btn.dataset.phone, btn.dataset.pilot);
+              if (error) showToast('Erreur : ' + (error.message || error));
+              else {
+                showToast('Sentinelle supprimée.');
+                view(btn.dataset.pilot, document.getElementById('view-title').textContent.replace('Sentinelles de ', ''));
+              }
+            }
+          );
         });
       });
     }
