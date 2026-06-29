@@ -338,41 +338,48 @@ function _fitBounds(signals) {
 
 // ── NIDS TROUVÉS ──────────────────────────────────────────────
 
-const NEST_ICON = L.divIcon({
-  html: '<div style="font-size:28px;line-height:1;filter:drop-shadow(0 2px 3px rgba(0,0,0,0.4))">🪺</div>',
-  className: '',
-  iconSize:   [32, 32],
-  iconAnchor: [16, 28],
-  popupAnchor:[0, -28],
-});
+function _getNestIcon(annee) {
+  const year = annee || new Date().getFullYear().toString();
+  const currentYear = new Date().getFullYear().toString();
+  let emoji, color;
+  if (year === currentYear || !annee) {
+    emoji = '🪺'; color = '#2e7d32'; // vert = cette année
+  } else if (year === (parseInt(currentYear)-1).toString()) {
+    emoji = '🟡'; color = '#f59e0b'; // jaune = année précédente
+  } else {
+    emoji = '🟠'; color = '#ea580c'; // orange = plus ancien
+  }
+  return L.divIcon({
+    html: `<div style="font-size:24px;line-height:1;filter:drop-shadow(0 2px 3px rgba(0,0,0,0.4))">${emoji}</div>`,
+    className: '',
+    iconSize:   [28, 28],
+    iconAnchor: [14, 24],
+    popupAnchor:[0, -24],
+  });
+}
 
 function _clearNestLayers() {
   _nestLayers.forEach(l => _map.removeLayer(l));
   _nestLayers = [];
-  // Retirer le listener de clic pour ajout nid
   _map.off('click', _onMapClickAddNest);
 }
 
 function _drawNests(nests) {
   nests.forEach(n => {
-    const marker = L.marker([n.lat, n.lon], { icon: NEST_ICON });
+    const icon   = _getNestIcon(n.annee);
+    const marker = L.marker([n.lat, n.lon], { icon });
     if (_nestsVisible) marker.addTo(_map);
-    const date   = n.found_at ? new Date(n.found_at).toLocaleDateString('fr-FR') : '—';
-    const pilote = n.pilot_nom || '—';
+    const date     = n.found_at ? new Date(n.found_at).toLocaleDateString('fr-FR') : '—';
+    const pilote   = n.pilot_nom || n.declarant || '—';
+    const anneeStr = n.annee ? ` (${n.annee})` : '';
+    const taille   = n.taille ? `<div style="color:#555;margin-bottom:2px">📏 ${n.taille}</div>` : '';
 
-    const lat    = n.lat.toFixed(5);
-    const lon    = n.lon.toFixed(5);
+    const lat     = n.lat.toFixed(5);
+    const lon     = n.lon.toFixed(5);
     const mapsUrl = `https://www.google.com/maps?q=${lat},${lon}`;
 
-    marker.bindPopup(`
-      <div style="font-family:'DM Sans',sans-serif;font-size:13px;min-width:180px">
-        <div style="font-weight:700;color:#7b3f00;margin-bottom:4px">🪺 Nid trouvé</div>
-        <div style="color:#555;margin-bottom:2px">📅 ${date}</div>
-        <div style="color:#555;margin-bottom:4px">👤 ${pilote}</div>
-        <a href="${mapsUrl}" target="_blank"
-           style="display:block;font-family:monospace;font-size:11px;color:#2563eb;margin-bottom:8px;text-decoration:none">
-          📍 ${lat}, ${lon}
-        </a>
+    const canDelete = !n.annee; // seulement les nids de l'année courante
+    const deleteBtn = canDelete ? `
         <button onclick="mapDeleteNest('${n.id}')" style="
           width:100%;padding:6px;
           background:#c0392b;color:#fff;
@@ -380,7 +387,19 @@ function _drawNests(nests) {
           font-family:'DM Sans',sans-serif;font-size:12px;
           font-weight:600;cursor:pointer">
           🗑 Supprimer
-        </button>
+        </button>` : '';
+
+    marker.bindPopup(`
+      <div style="font-family:'DM Sans',sans-serif;font-size:13px;min-width:180px">
+        <div style="font-weight:700;color:#7b3f00;margin-bottom:4px">🪺 Nid trouvé${anneeStr}</div>
+        <div style="color:#555;margin-bottom:2px">📅 ${date}</div>
+        <div style="color:#555;margin-bottom:2px">👤 ${pilote}</div>
+        ${taille}
+        <a href="${mapsUrl}" target="_blank"
+           style="display:block;font-family:monospace;font-size:11px;color:#2563eb;margin-bottom:8px;text-decoration:none">
+          📍 ${lat}, ${lon}
+        </a>
+        ${deleteBtn}
       </div>`, { maxWidth: 240 });
 
     _nestLayers.push(marker);
