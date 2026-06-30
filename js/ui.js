@@ -181,7 +181,8 @@ function applyRoleUI(role) {
   show('tab-btn-admins',  role === 'superadmin');
   show('tab-btn-pilots',  ['superadmin', 'admin_dept'].includes(role));
   show('tab-btn-pending', ['superadmin', 'admin_dept'].includes(role));
-  show('btn-qrcode',      ['superadmin', 'admin_dept', 'pilot'].includes(role));
+  show('btn-qrcode-pm',   ['superadmin', 'admin_dept', 'pilot'].includes(role));
+  show('btn-qrcode-vn',   ['superadmin', 'admin_dept', 'pilot'].includes(role));
   show('btn-new-admin',   role === 'superadmin');
   show('btn-new-pilot',   ['superadmin', 'admin_dept'].includes(role));
 

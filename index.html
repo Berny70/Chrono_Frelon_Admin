@@ -127,12 +127,13 @@
     </div>
     <div class="topbar-right">
       <span id="topbar-version" style="font-size:10px;opacity:0.5;margin-right:4px"></span>
-      <!-- QR Code -->
-      <button class="topbar-btn" id="btn-qrcode" title="Mon QR Code" style="display:none">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
-          <rect x="3" y="14" width="7" height="7"/><path d="M14 14h3v3h-3zM17 17h3v3h-3zM14 20h3"/>
-        </svg>
+      <!-- QR Code Pot à Mèche -->
+      <button class="topbar-btn" id="btn-qrcode-pm" title="QR Code Pot à Mèche" style="display:none">
+        <div style="width:18px;height:18px;border-radius:50%;background:#1b2d3e;display:flex;align-items:center;justify-content:center;font-size:11px;line-height:1;">⏱</div>
+      </button>
+      <!-- QR Code VigieNid -->
+      <button class="topbar-btn" id="btn-qrcode-vn" title="QR Code VigieNid" style="display:none">
+        <div style="width:18px;height:18px;border-radius:4px;background:#2d5a27;display:flex;align-items:center;justify-content:center;font-size:11px;line-height:1;">👁</div>
       </button>
       <!-- Profil -->
       <button class="topbar-btn" id="btn-profile" title="Mon profil">
@@ -440,45 +441,60 @@
   </div>
 </div>
 
-<!-- ══ PANNEAU QR CODE ═══════════════════════════════════════ -->
-<div class="overlay" id="overlay-qrcode">
-  <div class="panel" style="text-align:center;max-width:520px">
+<!-- ══ PANNEAU QR CODE — POT À MÈCHE ═══════════════════════════ -->
+<div class="overlay" id="overlay-qrcode-pm">
+  <div class="panel" style="text-align:center;max-width:340px">
     <div class="panel-header">
-      <h3 class="panel-title">Mes QR Codes</h3>
-      <button class="panel-close" data-close="overlay-qrcode">✕</button>
+      <h3 class="panel-title">QR Code Pot à Mèche</h3>
+      <button class="panel-close" data-close="overlay-qrcode-pm">✕</button>
     </div>
-    <p class="qr-desc">Scannez le QR Code correspondant à l'application souhaitée.</p>
+    <p class="qr-desc">Faites scanner ce QR Code par vos sentinelles pour Pot à Mèche.</p>
 
-    <div style="display:flex;gap:20px;justify-content:center;flex-wrap:wrap;margin:16px 0;">
-
-      <!-- Pot à Mèche -->
-      <div style="display:flex;flex-direction:column;align-items:center;gap:8px;">
-        <div style="width:44px;height:44px;border-radius:50%;background:#1b2d3e;display:flex;align-items:center;justify-content:center;font-size:24px;box-shadow:0 2px 6px rgba(0,0,0,0.3);">⏱</div>
-        <div style="font-weight:700;font-size:13px;color:#1b2d3e;">Pot à Mèche</div>
-        <div id="qrcode-container-pm" style="border:3px solid #1b2d3e;border-radius:8px;padding:8px;background:#fff;"></div>
-        <div id="qrcode-url-pm" style="font-size:10px;color:#666;word-break:break-all;max-width:200px;"></div>
-        <div style="display:flex;gap:6px;">
-          <button class="btn-whatsapp" id="btn-share-whatsapp-pm" style="font-size:12px;padding:6px 10px;">📲</button>
-          <button class="btn-primary" id="btn-copy-qr-pm" style="font-size:12px;padding:6px 10px;">📋</button>
-        </div>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:10px;margin:16px 0;">
+      <div style="width:44px;height:44px;border-radius:50%;background:#1b2d3e;display:flex;align-items:center;justify-content:center;font-size:24px;box-shadow:0 2px 6px rgba(0,0,0,0.3);">⏱</div>
+      <div style="font-weight:700;font-size:14px;color:#1b2d3e;">Pot à Mèche</div>
+      <div style="position:relative;border:3px solid #1b2d3e;border-radius:8px;padding:8px;background:#fff;">
+        <div id="qrcode-container-pm"></div>
+        <img src="icon_pm.jpg" alt="" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:42px;height:42px;border-radius:50%;border:3px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,0.4);">
       </div>
-
-      <!-- VigieNid -->
-      <div style="display:flex;flex-direction:column;align-items:center;gap:8px;">
-        <div style="width:44px;height:44px;border-radius:6px;background:#2d5a27;display:flex;align-items:center;justify-content:center;font-size:24px;box-shadow:0 2px 6px rgba(0,0,0,0.3);">👁</div>
-        <div style="font-weight:700;font-size:13px;color:#2d5a27;">VigieNid</div>
-        <div id="qrcode-container-vn" style="border:3px solid #2d5a27;border-radius:8px;padding:8px;background:#fff;"></div>
-        <div id="qrcode-url-vn" style="font-size:10px;color:#666;word-break:break-all;max-width:200px;"></div>
-        <div style="display:flex;gap:6px;">
-          <button class="btn-whatsapp" id="btn-share-whatsapp-vn" style="font-size:12px;padding:6px 10px;">📲</button>
-          <button class="btn-primary" id="btn-copy-qr-vn" style="font-size:12px;padding:6px 10px;">📋</button>
-        </div>
+      <div id="qrcode-url-pm" style="font-size:10px;color:#666;word-break:break-all;max-width:220px;"></div>
+      <div style="display:flex;gap:8px;">
+        <button class="btn-whatsapp" id="btn-share-whatsapp-pm" style="font-size:13px;padding:8px 14px;">📲 Partager</button>
+        <button class="btn-primary" id="btn-copy-qr-pm" style="font-size:13px;padding:8px 14px;">📋 Copier</button>
       </div>
-
     </div>
 
     <div class="panel-actions" style="justify-content:center;">
-      <button class="btn-cancel" data-close="overlay-qrcode">Fermer</button>
+      <button class="btn-cancel" data-close="overlay-qrcode-pm">Fermer</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ PANNEAU QR CODE — VIGIENID ═══════════════════════════════ -->
+<div class="overlay" id="overlay-qrcode-vn">
+  <div class="panel" style="text-align:center;max-width:340px">
+    <div class="panel-header">
+      <h3 class="panel-title">QR Code VigieNid</h3>
+      <button class="panel-close" data-close="overlay-qrcode-vn">✕</button>
+    </div>
+    <p class="qr-desc">Faites scanner ce QR Code par vos sentinelles pour VigieNid.</p>
+
+    <div style="display:flex;flex-direction:column;align-items:center;gap:10px;margin:16px 0;">
+      <div style="width:44px;height:44px;border-radius:6px;background:#2d5a27;display:flex;align-items:center;justify-content:center;font-size:24px;box-shadow:0 2px 6px rgba(0,0,0,0.3);">👁</div>
+      <div style="font-weight:700;font-size:14px;color:#2d5a27;">VigieNid</div>
+      <div style="position:relative;border:3px solid #2d5a27;border-radius:8px;padding:8px;background:#fff;">
+        <div id="qrcode-container-vn"></div>
+        <img src="icon_vn.png" alt="" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:42px;height:42px;border-radius:50%;border:3px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,0.4);">
+      </div>
+      <div id="qrcode-url-vn" style="font-size:10px;color:#666;word-break:break-all;max-width:220px;"></div>
+      <div style="display:flex;gap:8px;">
+        <button class="btn-whatsapp" id="btn-share-whatsapp-vn" style="font-size:13px;padding:8px 14px;">📲 Partager</button>
+        <button class="btn-primary" id="btn-copy-qr-vn" style="font-size:13px;padding:8px 14px;">📋 Copier</button>
+      </div>
+    </div>
+
+    <div class="panel-actions" style="justify-content:center;">
+      <button class="btn-cancel" data-close="overlay-qrcode-vn">Fermer</button>
     </div>
   </div>
 </div>

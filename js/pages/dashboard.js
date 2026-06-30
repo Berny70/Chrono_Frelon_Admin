@@ -439,28 +439,28 @@ const Dashboard = (() => {
 
   // ── QR CODE ───────────────────────────────────────────────
 
-  function showQrCode() {
+  function showQrCodePM() {
     const profile = Auth.getProfile();
-    const pilotId = profile.id;
+    const urlPM = `${CONFIG.CHRONO_FRELON_URL}?pilot=${profile.id}`;
 
-    // URL Pot à Mèche
-    const urlPM = `${CONFIG.CHRONO_FRELON_URL}?pilot=${pilotId}`;
-    // URL VigieNid
-    const urlVN = `https://berny70.github.io/NidTraque/?pilot=${pilotId}`;
-
-    // QR Pot à Mèche
     const cPM = document.getElementById('qrcode-container-pm');
     cPM.innerHTML = '';
     new QRCode(cPM, { text: urlPM, width: 180, height: 180, colorDark: '#1b2d3e', colorLight: '#ffffff', correctLevel: QRCode.CorrectLevel.H });
     document.getElementById('qrcode-url-pm').textContent = urlPM;
 
-    // QR VigieNid
+    showOverlay('overlay-qrcode-pm');
+  }
+
+  function showQrCodeVN() {
+    const profile = Auth.getProfile();
+    const urlVN = `https://berny70.github.io/NidTraque/?pilot=${profile.id}`;
+
     const cVN = document.getElementById('qrcode-container-vn');
     cVN.innerHTML = '';
     new QRCode(cVN, { text: urlVN, width: 180, height: 180, colorDark: '#2d5a27', colorLight: '#ffffff', correctLevel: QRCode.CorrectLevel.H });
     document.getElementById('qrcode-url-vn').textContent = urlVN;
 
-    showOverlay('overlay-qrcode');
+    showOverlay('overlay-qrcode-vn');
   }
 
   // ── GETTERS / SETTERS ─────────────────────────────────────
@@ -558,7 +558,8 @@ const Dashboard = (() => {
       }
     });
 
-    document.getElementById('btn-qrcode')?.addEventListener('click', showQrCode);
+    document.getElementById('btn-qrcode-pm')?.addEventListener('click', showQrCodePM);
+    document.getElementById('btn-qrcode-vn')?.addEventListener('click', showQrCodeVN);
     document.getElementById('btn-share-whatsapp-pm')?.addEventListener('click', () => {
       const url = document.getElementById('qrcode-url-pm').textContent;
       window.open(`https://wa.me/?text=${encodeURIComponent('Rejoignez Pot à Mèche : ' + url)}`, '_blank');
