@@ -11,6 +11,7 @@ const Admins = (() => {
     const email   = document.getElementById('admin-email').value.trim();
     const dept    = document.getElementById('admin-dept').value.trim();
     const secteur = document.getElementById('admin-secteur').value.trim();
+    const pseudo  = document.getElementById('admin-pseudo')?.value.trim() || '';
 
     if (!prenom || !nom || !email || !dept) {
       showAuthMsg('new-admin-msg', 'error', 'Tous les champs sont requis sauf Territoire.');
@@ -37,6 +38,11 @@ const Admins = (() => {
       return;
     }
 
+    // 2. Enregistrer le pseudo si renseigné
+    if (pseudo) {
+      await dbUpdatePseudo(newId, newId, pseudo);
+    }
+
   btn.disabled = false;
 
 
@@ -52,7 +58,7 @@ const Admins = (() => {
   }
 
   function _clearForm() {
-    ['admin-prenom', 'admin-nom', 'admin-email', 'admin-dept', 'admin-secteur']
+    ['admin-prenom', 'admin-nom', 'admin-email', 'admin-dept', 'admin-secteur', 'admin-pseudo']
       .forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
     clearAuthMsg('new-admin-msg');
   }

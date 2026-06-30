@@ -1,6 +1,13 @@
 // ── map.js — Carte Leaflet + traits directionnels + convergence
 // Dépend de : config.js, Leaflet CDN
 
+// CSS override pour les icônes nids
+(function() {
+  const style = document.createElement('style');
+  style.textContent = '.nest-div-icon { background: none !important; border: none !important; }';
+  document.head.appendChild(style);
+})();
+
 let _map         = null;
 let _layers      = [];
 let _convergence = null;
@@ -338,23 +345,35 @@ function _fitBounds(signals) {
 
 // ── NIDS TROUVÉS ──────────────────────────────────────────────
 
+// Couleurs des reines d'abeilles par année
+// Cycle : 0/5=Blanc, 1/6=Jaune, 2/7=Rouge, 3/8=Vert, 4/9=Bleu
+function _getQueenColor(annee) {
+  const y = parseInt(annee) || new Date().getFullYear();
+  const digit = y % 10;
+  if (digit === 1 || digit === 6) return { bg: '#FFD700', border: '#b8a000', label: 'Jaune' };
+  if (digit === 2 || digit === 7) return { bg: '#e53935', border: '#8b0000', label: 'Rouge' };
+  if (digit === 3 || digit === 8) return { bg: '#43a047', border: '#1b5e20', label: 'Vert'  };
+  if (digit === 4 || digit === 9) return { bg: '#1e88e5', border: '#0d47a1', label: 'Bleu'  };
+  return { bg: '#f5f5f5', border: '#9e9e9e', label: 'Blanc' }; // 0 ou 5
+}
+
 function _getNestIcon(annee) {
-  const year = annee || new Date().getFullYear().toString();
-  const currentYear = new Date().getFullYear().toString();
-  let emoji, color;
-  if (year === currentYear || !annee) {
-    emoji = '🪺'; color = '#2e7d32'; // vert = cette année
-  } else if (year === (parseInt(currentYear)-1).toString()) {
-    emoji = '🟡'; color = '#f59e0b'; // jaune = année précédente
-  } else {
-    emoji = '🟠'; color = '#ea580c'; // orange = plus ancien
-  }
+  const c = _getQueenColor(annee);
+  const year = annee || new Date().getFullYear();
   return L.divIcon({
-    html: `<div style="font-size:24px;line-height:1;filter:drop-shadow(0 2px 3px rgba(0,0,0,0.4))">${emoji}</div>`,
-    className: '',
+    html: `<div style="
+      width:28px;height:28px;
+      background:${c.bg};
+      border:3px solid ${c.border};
+      border-radius:50%;
+      display:flex;align-items:center;justify-content:center;
+      font-size:14px;line-height:1;
+      box-shadow:0 2px 5px rgba(0,0,0,0.4);
+    ">🪺</div>`,
+    className: 'nest-div-icon',
     iconSize:   [28, 28],
-    iconAnchor: [14, 24],
-    popupAnchor:[0, -24],
+    iconAnchor: [14, 14],
+    popupAnchor:[0, -16],
   });
 }
 
@@ -371,7 +390,8 @@ function _drawNests(nests) {
     if (_nestsVisible) marker.addTo(_map);
     const date     = n.found_at ? new Date(n.found_at).toLocaleDateString('fr-FR') : '—';
     const pilote   = n.pilot_nom || n.declarant || '—';
-    const anneeStr = n.annee ? ` (${n.annee})` : '';
+    const c = _getQueenColor(n.annee);
+    const anneeStr = n.annee ? ` ${n.annee} <span style="display:inline-block;width:10px;height:10px;background:${c.bg};border:2px solid ${c.border};border-radius:50%;vertical-align:middle"></span>` : ' 2026 <span style="display:inline-block;width:10px;height:10px;background:#f5f5f5;border:2px solid #9e9e9e;border-radius:50%;vertical-align:middle"></span>';
     const taille   = n.taille ? `<div style="color:#555;margin-bottom:2px">📏 ${n.taille}</div>` : '';
 
     const lat     = n.lat.toFixed(5);

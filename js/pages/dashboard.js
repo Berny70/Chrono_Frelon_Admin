@@ -441,18 +441,25 @@ const Dashboard = (() => {
 
   function showQrCode() {
     const profile = Auth.getProfile();
-    const url     = dbQrCodeBuildUrl(profile.id);
-    const container = document.getElementById('qrcode-container');
-    container.innerHTML = '';
-    new QRCode(container, {
-      text:         url,
-      width:        200,
-      height:       200,
-      colorDark:    '#0f1f0f',
-      colorLight:   '#ffffff',
-      correctLevel: QRCode.CorrectLevel.H,
-    });
-    document.getElementById('qrcode-url').textContent = url;
+    const pilotId = profile.id;
+
+    // URL Pot à Mèche
+    const urlPM = `${CONFIG.CHRONO_FRELON_URL}?pilot=${pilotId}`;
+    // URL VigieNid
+    const urlVN = `https://berny70.github.io/NidTraque/?pilot=${pilotId}`;
+
+    // QR Pot à Mèche
+    const cPM = document.getElementById('qrcode-container-pm');
+    cPM.innerHTML = '';
+    new QRCode(cPM, { text: urlPM, width: 180, height: 180, colorDark: '#1b2d3e', colorLight: '#ffffff', correctLevel: QRCode.CorrectLevel.H });
+    document.getElementById('qrcode-url-pm').textContent = urlPM;
+
+    // QR VigieNid
+    const cVN = document.getElementById('qrcode-container-vn');
+    cVN.innerHTML = '';
+    new QRCode(cVN, { text: urlVN, width: 180, height: 180, colorDark: '#2d5a27', colorLight: '#ffffff', correctLevel: QRCode.CorrectLevel.H });
+    document.getElementById('qrcode-url-vn').textContent = urlVN;
+
     showOverlay('overlay-qrcode');
   }
 
@@ -552,16 +559,26 @@ const Dashboard = (() => {
     });
 
     document.getElementById('btn-qrcode')?.addEventListener('click', showQrCode);
-    document.getElementById('btn-share-whatsapp')?.addEventListener('click', () => {
-      const url = document.getElementById('qrcode-url').textContent;
+    document.getElementById('btn-share-whatsapp-pm')?.addEventListener('click', () => {
+      const url = document.getElementById('qrcode-url-pm').textContent;
+      window.open(`https://wa.me/?text=${encodeURIComponent('Rejoignez Pot à Mèche : ' + url)}`, '_blank');
+    });
+    document.getElementById('btn-share-whatsapp-vn')?.addEventListener('click', () => {
+      const url = document.getElementById('qrcode-url-vn').textContent;
       window.open(
         'https://wa.me/?text=' + encodeURIComponent(
           `Installez ChassNid pour rejoindre le réseau Piste-Frelon :\n${url}`
         ), '_blank'
       );
     });
-    document.getElementById('btn-copy-qr')?.addEventListener('click', () => {
-      const url = document.getElementById('qrcode-url').textContent;
+    document.getElementById('btn-copy-qr-pm')?.addEventListener('click', () => {
+      const url = document.getElementById('qrcode-url-pm').textContent;
+      navigator.clipboard.writeText(url)
+        .then(() => showToast('Lien copié !'))
+        .catch(() => showToast('Copiez manuellement le lien'));
+    });
+    document.getElementById('btn-copy-qr-vn')?.addEventListener('click', () => {
+      const url = document.getElementById('qrcode-url-vn').textContent;
       navigator.clipboard.writeText(url)
         .then(() => showToast('Lien copié !'))
         .catch(() => showToast('Copiez manuellement le lien'));
