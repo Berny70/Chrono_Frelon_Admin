@@ -512,8 +512,10 @@ const Dashboard = (() => {
   }
 
   function renderNests(nests) {
-    if (nests !== undefined) _nests = nests;
-    _populateYearFilter(_nests);
+    if (nests !== undefined) {
+      _nests = nests;
+      _populateYearFilter(_nests); // seulement au chargement initial
+    }
 
     const list = document.getElementById('nests-list');
     if (!list) return;
