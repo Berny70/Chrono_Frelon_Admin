@@ -646,6 +646,48 @@ const Dashboard = (() => {
       renderSignals(filtered, _blockedPhones, _sentinelMap);
     });
 
+    document.getElementById('btn-export-csv')?.addEventListener('click', () => {
+      const profile  = Auth.getProfile();
+      const filtered = _applyDateFilter(_signals);
+      if (!filtered || filtered.length === 0) {
+        showToast('Aucun signalement à exporter.');
+        return;
+      }
+
+      const headers = ['Date', 'Heure', 'Latitude', 'Longitude', 'Direction (°)', 'Distance (m)', 'Destination', 'Fréquentation', 'Pseudo sentinelle', 'Pilote'];
+      const rows = filtered.map(s => {
+        const sentinel  = _sentinelMap[s.phone_id];
+        const pseudo    = sentinel?.pseudo || s.pseudo || '';
+        const pilote    = sentinel?.pilote || '';
+        const dt        = new Date(s.created_at);
+        const date      = dt.toLocaleDateString('fr-FR');
+        const heure     = dt.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+        return [
+          date, heure,
+          s.lat?.toFixed(6) || '',
+          s.lon?.toFixed(6) || '',
+          s.direction ?? '',
+          s.distance ?? '',
+          s.destination || '',
+          s.frequentation || '',
+          pseudo,
+          pilote
+        ].map(v => `"${String(v).replace(/"/g, '""')}"`).join(';');
+      });
+
+      const csv     = '\uFEFF' + headers.join(';') + '\n' + rows.join('\n');
+      const blob    = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url     = URL.createObjectURL(blob);
+      const a       = document.createElement('a');
+      const nom     = profile?.prenom ? `${profile.prenom}_${profile.nom}` : 'signalements';
+      const today   = new Date().toISOString().slice(0, 10);
+      a.href        = url;
+      a.download    = `signalements_${nom}_${today}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+      showToast(`${filtered.length} signalements exportés.`);
+    });
+
     document.getElementById('year-filter-nests')?.addEventListener('change', () => {
       renderNests();
       mapFilterNests(_applyNestFilters());
