@@ -701,7 +701,7 @@ h1, h2, h3, h4 { font-family: 'Playfair Display', serif; font-weight: 700; }
   position: fixed;
   inset: 0;
   background: rgba(0,0,0,0.55);
-  z-index: 500;
+  z-index: 2000;
   align-items: center;
   justify-content: center;
   padding: 20px;
@@ -884,7 +884,7 @@ h1, h2, h3, h4 { font-family: 'Playfair Display', serif; font-weight: 700; }
   border-radius: 10px;
   font-size: 14px;
   font-weight: 500;
-  z-index: 1000;
+  z-index: 2100;
   transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
   white-space: nowrap;
   pointer-events: none;
