@@ -484,20 +484,27 @@ const Dashboard = (() => {
   function _populateYearFilter(nests) {
     const sel = document.getElementById('year-filter-nests');
     if (!sel) return;
-    const years = [...new Set(nests.map(n => n.annee).filter(Boolean))].sort((a, b) => b - a);
-    // Garder l'option "Toutes années" puis ajouter les années trouvées
+    const years = [...new Set(nests.map(n => {
+      if (n.annee) return parseInt(n.annee);
+      if (n.found_at) return new Date(n.found_at).getFullYear();
+      return null;
+    }).filter(Boolean))].sort((a, b) => b - a);
     sel.innerHTML = '<option value="all">Toutes années</option>' +
       years.map(y => `<option value="${y}">${y}</option>`).join('');
-    // Défaut : année en cours si présente, sinon "Tout"
+    // Défaut : année en cours si présente
     const currentYear = new Date().getFullYear().toString();
-    if (years.includes(parseInt(currentYear))) sel.value = currentYear;
+    if (years.map(String).includes(currentYear)) sel.value = currentYear;
   }
 
   function _applyNestFilters() {
     const yearVal   = document.getElementById('year-filter-nests')?.value || 'all';
     const searchVal = (document.getElementById('search-nests')?.value || '').toLowerCase().trim();
     return _nests.filter(n => {
-      const matchYear   = yearVal === 'all' || String(n.annee) === yearVal || (!n.annee && yearVal === new Date().getFullYear().toString());
+      // Utiliser annee si renseigné, sinon extraire l'année de found_at
+      const nestYear = n.annee
+        ? String(n.annee)
+        : (n.found_at ? new Date(n.found_at).getFullYear().toString() : null);
+      const matchYear   = yearVal === 'all' || nestYear === yearVal;
       const pilote      = (n.pilot_nom || '').toLowerCase();
       const matchSearch = !searchVal || pilote.includes(searchVal);
       return matchYear && matchSearch;
