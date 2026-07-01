@@ -239,6 +239,15 @@
     <div id="tab-nests" class="tab-panel">
       <div class="tab-header">
         <h2 class="tab-title">Nids trouvés 🪺</h2>
+        <div style="display:flex;gap:8px;align-items:center">
+          <select id="year-filter-nests" class="radius-select">
+            <option value="all">Toutes années</option>
+            <option value="2026">2026</option>
+            <option value="2025">2025</option>
+            <option value="2024">2024</option>
+          </select>
+          <input type="search" id="search-nests" class="search-input" placeholder="Pilote…">
+        </div>
       </div>
       <div class="list-container" id="nests-list">
         <div class="loading"><div class="spinner"></div></div>

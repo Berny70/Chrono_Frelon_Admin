@@ -220,8 +220,8 @@ function renderSignals(signals, blockedSet, sentinelMap = {}) {
   el.innerHTML = signals.map(s => {
     const isBlocked = blockedSet.has(s.phone_id);
     const sentinel  = sentinelMap[s.phone_id];
-    const label     = sentinel?.pseudo
-      ? `🏷️ ${sentinel.pseudo}`
+    const label     = sentinel?.pseudo || s.pseudo
+      ? `🏷️ ${sentinel?.pseudo || s.pseudo}`
       : `📱 ${(s.phone_id || '—').substring(0, 8)}…`;
     const pilotLabel = sentinel?.pilote
       ? `<span style="font-size:11px;color:var(--text-muted)">Pilote : ${sentinel.pilote}</span>`

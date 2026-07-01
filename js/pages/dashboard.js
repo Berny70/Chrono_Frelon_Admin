@@ -481,16 +481,49 @@ const Dashboard = (() => {
 
   // ── RENDU LISTE NIDS ──────────────────────────────────────
 
+  function _populateYearFilter(nests) {
+    const sel = document.getElementById('year-filter-nests');
+    if (!sel) return;
+    const years = [...new Set(nests.map(n => n.annee).filter(Boolean))].sort((a, b) => b - a);
+    // Garder l'option "Toutes années" puis ajouter les années trouvées
+    sel.innerHTML = '<option value="all">Toutes années</option>' +
+      years.map(y => `<option value="${y}">${y}</option>`).join('');
+    // Défaut : année en cours si présente, sinon "Tout"
+    const currentYear = new Date().getFullYear().toString();
+    if (years.includes(parseInt(currentYear))) sel.value = currentYear;
+  }
+
+  function _applyNestFilters() {
+    const yearVal   = document.getElementById('year-filter-nests')?.value || 'all';
+    const searchVal = (document.getElementById('search-nests')?.value || '').toLowerCase().trim();
+    return _nests.filter(n => {
+      const matchYear   = yearVal === 'all' || String(n.annee) === yearVal || (!n.annee && yearVal === new Date().getFullYear().toString());
+      const pilote      = (n.pilot_nom || '').toLowerCase();
+      const matchSearch = !searchVal || pilote.includes(searchVal);
+      return matchYear && matchSearch;
+    });
+  }
+
   function renderNests(nests) {
+    if (nests !== undefined) _nests = nests;
+    _populateYearFilter(_nests);
+
     const list = document.getElementById('nests-list');
     if (!list) return;
 
-    if (!nests || nests.length === 0) {
+    const filtered = _applyNestFilters();
+
+    if (!_nests || _nests.length === 0) {
       list.innerHTML = '<p class="form-hint" style="padding:20px">Aucun nid enregistré.</p>';
       return;
     }
 
-    list.innerHTML = nests.map(n => {
+    if (filtered.length === 0) {
+      list.innerHTML = '<p class="form-hint" style="padding:20px">Aucun nid pour ces critères.</p>';
+      return;
+    }
+
+    list.innerHTML = filtered.map(n => {
       const date   = n.found_at
         ? new Date(n.found_at).toLocaleDateString('fr-FR')
         : '—';
@@ -499,12 +532,13 @@ const Dashboard = (() => {
       const lon    = n.lon ? n.lon.toFixed(5) : '—';
       const gps    = `${lat}, ${lon}`;
       const mapsUrl = `https://www.google.com/maps?q=${lat},${lon}`;
+      const annee  = n.annee ? ` · ${n.annee}` : '';
 
       return `
         <div class="list-item" style="display:flex;align-items:flex-start;gap:12px;padding:12px 0;border-bottom:1px solid var(--border)">
           <div style="font-size:28px;line-height:1;flex-shrink:0">🪺</div>
           <div style="flex:1;min-width:0">
-            <div style="font-weight:600;font-size:14px;margin-bottom:2px">📅 ${date}</div>
+            <div style="font-weight:600;font-size:14px;margin-bottom:2px">📅 ${date}${annee}</div>
             <div style="font-size:13px;color:var(--text-muted);margin-bottom:2px">👤 ${pilote}</div>
             <a href="${mapsUrl}" target="_blank"
                style="font-size:12px;font-family:monospace;color:var(--accent);text-decoration:none">
@@ -528,7 +562,7 @@ const Dashboard = (() => {
           async () => {
             await dbNestDelete(btn.dataset.nestId);
             _nests = _nests.filter(n => n.id !== btn.dataset.nestId);
-            renderNests(_nests);
+            renderNests();
             mapInit(_applyDateFilter(_signals), _blockedPhones, _sentinelMap, _nests, true);
             showToast('Nid supprimé.');
           }
@@ -601,6 +635,15 @@ const Dashboard = (() => {
           || (sentinel?.pilote || '').toLowerCase().includes(q);
       });
       renderSignals(filtered, _blockedPhones, _sentinelMap);
+    });
+
+    document.getElementById('year-filter-nests')?.addEventListener('change', () => {
+      renderNests();
+      mapFilterNests(_applyNestFilters());
+    });
+    document.getElementById('search-nests')?.addEventListener('input', () => {
+      renderNests();
+      mapFilterNests(_applyNestFilters());
     });
 
     document.getElementById('search-users')?.addEventListener('input', e => {

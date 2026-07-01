@@ -383,6 +383,13 @@ function _clearNestLayers() {
   _map.off('click', _onMapClickAddNest);
 }
 
+// Filtre les nids affichés sur la carte (appelé depuis dashboard.js)
+function mapFilterNests(filteredNests) {
+  if (!_map) return;
+  _clearNestLayers();
+  _drawNests(filteredNests);
+}
+
 function _drawNests(nests) {
   nests.forEach(n => {
     const icon   = _getNestIcon(n.annee);
