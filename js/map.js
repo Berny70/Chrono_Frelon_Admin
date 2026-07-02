@@ -390,6 +390,12 @@ function mapFilterNests(filteredNests) {
   _drawNests(filteredNests);
 }
 
+// Retourne le centre actuel de la carte (lat/lng)
+function mapGetCenter() {
+  if (!_map) return null;
+  return _map.getCenter();
+}
+
 function _drawNests(nests) {
   nests.forEach(n => {
     const icon   = _getNestIcon(n.annee);

@@ -688,6 +688,103 @@ const Dashboard = (() => {
       showToast(`${filtered.length} signalements exportés.`);
     });
 
+    // ── SUPPRESSION EN MASSE ──────────────────────────────────
+    let _bulkMatches = []; // IDs des signalements correspondant aux filtres
+
+    document.getElementById('btn-bulk-delete')?.addEventListener('click', () => {
+      // Réinitialiser le panneau
+      document.getElementById('bulk-pseudo').value = '';
+      document.getElementById('bulk-date').value = '';
+      document.getElementById('bulk-radius').value = '';
+      document.getElementById('bulk-preview').textContent = '';
+      document.getElementById('btn-bulk-confirm').disabled = true;
+      _bulkMatches = [];
+      document.getElementById('overlay-bulk-delete').classList.add('active');
+    });
+
+    document.getElementById('btn-bulk-cancel')?.addEventListener('click', () => {
+      document.getElementById('overlay-bulk-delete').classList.remove('active');
+    });
+
+    document.getElementById('btn-bulk-preview')?.addEventListener('click', () => {
+      const pseudo  = document.getElementById('bulk-pseudo').value.trim().toLowerCase();
+      const dateStr = document.getElementById('bulk-date').value;
+      const radius  = parseFloat(document.getElementById('bulk-radius').value);
+
+      // Récupérer le centre actuel de la carte
+      const mapCenter = mapGetCenter?.() || null;
+
+      _bulkMatches = _signals.filter(s => {
+        const sentinel = _sentinelMap[s.phone_id];
+        const sPseudo  = (sentinel?.pseudo || s.pseudo || '').toLowerCase();
+
+        // Filtre pseudo
+        if (pseudo && !sPseudo.includes(pseudo)) return false;
+
+        // Filtre date (avant la date donnée)
+        if (dateStr && new Date(s.created_at) >= new Date(dateStr)) return false;
+
+        // Filtre zone (rayon autour du centre de la carte)
+        if (radius && mapCenter) {
+          const R    = 6371;
+          const dLat = (s.lat - mapCenter.lat) * Math.PI / 180;
+          const dLon = (s.lon - mapCenter.lng) * Math.PI / 180;
+          const a    = Math.sin(dLat/2)**2 +
+                       Math.cos(mapCenter.lat * Math.PI/180) *
+                       Math.cos(s.lat * Math.PI/180) *
+                       Math.sin(dLon/2)**2;
+          const dist = R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+          if (dist > radius) return false;
+        }
+
+        return true;
+      });
+
+      const preview = document.getElementById('bulk-preview');
+      const confirm = document.getElementById('btn-bulk-confirm');
+
+      if (!pseudo && !dateStr && !radius) {
+        preview.innerHTML = '<span style="color:#c0392b">⚠️ Au moins un filtre est requis.</span>';
+        confirm.disabled = true;
+        _bulkMatches = [];
+        return;
+      }
+
+      if (_bulkMatches.length === 0) {
+        preview.innerHTML = 'Aucun signalement ne correspond à ces critères.';
+        confirm.disabled = true;
+        return;
+      }
+
+      preview.innerHTML = `<strong style="color:#c0392b">${_bulkMatches.length} signalement(s)</strong> seront supprimés définitivement.`;
+      confirm.disabled = false;
+    });
+
+    document.getElementById('btn-bulk-confirm')?.addEventListener('click', async () => {
+      if (_bulkMatches.length === 0) return;
+      const count = _bulkMatches.length;
+
+      document.getElementById('overlay-bulk-delete').classList.remove('active');
+
+      showModal(
+        `Supprimer ${count} signalement(s)`,
+        `Cette action est irréversible. ${count} signalement(s) vont être supprimés définitivement.`,
+        'Supprimer définitivement',
+        async () => {
+          let deleted = 0;
+          for (const s of _bulkMatches) {
+            await dbSignalDelete(s.id);
+            deleted++;
+          }
+          _signals = _signals.filter(s => !_bulkMatches.find(m => m.id === s.id));
+          _bulkMatches = [];
+          _buildUsers();
+          await _refresh();
+          showToast(`${deleted} signalement(s) supprimés.`);
+        }
+      );
+    });
+
     document.getElementById('year-filter-nests')?.addEventListener('change', () => {
       renderNests();
       mapFilterNests(_applyNestFilters());

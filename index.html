@@ -229,10 +229,42 @@
           </select>
           <input type="search" id="search-signals" class="search-input" placeholder="Rechercher…">
           <button id="btn-export-csv" title="Exporter en CSV" style="padding:6px 10px;border-radius:6px;background:var(--green);color:#fff;border:none;font-size:13px;cursor:pointer;white-space:nowrap;">📥 CSV</button>
+          <button id="btn-bulk-delete" title="Suppression en masse" style="padding:6px 10px;border-radius:6px;background:#c0392b;color:#fff;border:none;font-size:13px;cursor:pointer;white-space:nowrap;">🗑 Masse</button>
         </div>
       </div>
       <div class="list-container" id="signals-list">
         <div class="loading"><div class="spinner"></div></div>
+      </div>
+    </div>
+
+    <!-- Overlay suppression en masse -->
+    <div id="overlay-bulk-delete" class="overlay">
+      <div class="panel" style="max-width:480px;width:100%">
+        <h3 style="margin:0 0 16px;font-size:18px;">🗑 Suppression en masse</h3>
+        <p style="font-size:13px;color:var(--text-muted);margin:0 0 20px;">Combinez un ou plusieurs filtres. Seuls les signalements correspondant à <strong>tous</strong> les critères renseignés seront supprimés.</p>
+
+        <div style="display:flex;flex-direction:column;gap:14px;margin-bottom:24px;">
+          <div>
+            <label style="font-size:13px;font-weight:600;display:block;margin-bottom:4px;">Pseudo sentinelle</label>
+            <input id="bulk-pseudo" type="text" placeholder="ex : Michel-38560" style="width:100%;padding:8px 10px;border-radius:6px;border:1px solid var(--border);font-size:13px;box-sizing:border-box;">
+          </div>
+          <div>
+            <label style="font-size:13px;font-weight:600;display:block;margin-bottom:4px;">Avant cette date</label>
+            <input id="bulk-date" type="date" style="width:100%;padding:8px 10px;border-radius:6px;border:1px solid var(--border);font-size:13px;box-sizing:border-box;">
+          </div>
+          <div>
+            <label style="font-size:13px;font-weight:600;display:block;margin-bottom:4px;">Dans un rayon (km) autour du centre de la carte</label>
+            <input id="bulk-radius" type="number" min="0.1" max="200" step="0.5" placeholder="ex : 5" style="width:100%;padding:8px 10px;border-radius:6px;border:1px solid var(--border);font-size:13px;box-sizing:border-box;">
+          </div>
+        </div>
+
+        <div id="bulk-preview" style="font-size:13px;color:var(--text-muted);margin-bottom:16px;min-height:20px;"></div>
+
+        <div style="display:flex;gap:10px;justify-content:flex-end;">
+          <button id="btn-bulk-preview" style="padding:8px 16px;border-radius:6px;background:var(--surface);border:1px solid var(--border);font-size:13px;cursor:pointer;">🔍 Prévisualiser</button>
+          <button id="btn-bulk-cancel" style="padding:8px 16px;border-radius:6px;background:var(--surface);border:1px solid var(--border);font-size:13px;cursor:pointer;">Annuler</button>
+          <button id="btn-bulk-confirm" style="padding:8px 16px;border-radius:6px;background:#c0392b;color:#fff;border:none;font-size:13px;cursor:pointer;" disabled>Supprimer</button>
+        </div>
       </div>
     </div>
 
