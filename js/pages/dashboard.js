@@ -199,6 +199,12 @@ const Dashboard = (() => {
     if (role === 'superadmin') renderAdmins(_admins);
     if (['superadmin', 'admin_dept'].includes(role)) renderPilots(_pilots);
 
+    // Bouton suppression en masse réservé aux admins
+    if (['superadmin', 'admin_dept'].includes(role)) {
+      const btn = document.getElementById('btn-bulk-delete');
+      if (btn) btn.style.display = 'block';
+    }
+
     renderNests(_nests);
   }
 
