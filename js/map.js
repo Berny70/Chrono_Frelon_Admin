@@ -487,7 +487,7 @@ function mapDeleteNest(id) {
       _clearNestLayers();
       _drawNests(_nests);
       _setupNestClick(true);
-      renderNests(_nests);   // sync liste après suppression depuis la carte
+      Dashboard.renderNests(_nests);   // sync liste après suppression depuis la carte
       showToast('Nid supprimé.');
     }
   );
