@@ -345,16 +345,16 @@ function _fitBounds(signals) {
 
 // ── NIDS TROUVÉS ──────────────────────────────────────────────
 
-// Couleurs des reines d'abeilles par année
-// Cycle : 0/5=Blanc, 1/6=Jaune, 2/7=Rouge, 3/8=Vert, 4/9=Bleu
+// Couleurs des reines d'abeilles par année — code international
+// 1/6=Blanc, 2/7=Jaune, 3/8=Rouge, 4/9=Vert, 5/0=Bleu
 function _getQueenColor(annee) {
   const y = parseInt(annee) || new Date().getFullYear();
   const digit = y % 10;
-  if (digit === 1 || digit === 6) return { bg: '#FFD700', border: '#b8a000', label: 'Jaune' };
-  if (digit === 2 || digit === 7) return { bg: '#e53935', border: '#8b0000', label: 'Rouge' };
-  if (digit === 3 || digit === 8) return { bg: '#43a047', border: '#1b5e20', label: 'Vert'  };
-  if (digit === 4 || digit === 9) return { bg: '#1e88e5', border: '#0d47a1', label: 'Bleu'  };
-  return { bg: '#f5f5f5', border: '#9e9e9e', label: 'Blanc' }; // 0 ou 5
+  if (digit === 1 || digit === 6) return { bg: '#f5f5f5', border: '#9e9e9e', label: 'Blanc' };
+  if (digit === 2 || digit === 7) return { bg: '#FFD700', border: '#b8a000', label: 'Jaune' };
+  if (digit === 3 || digit === 8) return { bg: '#e53935', border: '#8b0000', label: 'Rouge' };
+  if (digit === 4 || digit === 9) return { bg: '#43a047', border: '#1b5e20', label: 'Vert'  };
+  return { bg: '#1e88e5', border: '#0d47a1', label: 'Bleu'  }; // 5 ou 0
 }
 
 function _getNestIcon(annee) {
