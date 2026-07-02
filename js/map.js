@@ -482,7 +482,11 @@ function mapDeleteNest(id) {
     'Cette action est irréversible.',
     'Supprimer',
     async () => {
-      await dbNestDelete(id);
+      const res = await dbNestDelete(id);
+      if (res?.error) {
+        showToast('Erreur : suppression échouée (' + (res.error.message || 'inconnue') + ')', 'error');
+        return;
+      }
       _nests = _nests.filter(n => n.id !== id);
       _clearNestLayers();
       _drawNests(_nests);
