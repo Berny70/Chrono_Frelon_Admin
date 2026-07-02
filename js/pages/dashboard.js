@@ -857,6 +857,7 @@ const Dashboard = (() => {
     setPilots,
     validatePending,
     rejectPending,
+    renderNests,
   };
 
 })();
