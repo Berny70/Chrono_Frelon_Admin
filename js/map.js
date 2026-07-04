@@ -308,24 +308,11 @@ function _computeConvergence(signals) {
 }
 
 // ── DESSIN DE LA CONVERGENCE ──────────────────────────────────
+// Désactivé : calcul de zone probabiliste erroné pour l'instant
 
 function _drawConvergence(conv) {
-  const circle = L.circle([conv.lat, conv.lon], {
-    radius:      conv.radius,
-    color:       '#d4820a',
-    weight:      2,
-    fillColor:   '#f0a832',
-    fillOpacity: 0.18,
-    dashArray:   '6 4',
-  }).addTo(_map);
-
-  circle.bindTooltip(
-    `Zone probable du nid · rayon ~${Math.round(conv.radius)} m`,
-    { className: 'convergence-label', permanent: true, direction: 'top' }
-  );
-
-  _convergence = circle;
-  _layers.push(circle);
+  // Cercle de probabilité désactivé temporairement
+  // _convergence reste null, rien n'est dessiné
 }
 
 // ── CENTRAGE ──────────────────────────────────────────────────
