@@ -85,15 +85,21 @@ const Login = (() => {
     const vEl = document.getElementById('login-version');
     if (vEl) vEl.textContent = `v${CONFIG.APP_VERSION} · ${CONFIG.APP_DATE}`;
 
-    // Clavier PIN
+    // Clavier PIN — touchstart pour éliminer le délai 300ms iOS
+    const _addPinEvent = (el, fn) => {
+      el.addEventListener('touchstart', e => { e.preventDefault(); fn(); }, { passive: false });
+      el.addEventListener('click', fn); // fallback desktop
+    };
+
     document.querySelectorAll('.pin-key[data-digit]').forEach(btn => {
       // Seulement les boutons sans data-ctx (ceux du login)
       if (!btn.dataset.ctx) {
-        btn.addEventListener('click', () => _pressDigit(btn.dataset.digit));
+        _addPinEvent(btn, () => _pressDigit(btn.dataset.digit));
       }
     });
 
-    document.getElementById('pin-del')?.addEventListener('click', _delDigit);
+    const delBtn = document.getElementById('pin-del');
+    if (delBtn) _addPinEvent(delBtn, _delDigit);
 
     // Bouton connexion
     document.getElementById('btn-login')?.addEventListener('click', _submit);
