@@ -459,7 +459,7 @@ const Dashboard = (() => {
 
   function showQrCodeVN() {
     const profile = Auth.getProfile();
-    const urlVN = `https://berny70.github.io/NidTraque/?pilot=${profile.id}`;
+    const urlVN = `https://berny70.github.io/NidTraque/attach.html?pilot=${profile.id}`;
 
     const cVN = document.getElementById('qrcode-container-vn');
     cVN.innerHTML = '';
