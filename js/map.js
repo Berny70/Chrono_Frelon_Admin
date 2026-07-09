@@ -346,21 +346,18 @@ function _getQueenColor(annee) {
 
 function _getNestIcon(annee) {
   const c = _getQueenColor(annee);
-  const year = annee || new Date().getFullYear();
   return L.divIcon({
     html: `<div style="
-      width:28px;height:28px;
-      background:${c.bg};
+      width:36px;height:36px;
       border:3px solid ${c.border};
       border-radius:50%;
-      display:flex;align-items:center;justify-content:center;
-      font-size:14px;line-height:1;
+      background:${c.bg} url('./img/nid_secondaire.png') center/32px no-repeat;
       box-shadow:0 2px 5px rgba(0,0,0,0.4);
-    ">🪺</div>`,
+    "></div>`,
     className: 'nest-div-icon',
-    iconSize:   [28, 28],
-    iconAnchor: [14, 14],
-    popupAnchor:[0, -16],
+    iconSize:   [36, 36],
+    iconAnchor: [18, 18],
+    popupAnchor:[0, -20],
   });
 }
 
