@@ -539,7 +539,10 @@
         <button class="btn-primary" id="btn-gen-code-vn" onclick="Dashboard.generateCodeVN()" style="font-size:14px;padding:10px 20px;background:#2d5a27;">🔢 Générer un code 4 chiffres</button>
         <div id="code-vn-display" style="display:none;margin-top:12px;">
           <div style="font-size:48px;font-weight:900;letter-spacing:12px;color:#2d5a27;font-family:monospace;" id="code-vn-value"></div>
-          <div style="font-size:11px;color:#999;margin-top:4px;">Valable 30 minutes — à dicter à la sentinelle</div>
+          <div style="font-size:11px;color:#999;margin-top:4px;">Valable 30 minutes</div>
+          <button id="btn-share-code-vn" onclick="Dashboard.shareCodeVN()" style="margin-top:10px;background:#25D366;color:white;border:none;border-radius:10px;padding:10px 20px;font-size:14px;font-weight:600;cursor:pointer;display:none;">
+            📲 Envoyer par WhatsApp
+          </button>
         </div>
       </div>
     </div>
