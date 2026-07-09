@@ -498,6 +498,13 @@ const Dashboard = (() => {
     document.getElementById('btn-gen-code-vn').textContent = '🔄 Nouveau code';
     document.getElementById('btn-share-code-vn').style.display = 'inline-block';
     document.getElementById('btn-share-code-vn').dataset.code = code;
+
+    // Régénérer le QR code avec le code inclus dans l'URL
+    const newUrlVN = `https://berny70.github.io/NidTraque/attach.html?pilot=${profile.id}&code=${code}`;
+    const cVN = document.getElementById('qrcode-container-vn');
+    cVN.innerHTML = '';
+    new QRCode(cVN, { text: newUrlVN, width: 180, height: 180, colorDark: '#2d5a27', colorLight: '#ffffff', correctLevel: QRCode.CorrectLevel.H });
+    document.getElementById('qrcode-url-vn').textContent = newUrlVN;
   }
 
   function shareCodeVN() {
