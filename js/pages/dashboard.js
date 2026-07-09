@@ -471,6 +471,33 @@ const Dashboard = (() => {
 
   // ── GETTERS / SETTERS ─────────────────────────────────────
 
+  async function generateCodeVN() {
+    const profile = Auth.getProfile();
+    if (!profile) return;
+
+    // Générer un code 4 chiffres unique
+    const code = String(Math.floor(1000 + Math.random() * 9000));
+
+    // Supprimer les anciens codes de ce pilote
+    await db.from('pilot_codes')
+      .delete()
+      .eq('pilot_id', profile.id);
+
+    // Insérer le nouveau code
+    const { error } = await db.from('pilot_codes')
+      .insert({ code, pilot_id: profile.id });
+
+    if (error) {
+      showToast('Erreur lors de la génération du code', 'error');
+      return;
+    }
+
+    // Afficher le code
+    document.getElementById('code-vn-value').textContent = code;
+    document.getElementById('code-vn-display').style.display = 'block';
+    document.getElementById('btn-gen-code-vn').textContent = '🔄 Nouveau code';
+  }
+
   function getSignals() { return _signals; }
   function getAdmins()  { return _admins; }
   function getPilots()  { return _pilots; }
@@ -858,6 +885,7 @@ const Dashboard = (() => {
     validatePending,
     rejectPending,
     renderNests,
+    generateCodeVN,
   };
 
 })();
