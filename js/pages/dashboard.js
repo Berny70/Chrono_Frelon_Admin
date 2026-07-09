@@ -475,27 +475,23 @@ const Dashboard = (() => {
     const profile = Auth.getProfile();
     if (!profile) return;
 
-    // Générer un code 4 chiffres unique
-    const code = String(Math.floor(1000 + Math.random() * 9000));
+    // Récupérer le code permanent du pilote
+    const { data: ap, error } = await db.from('admin_profiles')
+      .select('code_sentinelle')
+      .eq('id', profile.id)
+      .maybeSingle();
 
-    // Supprimer les anciens codes de ce pilote
-    await db.from('pilot_codes')
-      .delete()
-      .eq('pilot_id', profile.id);
-
-    // Insérer le nouveau code
-    const { error } = await db.from('pilot_codes')
-      .insert({ code, pilot_id: profile.id });
-
-    if (error) {
-      showToast('Erreur lors de la génération du code', 'error');
+    if (error || !ap?.code_sentinelle) {
+      showToast('Code sentinelle non trouvé', 'error');
       return;
     }
+
+    const code = ap.code_sentinelle;
 
     // Afficher le code
     document.getElementById('code-vn-value').textContent = code;
     document.getElementById('code-vn-display').style.display = 'block';
-    document.getElementById('btn-gen-code-vn').textContent = '🔄 Nouveau code';
+    document.getElementById('btn-gen-code-vn').textContent = '🔑 Mon code permanent';
     document.getElementById('btn-share-code-vn').style.display = 'inline-block';
     document.getElementById('btn-share-code-vn').dataset.code = code;
 
