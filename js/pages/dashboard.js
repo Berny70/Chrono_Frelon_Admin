@@ -496,6 +496,19 @@ const Dashboard = (() => {
     document.getElementById('code-vn-value').textContent = code;
     document.getElementById('code-vn-display').style.display = 'block';
     document.getElementById('btn-gen-code-vn').textContent = '🔄 Nouveau code';
+    document.getElementById('btn-share-code-vn').style.display = 'inline-block';
+    document.getElementById('btn-share-code-vn').dataset.code = code;
+  }
+
+  function shareCodeVN() {
+    const code = document.getElementById('btn-share-code-vn').dataset.code;
+    const profile = Auth.getProfile();
+    const pilotName = profile ? (profile.prenom + ' ' + profile.nom) : 'votre pilote';
+    const msg = encodeURIComponent(
+      'Bonjour ! Pour vous rattacher à VigieNid (secteur ' + pilotName + '), ' +
+      'ouvrez VigieNid et entrez ce code : *' + code + '* (valable 30 min)'
+    );
+    window.open('https://wa.me/?text=' + msg, '_blank');
   }
 
   function getSignals() { return _signals; }
@@ -886,6 +899,7 @@ const Dashboard = (() => {
     rejectPending,
     renderNests,
     generateCodeVN,
+    shareCodeVN,
   };
 
 })();
