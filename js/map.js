@@ -344,14 +344,18 @@ function _getQueenColor(annee) {
   return { bg: '#1e88e5', border: '#0d47a1', label: 'Bleu'  }; // 5 ou 0
 }
 
-function _getNestIcon(annee) {
+function _getNestIcon(annee, type) {
   const c = _getQueenColor(annee);
+  const isPrimaire = type === 'primaire';
+  const imgSrc = isPrimaire ? './img/nid_primaire.png' : './img/nid_secondaire.png';
+  const borderColor = isPrimaire ? '#e07b00' : c.border;
+  const bgColor = isPrimaire ? '#fff3e0' : c.bg;
   return L.divIcon({
     html: `<div style="
       width:36px;height:36px;
-      border:3px solid ${c.border};
+      border:3px solid ${borderColor};
       border-radius:50%;
-      background:${c.bg} url('./img/nid_secondaire.png') center/32px no-repeat;
+      background:${bgColor} url('${imgSrc}') center/32px no-repeat;
       box-shadow:0 2px 5px rgba(0,0,0,0.4);
     "></div>`,
     className: 'nest-div-icon',
@@ -382,7 +386,7 @@ function mapGetCenter() {
 
 function _drawNests(nests) {
   nests.forEach(n => {
-    const icon   = _getNestIcon(n.annee);
+    const icon   = _getNestIcon(n.annee, n.type);
     const marker = L.marker([n.lat, n.lon], { icon });
     if (_nestsVisible) marker.addTo(_map);
     const date     = n.found_at ? new Date(n.found_at).toLocaleDateString('fr-FR') : '—';
