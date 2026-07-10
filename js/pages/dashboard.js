@@ -509,7 +509,7 @@ const Dashboard = (() => {
     const pilotName = profile ? (profile.prenom + ' ' + profile.nom) : 'votre pilote';
     const msg = encodeURIComponent(
       'Bonjour ! Pour vous rattacher à VigieNid (secteur ' + pilotName + '), ' +
-      'ouvrez VigieNid et entrez ce code : *' + code + '* (valable 24h)'
+      'ouvrez VigieNid et entrez ce code : *' + code + '* (code permanent)'
     );
     window.open('https://wa.me/?text=' + msg, '_blank');
   }
