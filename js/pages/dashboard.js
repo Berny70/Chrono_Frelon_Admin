@@ -333,12 +333,22 @@ const Dashboard = (() => {
     const p = Auth.getProfile();
 
     // Affichage immédiat en attente du fetch
+    // Charger le code_sentinelle
+    const { data: apData } = await db.from('admin_profiles')
+      .select('code_sentinelle')
+      .eq('id', p.id)
+      .maybeSingle();
+    const codeSentinelle = apData?.code_sentinelle || '—';
+
     document.getElementById('profile-info').innerHTML =
       `<strong>${p.prenom} ${p.nom}</strong><br>` +
       `${p.email}<br>` +
       `${roleLabel(p.role)}<br>` +
       `${p.secteur || p.canton || '—'} · ${p.departement || '—'}<br>` +
-      `<span style="opacity:0.4;font-size:12px">🏷️ Chargement…</span>`;
+      `<div style="margin-top:10px;padding:10px;background:#f0f8f0;border-radius:8px;text-align:center;">` +
+      `<div style="font-size:11px;color:#666;margin-bottom:4px;">🔑 Code sentinelle permanent</div>` +
+      `<div style="font-size:32px;font-weight:900;letter-spacing:8px;color:#2d5a27;font-family:monospace;">${codeSentinelle}</div>` +
+      `</div>`;
 
     _profPin = ['', ''];
     _updateProfDots();
