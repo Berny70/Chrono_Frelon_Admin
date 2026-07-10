@@ -386,7 +386,13 @@ const Dashboard = (() => {
         `💾</button></div>`
       : '';
 
-    document.getElementById('profile-info').innerHTML = infoBase + pseudoHtml;
+    const codeHtml =
+      `<div style="margin-top:10px;padding:10px;background:#f0f8f0;border-radius:8px;text-align:center;">` +
+      `<div style="font-size:11px;color:#666;margin-bottom:4px;">🔑 Code sentinelle permanent</div>` +
+      `<div style="font-size:32px;font-weight:900;letter-spacing:8px;color:#2d5a27;font-family:monospace;">${codeSentinelle}</div>` +
+      `</div>`;
+
+    document.getElementById('profile-info').innerHTML = infoBase + pseudoHtml + codeHtml;
 
     // Sauvegarder le pseudo au clic sur 💾
     document.getElementById('btn-pseudo-save')?.addEventListener('click', async () => {
