@@ -473,14 +473,33 @@ const Dashboard = (() => {
     showOverlay('overlay-qrcode-pm');
   }
 
-  function showQrCodeVN() {
+  async function showQrCodeVN() {
     const profile = Auth.getProfile();
-    const urlVN = `https://berny70.github.io/NidTraque/attach.html?pilot=${profile.id}`;
+
+    // Charger le code permanent
+    const { data: ap } = await db.from('admin_profiles')
+      .select('code_sentinelle')
+      .eq('id', profile.id)
+      .maybeSingle();
+    const code = ap?.code_sentinelle || '';
+
+    const urlVN = code
+      ? `https://berny70.github.io/NidTraque/attach.html?pilot=${profile.id}&code=${code}`
+      : `https://berny70.github.io/NidTraque/attach.html?pilot=${profile.id}`;
 
     const cVN = document.getElementById('qrcode-container-vn');
     cVN.innerHTML = '';
     new QRCode(cVN, { text: urlVN, width: 180, height: 180, colorDark: '#2d5a27', colorLight: '#ffffff', correctLevel: QRCode.CorrectLevel.H });
     document.getElementById('qrcode-url-vn').textContent = urlVN;
+
+    // Afficher le code dans la section dédiée
+    if (code) {
+      document.getElementById('code-vn-value').textContent = code;
+      document.getElementById('code-vn-display').style.display = 'block';
+      document.getElementById('btn-gen-code-vn').textContent = '🔑 Mon code permanent';
+      document.getElementById('btn-share-code-vn').style.display = 'inline-block';
+      document.getElementById('btn-share-code-vn').dataset.code = code;
+    }
 
     showOverlay('overlay-qrcode-vn');
   }
