@@ -1002,6 +1002,7 @@ const Dashboard = (() => {
     generateCodeVN,
     shareCodeVN,
     filterNestsByRadius,
+    getRadius: () => _radius,
   };
 
 })();
