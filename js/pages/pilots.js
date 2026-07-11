@@ -34,7 +34,7 @@ const Pilots = (() => {
       const lat = parseFloat(data[0].lat);
       const lon = parseFloat(data[0].lon);
       const { error: rpcError } = await db.rpc('chassnid_update_pilot_location', {
-        p_token:       _token(),
+        p_token:       localStorage.getItem(CONFIG.SESSION_KEY),
         p_pilot_id:    pilotId,
         p_lat:         lat,
         p_lon:         lon,
