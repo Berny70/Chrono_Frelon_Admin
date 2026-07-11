@@ -33,7 +33,7 @@ const Pilots = (() => {
       if (!data.length) { msg.textContent = 'Commune non trouvée — essayez autrement.'; msg.style.color = '#e53935'; return; }
       const lat = parseFloat(data[0].lat);
       const lon = parseFloat(data[0].lon);
-      await db.from('admin_profiles').update({ lat, lon }).eq('id', pilotId);
+      await db.from('admin_profiles').update({ lat, lon, secteur: commune, departement: dept || undefined }).eq('id', pilotId);
       msg.textContent = `✅ GPS mis à jour : ${lat.toFixed(4)}, ${lon.toFixed(4)}`;
       msg.style.color = '#2d6a4f';
       setTimeout(() => {
