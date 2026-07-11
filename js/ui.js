@@ -264,6 +264,7 @@ function renderUsers(users, sentinelMap = {}) {
         ? `<button class="btn-unblock" data-phone="${u.phone_id}">Débloquer</button>`
         : `<button class="btn-block"   data-phone="${u.phone_id}">Bloquer</button>`
       }
+      <button class="btn-delete-sentinel" data-phone="${u.phone_id}" style="margin-left:6px;padding:4px 10px;border:1px solid #e53935;border-radius:6px;background:white;color:#e53935;font-size:12px;cursor:pointer;">🗑</button>
     </div>`;
   }).join('');
 }
@@ -296,6 +297,7 @@ function renderUsersList(users, containerId, pilotIndex = {}) {
         ? `<button class="btn-unblock" data-phone="${u.phone_id}">Débloquer</button>`
         : `<button class="btn-block"   data-phone="${u.phone_id}">Bloquer</button>`
       }
+      <button class="btn-delete-sentinel" data-phone="${u.phone_id}" style="margin-left:6px;padding:4px 10px;border:1px solid #e53935;border-radius:6px;background:white;color:#e53935;font-size:12px;cursor:pointer;">🗑</button>
     </div>`;
   }).join('');
 
