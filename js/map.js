@@ -445,9 +445,20 @@ function _onMapClickAddNest(e) {
         showToast('Erreur : ' + (error.message || error));
       } else {
         showToast('Nid enregistré !');
-        // Recharger les nids depuis dashboard (avec filtre rayon)
+        // Recharger les nids avec filtre rayon
         const allNests = await dbNestsGetAll();
-        const filtered = Dashboard.filterNestsByRadius(allNests);
+        const profile = Auth.getProfile();
+        let filtered = allNests;
+        if (profile?.lat && profile?.lon) {
+          const R = 6371, radius = parseFloat(localStorage.getItem('chassnid_radius') || 10);
+          filtered = allNests.filter(n => {
+            if (!n.lat || !n.lon) return false;
+            const dLat = (n.lat - profile.lat) * Math.PI / 180;
+            const dLon = (n.lon - profile.lon) * Math.PI / 180;
+            const a = Math.sin(dLat/2)**2 + Math.cos(profile.lat*Math.PI/180) * Math.cos(n.lat*Math.PI/180) * Math.sin(dLon/2)**2;
+            return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)) <= radius;
+          });
+        }
         _clearNestLayers();
         _nests = filtered;
         _drawNests(filtered);
