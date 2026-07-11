@@ -554,6 +554,19 @@ const Dashboard = (() => {
 
   // ── GETTERS / SETTERS ─────────────────────────────────────
 
+  function filterNestsByRadius(allNests) {
+    const profile = Auth.getProfile();
+    if (!profile?.lat || !profile?.lon) return allNests;
+    const R = 6371;
+    return allNests.filter(n => {
+      if (!n.lat || !n.lon) return false;
+      const dLat = (n.lat - profile.lat) * Math.PI / 180;
+      const dLon = (n.lon - profile.lon) * Math.PI / 180;
+      const a = Math.sin(dLat/2)**2 + Math.cos(profile.lat*Math.PI/180) * Math.cos(n.lat*Math.PI/180) * Math.sin(dLon/2)**2;
+      return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)) <= _radius;
+    });
+  }
+
   async function generateCodeVN() {
     const profile = Auth.getProfile();
     if (!profile) return;
@@ -988,6 +1001,7 @@ const Dashboard = (() => {
     renderNests,
     generateCodeVN,
     shareCodeVN,
+    filterNestsByRadius,
   };
 
 })();
