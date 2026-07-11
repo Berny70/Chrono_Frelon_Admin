@@ -66,11 +66,26 @@ const Dashboard = (() => {
       await _loadPending();
 
     } else if (role === 'pilot') {
-      [_signals, _pilotUsers, _nests] = await Promise.all([
+      const [sigs, pilotUsers, allNests] = await Promise.all([
         dbSignalsGetAll(profile.lat, profile.lon, _radius),
         dbPilotUsersGet(profile.id),
         dbNestsGetAll(),
       ]);
+      _signals = sigs;
+      _pilotUsers = pilotUsers;
+      // Filtrer les nids par rayon dès le chargement initial
+      if (profile.lat && profile.lon) {
+        const R = 6371;
+        _nests = allNests.filter(n => {
+          if (!n.lat || !n.lon) return false;
+          const dLat = (n.lat - profile.lat) * Math.PI / 180;
+          const dLon = (n.lon - profile.lon) * Math.PI / 180;
+          const a = Math.sin(dLat/2)**2 + Math.cos(profile.lat*Math.PI/180) * Math.cos(n.lat*Math.PI/180) * Math.sin(dLon/2)**2;
+          return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)) <= _radius;
+        });
+      } else {
+        _nests = allNests;
+      }
       _blockedPhones = new Set(_pilotUsers.filter(u => u.blocked).map(u => u.phone_id));
 
     } else {
