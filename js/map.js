@@ -450,7 +450,7 @@ function _onMapClickAddNest(e) {
         const profile = Auth.getProfile();
         let filtered = allNests;
         if (profile?.lat && profile?.lon) {
-          const R = 6371, radius = parseFloat(localStorage.getItem('chassnid_radius') || 10);
+          const R = 6371, radius = (typeof Dashboard !== 'undefined' && Dashboard.getRadius) ? Dashboard.getRadius() : 10;
           filtered = allNests.filter(n => {
             if (!n.lat || !n.lon) return false;
             const dLat = (n.lat - profile.lat) * Math.PI / 180;
