@@ -445,11 +445,13 @@ function _onMapClickAddNest(e) {
         showToast('Erreur : ' + (error.message || error));
       } else {
         showToast('Nid enregistré !');
-        // Recharger les nids
-        const nests = await dbNestsGetAll();
+        // Recharger les nids depuis dashboard (avec filtre rayon)
+        const allNests = await dbNestsGetAll();
+        const filtered = Dashboard.filterNestsByRadius(allNests);
         _clearNestLayers();
-        _nests = nests;
-        _drawNests(nests);
+        _nests = filtered;
+        _drawNests(filtered);
+        Dashboard.renderNests(filtered);
         _setupNestClick(true);
       }
     }
