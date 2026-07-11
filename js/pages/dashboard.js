@@ -699,10 +699,11 @@ const Dashboard = (() => {
               📍 ${gps}
             </a>
           </div>
+          ${Auth.getProfile()?.id === n.pilot_id || Auth.getProfile()?.role === 'superadmin' ? `
           <button class="btn-delete-nest" data-nest-id="${n.id}"
             style="padding:6px 10px;border-radius:6px;background:#c0392b;color:#fff;border:none;font-size:12px;cursor:pointer;flex-shrink:0">
             🗑
-          </button>
+          </button>` : ''}
         </div>`;
     }).join('');
 
