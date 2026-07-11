@@ -380,6 +380,6 @@ const Pilots = (() => {
     });
   }
 
-  return { init, block, unblock, resetPin, remove, migrate, view };
+  return { init, block, unblock, resetPin, remove, migrate, view, geolocatePilotManuel };
 
 })();
