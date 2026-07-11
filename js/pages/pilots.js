@@ -23,6 +23,22 @@ const Pilots = (() => {
 
     // 1. Créer le profil en base
     const newId = crypto.randomUUID();
+    // Géocoder le secteur via Nominatim
+    let pilotLat = null, pilotLon = null;
+    try {
+      const geoUrl = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(secteur + ', France')}&format=json&limit=1`;
+      const geoRes = await fetch(geoUrl, { headers: { 'Accept-Language': 'fr' } });
+      const geoData = await geoRes.json();
+      if (geoData.length > 0) {
+        pilotLat = parseFloat(geoData[0].lat);
+        pilotLon = parseFloat(geoData[0].lon);
+      }
+    } catch(e) {
+      console.warn('Géocodage secteur échoué:', e);
+    }
+    // Fallback sur les coordonnées du parent
+    if (!pilotLat) { pilotLat = profile.lat || null; pilotLon = profile.lon || null; }
+
     const { error } = await dbProfileCreate({
       id:          newId,
       email, nom, prenom,
@@ -30,8 +46,8 @@ const Pilots = (() => {
       departement: profile.departement || '—',
       secteur,
       parent_id:   profile.id,
-      lat:         profile.lat || null,
-      lon:         profile.lon || null,
+      lat:         pilotLat,
+      lon:         pilotLon,
     });
 
     if (error) {
