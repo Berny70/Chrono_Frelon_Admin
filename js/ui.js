@@ -408,13 +408,14 @@ function renderPilots(pilots) {
         <div class="user-info" style="flex:1;min-width:0">
           <div class="user-phone" style="font-family:'DM Sans',sans-serif">${p.prenom} ${p.nom}${isBlocked ? ' <span style="color:#c0392b;font-size:11px">· Bloqué</span>' : ''}</div>
           <div class="user-meta">${p.email}</div>
-          <div class="user-meta">📍 ${p.secteur || '—'} · ${p.departement || '—'}</div>
+          <div class="user-meta">📍 ${p.secteur || '—'} · ${p.departement || '—'} ${p.lat ? '<span style="color:#2d6a4f;font-size:10px">✅ GPS</span>' : '<span style="color:#e67e22;font-size:10px">⚠️ pas de GPS</span>'}</div>
           <div class="user-meta" style="font-size:11px">Créé le ${new Date(p.created_at).toLocaleDateString('fr-FR')}</div>
         </div>
         <div style="display:flex;gap:6px;flex-shrink:0;flex-wrap:wrap;justify-content:flex-end">
           ${isBlocked
             ? `<button class="btn-unblock" data-pilot-id="${p.id}" data-pilot-name="${p.prenom} ${p.nom}">Débloquer</button>`
-            : `<button class="btn-block"   data-pilot-id="${p.id}" data-pilot-name="${p.prenom} ${p.nom}">Bloquer</button>`
+            : `<button class="btn-geolocate" data-pilot-id="${p.id}" data-pilot-secteur="${p.secteur || ''}" title="Géolocaliser ce pilote" style="padding:4px 8px;border:1px solid #2d6a4f;border-radius:6px;background:white;color:#2d6a4f;font-size:12px;cursor:pointer;">📍</button>
+               <button class="btn-block"   data-pilot-id="${p.id}" data-pilot-name="${p.prenom} ${p.nom}">Bloquer</button>`
           }
           <button class="btn-view"      data-pilot-id="${p.id}" data-pilot-name="${p.prenom} ${p.nom}" title="Voir les sentinelles">Voir</button>
           <button class="btn-message"   data-pilot-id="${p.id}" data-pilot-email="${p.email}" data-pilot-prenom="${p.prenom}" data-pilot-nom="${p.nom}" title="Message de bienvenue">✉</button>
