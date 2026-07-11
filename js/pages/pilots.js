@@ -5,6 +5,27 @@ const Pilots = (() => {
 
   // ── CRÉER UN PILOTE ────────────────────────────────────────
 
+  async function geolocatePilot(pilotId, secteur) {
+    if (!secteur) { showToast('Secteur non renseigné', 'error'); return; }
+    showToast('Géolocalisation en cours…');
+    try {
+      const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(secteur + ', France')}&format=json&limit=1`;
+      const res = await fetch(url, { headers: { 'Accept-Language': 'fr' } });
+      const data = await res.json();
+      if (!data.length) { showToast('Secteur non trouvé', 'error'); return; }
+      const lat = parseFloat(data[0].lat);
+      const lon = parseFloat(data[0].lon);
+      await db.from('admin_profiles').update({ lat, lon }).eq('id', pilotId);
+      showToast(`📍 GPS mis à jour : ${lat.toFixed(4)}, ${lon.toFixed(4)}`);
+      // Rafraîchir la liste
+      const pilots = await dbPilotsGetByParent();
+      Dashboard.setPilots(pilots);
+      renderPilots(pilots);
+    } catch(e) {
+      showToast('Erreur géolocalisation : ' + e.message, 'error');
+    }
+  }
+
   async function create() {
     const prenom  = document.getElementById('pilot-prenom').value.trim();
     const nom     = document.getElementById('pilot-nom').value.trim();
@@ -292,6 +313,8 @@ const Pilots = (() => {
 
     // Délégation événements sur la liste
     document.getElementById('pilots-list')?.addEventListener('click', e => {
+      const geoBtn     = e.target.closest('.btn-geolocate[data-pilot-id]');
+      if (geoBtn) { geolocatePilot(geoBtn.dataset.pilotId, geoBtn.dataset.pilotSecteur); return; }
       const blockBtn   = e.target.closest('.btn-block[data-pilot-id]');
       const unblockBtn = e.target.closest('.btn-unblock[data-pilot-id]');
       const deleteBtn  = e.target.closest('.btn-delete[data-pilot-id]');
