@@ -5,24 +5,44 @@ const Pilots = (() => {
 
   // ── CRÉER UN PILOTE ────────────────────────────────────────
 
-  async function geolocatePilot(pilotId, secteur) {
-    if (!secteur) { showToast('Secteur non renseigné', 'error'); return; }
-    showToast('Géolocalisation en cours…');
+  function geolocatePilot(pilotId, secteur) {
+    // Ouvrir l'overlay avec les champs pré-remplis
+    document.getElementById('geo-pilot-id').value = pilotId;
+    document.getElementById('geo-commune').value = secteur || '';
+    document.getElementById('geo-departement').value = '';
+    document.getElementById('geo-msg').textContent = '';
+    showOverlay('overlay-geolocate-pilot');
+  }
+
+  async function geolocatePilotManuel() {
+    const pilotId = document.getElementById('geo-pilot-id').value;
+    const commune = document.getElementById('geo-commune').value.trim();
+    const dept    = document.getElementById('geo-departement').value.trim();
+    const msg     = document.getElementById('geo-msg');
+
+    if (!commune) { msg.textContent = 'Entrez une commune.'; msg.style.color = '#e53935'; return; }
+
+    msg.textContent = 'Recherche en cours…';
+    msg.style.color = 'var(--text-muted)';
+
+    const query = dept ? `${commune}, ${dept}, France` : `${commune}, France`;
     try {
-      const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(secteur + ', France')}&format=json&limit=1`;
+      const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=1`;
       const res = await fetch(url, { headers: { 'Accept-Language': 'fr' } });
       const data = await res.json();
-      if (!data.length) { showToast('Secteur non trouvé', 'error'); return; }
+      if (!data.length) { msg.textContent = 'Commune non trouvée — essayez autrement.'; msg.style.color = '#e53935'; return; }
       const lat = parseFloat(data[0].lat);
       const lon = parseFloat(data[0].lon);
       await db.from('admin_profiles').update({ lat, lon }).eq('id', pilotId);
-      showToast(`📍 GPS mis à jour : ${lat.toFixed(4)}, ${lon.toFixed(4)}`);
-      // Rafraîchir la liste
-      const pilots = await dbPilotsGetByParent();
-      Dashboard.setPilots(pilots);
-      renderPilots(pilots);
+      msg.textContent = `✅ GPS mis à jour : ${lat.toFixed(4)}, ${lon.toFixed(4)}`;
+      msg.style.color = '#2d6a4f';
+      setTimeout(() => {
+        hideOverlay('overlay-geolocate-pilot');
+        dbPilotsGetByParent().then(pilots => { Dashboard.setPilots(pilots); renderPilots(pilots); });
+      }, 1500);
     } catch(e) {
-      showToast('Erreur géolocalisation : ' + e.message, 'error');
+      msg.textContent = 'Erreur : ' + e.message;
+      msg.style.color = '#e53935';
     }
   }
 
