@@ -33,7 +33,15 @@ const Pilots = (() => {
       if (!data.length) { msg.textContent = 'Commune non trouvée — essayez autrement.'; msg.style.color = '#e53935'; return; }
       const lat = parseFloat(data[0].lat);
       const lon = parseFloat(data[0].lon);
-      await db.from('admin_profiles').update({ lat, lon, secteur: commune, departement: dept || undefined }).eq('id', pilotId);
+      const { error: rpcError } = await db.rpc('chassnid_update_pilot_location', {
+        p_token:       _token(),
+        p_pilot_id:    pilotId,
+        p_lat:         lat,
+        p_lon:         lon,
+        p_secteur:     commune,
+        p_departement: dept || '',
+      });
+      if (rpcError) throw new Error(rpcError.message);
       msg.textContent = `✅ GPS mis à jour : ${lat.toFixed(4)}, ${lon.toFixed(4)}`;
       msg.style.color = '#2d6a4f';
       setTimeout(() => {
