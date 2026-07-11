@@ -753,5 +753,27 @@
 
 
 
+<div class="overlay" id="overlay-geolocate-pilot">
+  <div class="panel" style="max-width:340px">
+    <div class="panel-header">
+      <h3 class="panel-title">📍 Géolocaliser le pilote</h3>
+      <button class="panel-close" data-close="overlay-geolocate-pilot">✕</button>
+    </div>
+    <div style="padding:16px;display:flex;flex-direction:column;gap:12px;">
+      <input type="hidden" id="geo-pilot-id">
+      <div>
+        <label style="font-size:12px;color:var(--text-muted);">Commune</label>
+        <input type="text" id="geo-commune" placeholder="ex: Mulhouse" class="field" style="width:100%;margin-top:4px;">
+      </div>
+      <div>
+        <label style="font-size:12px;color:var(--text-muted);">Département</label>
+        <input type="text" id="geo-departement" placeholder="ex: Haut-Rhin" class="field" style="width:100%;margin-top:4px;">
+      </div>
+      <div id="geo-msg" style="font-size:12px;color:var(--text-muted);"></div>
+      <button class="btn-primary" id="btn-geo-validate" onclick="Pilots.geolocatePilotManuel()">📍 Valider la localisation</button>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
