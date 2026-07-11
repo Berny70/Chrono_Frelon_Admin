@@ -714,7 +714,11 @@ const Dashboard = (() => {
           'Cette action est irréversible.',
           'Supprimer',
           async () => {
-            await dbNestDelete(btn.dataset.nestId);
+            const res = await dbNestDelete(btn.dataset.nestId);
+            if (res?.error) {
+              showToast('Erreur suppression : ' + (res.error.message || 'inconnue'), 'error');
+              return;
+            }
             _nests = _nests.filter(n => n.id !== btn.dataset.nestId);
             renderNests();
             mapInit(_applyDateFilter(_signals), _blockedPhones, _sentinelMap, _nests, true);
