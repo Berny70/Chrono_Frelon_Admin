@@ -706,29 +706,30 @@ const Dashboard = (() => {
         </div>`;
     }).join('');
 
-    // Délégation suppression
-    list.querySelectorAll('.btn-delete-nest').forEach(btn => {
-      btn.addEventListener('click', async () => {
-        showModal(
-          'Supprimer ce nid',
-          'Cette action est irréversible.',
-          'Supprimer',
-          async () => {
-            const nestId = btn.dataset.nestId;
-            console.log('Suppression nid:', nestId);
-            const res = await dbNestDelete(nestId);
-            console.log('Résultat suppression:', JSON.stringify(res));
-            if (res?.error) {
-              showToast('Erreur suppression : ' + (res.error.message || 'inconnue'), 'error');
-              return;
-            }
-            _nests = _nests.filter(n => n.id !== btn.dataset.nestId);
-            renderNests();
-            mapInit(_applyDateFilter(_signals), _blockedPhones, _sentinelMap, _nests, true);
-            showToast('Nid supprimé.');
+    // Délégation suppression au niveau de la liste (évite la perte des listeners après renderNests)
+    list.addEventListener('click', e => {
+      const btn = e.target.closest('.btn-delete-nest[data-nest-id]');
+      if (!btn) return;
+      const nestId = btn.dataset.nestId;
+      showModal(
+        'Supprimer ce nid',
+        'Cette action est irréversible.',
+        'Supprimer',
+        async () => {
+          console.log('Suppression nid:', nestId);
+          const res = await dbNestDelete(nestId);
+          console.log('Résultat suppression:', JSON.stringify(res));
+          if (res?.error) {
+            showToast('Erreur suppression : ' + (res.error.message || 'inconnue'), 'error');
+            return;
           }
-        );
-      });
+          _nests = _nests.filter(n => n.id !== nestId);
+          Dashboard.setNests(_nests);
+          renderNests();
+          mapInit(_applyDateFilter(_signals), _blockedPhones, _sentinelMap, _nests, true);
+          showToast('Nid supprimé.');
+        }
+      );
     });
   }
 
