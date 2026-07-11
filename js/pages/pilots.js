@@ -30,6 +30,8 @@ const Pilots = (() => {
       departement: profile.departement || '—',
       secteur,
       parent_id:   profile.id,
+      lat:         profile.lat || null,
+      lon:         profile.lon || null,
     });
 
     if (error) {
