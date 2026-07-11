@@ -1,5 +1,5 @@
-// Service Worker ChassNid v1.3.7
-const CACHE_VERSION = 'chassnid-v1.3.7';
+// Service Worker ChassNid v1.3.8
+const CACHE_VERSION = 'chassnid-v1.3.8';
 
 self.addEventListener('install', () => self.skipWaiting());
 
