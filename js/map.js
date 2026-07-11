@@ -462,6 +462,7 @@ function _onMapClickAddNest(e) {
         _clearNestLayers();
         _nests = filtered;
         _drawNests(filtered);
+        Dashboard.setNests(filtered);   // sync dashboard._nests
         Dashboard.renderNests(filtered);
         _setupNestClick(true);
       }
