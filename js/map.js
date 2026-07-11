@@ -399,7 +399,8 @@ function _drawNests(nests) {
     const lon     = n.lon.toFixed(5);
     const mapsUrl = `https://www.google.com/maps?q=${lat},${lon}`;
 
-    const canDelete = !n.annee; // seulement les nids de l'année courante
+    const profile = Auth.getProfile();
+    const canDelete = !n.annee && (profile?.id === n.pilot_id || profile?.role === 'superadmin');
     const deleteBtn = canDelete ? `
         <button onclick="mapDeleteNest('${n.id}')" style="
           width:100%;padding:6px;
