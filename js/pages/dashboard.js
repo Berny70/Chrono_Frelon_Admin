@@ -714,7 +714,10 @@ const Dashboard = (() => {
           'Cette action est irréversible.',
           'Supprimer',
           async () => {
-            const res = await dbNestDelete(btn.dataset.nestId);
+            const nestId = btn.dataset.nestId;
+            console.log('Suppression nid:', nestId);
+            const res = await dbNestDelete(nestId);
+            console.log('Résultat suppression:', JSON.stringify(res));
             if (res?.error) {
               showToast('Erreur suppression : ' + (res.error.message || 'inconnue'), 'error');
               return;
