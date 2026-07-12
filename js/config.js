@@ -1,6 +1,6 @@
 const CONFIG = {
   APP_NAME:          'ChassNid',
-  APP_VERSION:       '1.4.1',
+  APP_VERSION:       '1.4.2',
   APP_DATE:          '2026-05',
   APP_URL:           'https://berny70.github.io/Chrono_Frelon_Admin/',
   SUPABASE_URL:      'https://pqozgsgytzntrqscevrt.supabase.co',
