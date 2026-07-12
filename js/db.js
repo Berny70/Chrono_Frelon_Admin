@@ -251,12 +251,13 @@ async function dbNestsGetAll() {
   return data || [];
 }
 
-async function dbNestAdd(lat, lon, foundAt) {
+async function dbNestAdd(lat, lon, foundAt, type = 'secondaire') {
   const { data, error } = await db.rpc('chassnid_nest_add', {
     p_token:    _token(),
     p_lat:      lat,
     p_lon:      lon,
     p_found_at: foundAt,
+    p_type:     type,
   });
   if (error) return { error };
   const result = _parse(data);
