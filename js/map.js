@@ -390,7 +390,9 @@ function _drawNests(nests) {
     const marker = L.marker([n.lat, n.lon], { icon });
     if (_nestsVisible) marker.addTo(_map);
     const date     = n.found_at ? new Date(n.found_at).toLocaleDateString('fr-FR') : '—';
-    const pilote   = n.pilot_nom || n.declarant || '—';
+    const pilote = n.pilot_nom || n.declarant || '—';
+    const declarantExtra = (n.declarant && n.pilot_nom && n.declarant !== n.pilot_nom)
+      ? ` <span style="font-size:11px;color:#888">(déclaré par : ${n.declarant})</span>` : '';
     const c = _getQueenColor(n.annee);
     const anneeStr = n.annee ? ` ${n.annee} <span style="display:inline-block;width:10px;height:10px;background:${c.bg};border:2px solid ${c.border};border-radius:50%;vertical-align:middle"></span>` : ' 2026 <span style="display:inline-block;width:10px;height:10px;background:#f5f5f5;border:2px solid #9e9e9e;border-radius:50%;vertical-align:middle"></span>';
     const taille   = n.taille ? `<div style="color:#555;margin-bottom:2px">📏 ${n.taille}</div>` : '';
