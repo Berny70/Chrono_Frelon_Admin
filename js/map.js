@@ -437,11 +437,14 @@ function _onMapClickAddNest(e) {
     '🪺 Marquer un nid trouvé',
     `Position : ${lat.toFixed(5)}, ${lng.toFixed(5)}<br><br>` +
     `Date : <input type="date" id="nest-date-input" value="${today}" ` +
-    `style="border:1px solid #ccc;border-radius:6px;padding:4px 8px;font-size:14px">`,
+    `style="border:1px solid #ccc;border-radius:6px;padding:4px 8px;font-size:14px"><br><br>` +
+    `Type : <label style="margin-right:12px"><input type="radio" name="nest-type" value="secondaire" checked> 🔴 Secondaire</label>` +
+    `<label><input type="radio" name="nest-type" value="primaire"> 🟠 Primaire</label>`,
     'Confirmer',
     async () => {
       const foundAt = document.getElementById('nest-date-input')?.value || today;
-      const { ok, error } = await dbNestAdd(lat, lng, foundAt);
+      const nestType = document.querySelector('input[name="nest-type"]:checked')?.value || 'secondaire';
+      const { ok, error } = await dbNestAdd(lat, lng, foundAt, nestType);
       if (error) {
         showToast('Erreur : ' + (error.message || error));
       } else {
