@@ -681,7 +681,9 @@ const Dashboard = (() => {
       const date   = n.found_at
         ? new Date(n.found_at).toLocaleDateString('fr-FR')
         : '—';
-      const pilote = n.pilot_nom || '—';
+      const pilote = n.pilot_nom || n.declarant || '—';
+      const declarantExtra = (n.declarant && n.pilot_nom && n.declarant !== n.pilot_nom)
+        ? ` <span style="font-size:11px;color:#aaa">(${n.declarant})</span>` : '';
       const lat    = n.lat ? n.lat.toFixed(5) : '—';
       const lon    = n.lon ? n.lon.toFixed(5) : '—';
       const gps    = `${lat}, ${lon}`;
@@ -693,7 +695,7 @@ const Dashboard = (() => {
           <div style="font-size:28px;line-height:1;flex-shrink:0">🪺</div>
           <div style="flex:1;min-width:0">
             <div style="font-weight:600;font-size:14px;margin-bottom:2px">📅 ${date}${annee}</div>
-            <div style="font-size:13px;color:var(--text-muted);margin-bottom:2px">👤 ${pilote}</div>
+            <div style="font-size:13px;color:var(--text-muted);margin-bottom:2px">👤 ${pilote}${declarantExtra}</div>
             <a href="${mapsUrl}" target="_blank"
                style="font-size:12px;font-family:monospace;color:var(--accent);text-decoration:none">
               📍 ${gps}
