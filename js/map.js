@@ -352,16 +352,16 @@ function _getNestIcon(annee, type) {
   const bgColor = isPrimaire ? '#fff3e0' : c.bg;
   return L.divIcon({
     html: `<div style="
-      width:36px;height:36px;
-      border:3px solid ${borderColor};
+      width:24px;height:24px;
+      border:2px solid ${borderColor};
       border-radius:50%;
-      background:${bgColor} url('${imgSrc}') center/32px no-repeat;
+      background:${bgColor} url('${imgSrc}') center/20px no-repeat;
       box-shadow:0 2px 5px rgba(0,0,0,0.4);
     "></div>`,
     className: 'nest-div-icon',
-    iconSize:   [36, 36],
-    iconAnchor: [18, 18],
-    popupAnchor:[0, -20],
+    iconSize:   [24, 24],
+    iconAnchor: [12, 12],
+    popupAnchor:[0, -14],
   });
 }
 
