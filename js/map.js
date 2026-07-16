@@ -15,6 +15,7 @@ let _currentBasemap = null;
 let _nests       = [];
 let _nestLayers  = [];
 let _nestsVisible = true;
+let _canAddNestPermission = false;
 
 // ── FONDS DE CARTE ────────────────────────────────────────────
 
@@ -432,6 +433,11 @@ function _drawNests(nests) {
 
 // Clic sur la carte pour ajouter un nid
 function _onMapClickAddNest(e) {
+  if (!_nestsVisible) {
+    showToast('Passez en mode "🪺 Nids visibles" pour ajouter un nid (afin de voir les nids déjà déclarés à cet endroit).');
+    return;
+  }
+
   const { lat, lng } = e.latlng;
   const today = new Date().toISOString().split('T')[0];
 
@@ -470,13 +476,14 @@ function _onMapClickAddNest(e) {
         _drawNests(filtered);
         Dashboard.setNests(filtered);   // sync dashboard._nests
         Dashboard.renderNests(filtered);
-        _setupNestClick(true);
+        _setupNestClick(_canAddNestPermission);
       }
     }
   );
 }
 
 function _setupNestClick(canAdd) {
+  _canAddNestPermission = canAdd;
   _map.off('click', _onMapClickAddNest);
   if (canAdd) {
     _map.on('click', _onMapClickAddNest);
@@ -498,7 +505,7 @@ function mapDeleteNest(id) {
       _nests = _nests.filter(n => n.id !== id);
       _clearNestLayers();
       _drawNests(_nests);
-      _setupNestClick(true);
+      _setupNestClick(_canAddNestPermission);
       Dashboard.renderNests(_nests);   // sync liste après suppression depuis la carte
       Dashboard.setNests(_nests);      // sync _nests dashboard pour éviter retour du fantôme
       showToast('Nid supprimé.');
