@@ -59,7 +59,7 @@ function showToast(msg, duration = 3000) {
 
 function showModal(title, text, label, callback) {
   document.getElementById('modal-title').textContent = title;
-  document.getElementById('modal-text').textContent  = text;
+  document.getElementById('modal-text').innerHTML     = text;
   const btn = document.getElementById('modal-ok');
   btn.textContent = label;
   btn.onclick = async () => { hideOverlay('overlay-modal'); await callback(); };
