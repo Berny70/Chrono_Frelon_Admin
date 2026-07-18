@@ -83,10 +83,10 @@ const Auth = (() => {
     try {
       const phoneId = getPhoneId();
       if (phoneId) {
-        db.rpc('chassnid_register_phone_id', {
+        Promise.resolve(db.rpc('chassnid_register_phone_id', {
           p_token:    result.token,
           p_phone_id: phoneId,
-        }).catch(e => console.warn('[Auth.login] register_phone_id ignoré :', e));
+        })).catch(e => console.warn('[Auth.login] register_phone_id ignoré :', e));
       }
     } catch (e) {
       console.warn('[Auth.login] association phone_id ignorée :', e);
