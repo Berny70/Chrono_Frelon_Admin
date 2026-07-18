@@ -33,6 +33,28 @@ const Auth = (() => {
     } catch { return null; }
   }
 
+  // ── PHONE ID — identique à VigieNid (même domaine, même clé) ──
+  // Permet à ChassNid Admin et VigieNid de reconnaître le même
+  // appareil, puisque les deux apps partagent le même domaine
+  // (berny70.github.io) et donc le même localStorage/cookies.
+  function _setCookie(name, value, days) {
+    const expires = new Date(Date.now() + days * 864e5).toUTCString();
+    document.cookie = `${name}=${encodeURIComponent(value)}; expires=${expires}; path=/; SameSite=Lax`;
+  }
+  function _getCookie(name) {
+    const match = document.cookie.match(new RegExp('(?:^|; )' + name + '=([^;]*)'));
+    return match ? decodeURIComponent(match[1]) : null;
+  }
+  function getPhoneId() {
+    let id = localStorage.getItem('phone_id');
+    if (!id) {
+      id = _getCookie('phone_id') || crypto.randomUUID();
+      localStorage.setItem('phone_id', id);
+    }
+    _setCookie('phone_id', id, 365);
+    return id;
+  }
+
   // ── LOGIN ──────────────────────────────────────────────────
 
   async function login(email, pin) {
@@ -48,6 +70,14 @@ const Auth = (() => {
     if (result.error) return { error: result.error };
 
     _saveSession(result.token, result.profile);
+
+    // Associer cet appareil au profil de façon sûre (session vérifiée
+    // côté serveur), pour que VigieNid reconnaisse ce pilote sur ce
+    // même appareil sans avoir à deviner via un scan de QR code.
+    db.rpc('chassnid_register_phone_id', {
+      p_token:    result.token,
+      p_phone_id: getPhoneId(),
+    }).catch(() => {}); // best-effort, ne bloque pas la connexion si ça échoue
 
     return { profile: _profile };
   }
