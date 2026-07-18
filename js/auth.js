@@ -46,13 +46,18 @@ const Auth = (() => {
     return match ? decodeURIComponent(match[1]) : null;
   }
   function getPhoneId() {
-    let id = localStorage.getItem('phone_id');
-    if (!id) {
-      id = _getCookie('phone_id') || crypto.randomUUID();
-      localStorage.setItem('phone_id', id);
+    try {
+      let id = localStorage.getItem('phone_id');
+      if (!id) {
+        id = _getCookie('phone_id') || (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + Math.random().toString(36).slice(2));
+        localStorage.setItem('phone_id', id);
+      }
+      _setCookie('phone_id', id, 365);
+      return id;
+    } catch (e) {
+      console.warn('[Auth.getPhoneId] échec, association ignorée :', e);
+      return null;
     }
-    _setCookie('phone_id', id, 365);
-    return id;
   }
 
   // ── LOGIN ──────────────────────────────────────────────────
@@ -74,10 +79,18 @@ const Auth = (() => {
     // Associer cet appareil au profil de façon sûre (session vérifiée
     // côté serveur), pour que VigieNid reconnaisse ce pilote sur ce
     // même appareil sans avoir à deviner via un scan de QR code.
-    db.rpc('chassnid_register_phone_id', {
-      p_token:    result.token,
-      p_phone_id: getPhoneId(),
-    }).catch(() => {}); // best-effort, ne bloque pas la connexion si ça échoue
+    // Entièrement best-effort : ne doit jamais empêcher la connexion.
+    try {
+      const phoneId = getPhoneId();
+      if (phoneId) {
+        db.rpc('chassnid_register_phone_id', {
+          p_token:    result.token,
+          p_phone_id: phoneId,
+        }).catch(e => console.warn('[Auth.login] register_phone_id ignoré :', e));
+      }
+    } catch (e) {
+      console.warn('[Auth.login] association phone_id ignorée :', e);
+    }
 
     return { profile: _profile };
   }

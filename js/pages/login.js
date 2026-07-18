@@ -62,10 +62,15 @@ const Login = (() => {
     btn.disabled = true;
     btn.textContent = 'Connexion…';
 
-    const { profile, error } = await Auth.login(email, _pin);
-
-    btn.disabled = false;
-    btn.textContent = 'Se connecter';
+    let profile, error;
+    try {
+      ({ profile, error } = await Auth.login(email, _pin));
+    } catch (e) {
+      error = e?.message || 'Erreur inattendue, réessayez.';
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Se connecter';
+    }
 
     if (error) {
       _setError();
