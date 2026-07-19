@@ -308,12 +308,14 @@ const Dashboard = (() => {
       async () => {
         const profile = Auth.getProfile();
         if (profile.role === 'pilot') {
-          await dbPilotUserBlock(phone_id, profile.id);
+          const { error } = await dbPilotUserBlock(phone_id, profile.id);
+          if (error) { showToast('Erreur : ' + (error.message || error), 'error'); return; }
           _pilotUsers = _pilotUsers.map(u =>
             u.phone_id === phone_id ? { ...u, blocked: true } : u
           );
         } else {
-          await dbBlockedAdd(phone_id, profile.id);
+          const { error } = await dbBlockedAdd(phone_id);
+          if (error) { showToast('Erreur : ' + (error.message || error), 'error'); return; }
           _blockedPhones.add(phone_id);
         }
         showToast('Sentinelle bloquée.');
@@ -331,12 +333,14 @@ const Dashboard = (() => {
       async () => {
         const profile = Auth.getProfile();
         if (profile.role === 'pilot') {
-          await dbPilotUserUnblock(phone_id, profile.id);
+          const { error } = await dbPilotUserUnblock(phone_id, profile.id);
+          if (error) { showToast('Erreur : ' + (error.message || error), 'error'); return; }
           _pilotUsers = _pilotUsers.map(u =>
             u.phone_id === phone_id ? { ...u, blocked: false } : u
           );
         } else {
-          await dbBlockedRemove(phone_id);
+          const { error } = await dbBlockedRemove(phone_id);
+          if (error) { showToast('Erreur : ' + (error.message || error), 'error'); return; }
           _blockedPhones.delete(phone_id);
         }
         showToast('Sentinelle débloquée.');

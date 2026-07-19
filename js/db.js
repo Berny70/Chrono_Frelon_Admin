@@ -140,16 +140,30 @@ async function dbProfileUpdateParams(id, { trait_length_m, validity_days }) {
 // ── UTILISATEURS BLOQUÉS ──────────────────────────────────────
 
 async function dbBlockedGetAll() {
-  const { data } = await db.from('blocked_phones').select('phone_id');
-  return new Set((data || []).map(b => b.phone_id));
+  const { data, error } = await db.rpc('chassnid_blocked_phones_get', { p_token: _token() });
+  if (error) return new Set();
+  const result = _parse(data);
+  return new Set(Array.isArray(result) ? result : []);
 }
 
-async function dbBlockedAdd(phone_id, blocked_by) {
-  return db.from('blocked_phones').upsert({ phone_id, blocked_by });
+async function dbBlockedAdd(phone_id) {
+  const { data, error } = await db.rpc('chassnid_blocked_phone_add', {
+    p_token:    _token(),
+    p_phone_id: phone_id,
+  });
+  if (error) return { error };
+  const result = _parse(data);
+  return result?.error ? { error: { message: result.error } } : { ok: true };
 }
 
 async function dbBlockedRemove(phone_id) {
-  return db.from('blocked_phones').delete().eq('phone_id', phone_id);
+  const { data, error } = await db.rpc('chassnid_blocked_phone_remove', {
+    p_token:    _token(),
+    p_phone_id: phone_id,
+  });
+  if (error) return { error };
+  const result = _parse(data);
+  return result?.error ? { error: { message: result.error } } : { ok: true };
 }
 
 // ── SENTINELLES ───────────────────────────────────────────────
