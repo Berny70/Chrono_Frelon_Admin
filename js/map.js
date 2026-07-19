@@ -199,7 +199,11 @@ function mapDeleteSignal(id) {
     'Supprimer',
     async () => {
       // 1. Supprimer en base d'abord
-      await dbSignalDelete(id);
+      const { error } = await dbSignalDelete(id);
+      if (error) {
+        showToast('Erreur : ' + (error.message || error));
+        return;
+      }
       // 2. Puis rafraîchir la carte (les données sont à jour)
       await Dashboard.load();
       showToast('Signalement supprimé.');
