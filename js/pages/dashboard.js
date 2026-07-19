@@ -268,7 +268,11 @@ const Dashboard = (() => {
       'Cette action est irréversible.',
       'Supprimer',
       async () => {
-        await dbSignalDelete(id);
+        const { error } = await dbSignalDelete(id);
+        if (error) {
+          showToast('Erreur : ' + (error.message || error));
+          return;
+        }
         showToast('Signalement supprimé.');
         _signals = _signals.filter(s => s.id !== id);
         _buildUsers();
@@ -928,15 +932,19 @@ const Dashboard = (() => {
         'Supprimer définitivement',
         async () => {
           let deleted = 0;
+          let failed = 0;
+          const okIds = [];
           for (const s of _bulkMatches) {
-            await dbSignalDelete(s.id);
-            deleted++;
+            const { error } = await dbSignalDelete(s.id);
+            if (error) { failed++; } else { deleted++; okIds.push(s.id); }
           }
-          _signals = _signals.filter(s => !_bulkMatches.find(m => m.id === s.id));
+          _signals = _signals.filter(s => !okIds.includes(s.id));
           _bulkMatches = [];
           _buildUsers();
           await _refresh();
-          showToast(`${deleted} signalement(s) supprimés.`);
+          showToast(failed
+            ? `${deleted} supprimé(s), ${failed} échec(s).`
+            : `${deleted} signalement(s) supprimés.`);
         }
       );
     });

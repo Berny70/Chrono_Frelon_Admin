@@ -36,11 +36,23 @@ async function dbSignalsGetAll(lat, lon, radiusKm = 50) {
 }
 
 async function dbSignalDelete(id) {
-  return db.from('chrono_frelon_geo').delete().eq('id', id);
+  const { data, error } = await db.rpc('chassnid_signal_delete', {
+    p_token:     _token(),
+    p_signal_id: id,
+  });
+  if (error) return { error };
+  const result = _parse(data);
+  return result?.error ? { error: { message: result.error } } : { ok: true };
 }
 
 async function dbSignalsDeleteByPhone(phone_id) {
-  return db.from('chrono_frelon_geo').delete().eq('phone_id', phone_id);
+  const { data, error } = await db.rpc('chassnid_signals_delete_by_phone', {
+    p_token:    _token(),
+    p_phone_id: phone_id,
+  });
+  if (error) return { error };
+  const result = _parse(data);
+  return result?.error ? { error: { message: result.error } } : { ok: true };
 }
 
 // ── PROFILS — LECTURE ─────────────────────────────────────────
@@ -197,11 +209,14 @@ async function dbPilotUserUnblock(phone_id, pilotId) {
 }
 
 async function dbSentinelDelete(phone_id, pilotId) {
-  const { error: e1 } = await db.from('pilot_users').delete()
-    .eq('phone_id', phone_id).eq('pilot_id', pilotId);
-  const { error: e2 } = await db.from('pilot_user_stats').delete()
-    .eq('phone_id', phone_id).eq('pilot_id', pilotId);
-  return e1 || e2 ? { error: e1 || e2 } : { ok: true };
+  const { data, error } = await db.rpc('chassnid_sentinel_delete', {
+    p_token:    _token(),
+    p_phone_id: phone_id,
+    p_pilot_id: pilotId,
+  });
+  if (error) return { error };
+  const result = _parse(data);
+  return result?.error ? { error: { message: result.error } } : { ok: true };
 }
 
 async function dbUpdatePseudo(phone_id, pilotId, pseudo) {
