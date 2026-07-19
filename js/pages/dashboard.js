@@ -312,6 +312,12 @@ const Dashboard = (() => {
         const { error } = await dbSentinelDelete(phone_id, pilotId);
         if (error) { showToast('Erreur : ' + (error.message || error), 'error'); return; }
         _pilotUsers = _pilotUsers.filter(u => u.phone_id !== phone_id);
+        // La RPC supprime aussi les signalements de cette sentinelle côté
+        // base — on doit faire pareil en mémoire, sinon _buildUsers() la
+        // fait réapparaître (elle reconstruit la liste à partir des
+        // phone_id distincts trouvés dans _signals).
+        _signals = _signals.filter(s => s.phone_id !== phone_id);
+        delete _phoneToPilotId[phone_id];
         _buildUsers();
         await _refresh();
         showToast('Sentinelle supprimée.');
