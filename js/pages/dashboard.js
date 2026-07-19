@@ -15,6 +15,7 @@ const Dashboard = (() => {
   let _sentinelMap   = {};   // phone_id → { pseudo, pilote }
   let _groupedSentinels = []; // [{ pilot, users }] — pour admin_dept, chargé une seule fois
   let _nests = [];
+  let _phoneToPilotId = {};   // phone_id → pilot_id réel (superadmin/admin_dept)
 
   // ── CONSTRUCTION DU MAP phone_id → {pseudo, pilote} ──────
 
@@ -56,13 +57,18 @@ const Dashboard = (() => {
     setLoading('users-list');
 
     if (role === 'superadmin') {
-      [_signals, _blockedPhones, _admins, _pilots, _nests] = await Promise.all([
+      let allRaw;
+      [_signals, _blockedPhones, _admins, _pilots, _nests, allRaw] = await Promise.all([
         dbSignalsGetAll(),
         dbBlockedGetAll(),
         dbAdminsGetAll(),
         dbPilotsGetByParent(),
         dbNestsGetAll(),
+        dbAllSentinelsGet(),
       ]);
+      _pilotUsers = allRaw; // conserve pilot_id pour chaque sentinelle
+      _phoneToPilotId = {};
+      allRaw.forEach(u => { _phoneToPilotId[u.phone_id] = u.pilot_id; });
       await _loadPending();
 
     } else if (role === 'pilot') {
@@ -98,6 +104,11 @@ const Dashboard = (() => {
         dbPilotUsersGetByAdmin(),   // RPC SQL unique — plus de N requêtes
         dbNestsGetAll(),
       ]);
+      _phoneToPilotId = {};
+      _pilotUsers.forEach(u => { _phoneToPilotId[u.phone_id] = profile.id; }); // sentinelles directes
+      _groupedSentinels.forEach(g => {
+        g.users.forEach(u => { _phoneToPilotId[u.phone_id] = g.pilot.id; });
+      });
       await _loadPending();
     }
 
@@ -129,6 +140,7 @@ const Dashboard = (() => {
         count:    _signals.filter(s => s.phone_id === phone).length,
         last:     _signals.find(s => s.phone_id === phone)?.created_at,
         blocked:  _blockedPhones.has(phone),
+        pilot_id: _phoneToPilotId[phone] || null,
       }));
     }
   }
@@ -143,7 +155,9 @@ const Dashboard = (() => {
 
   // ── RAFRAÎCHISSEMENT ──────────────────────────────────────
   // Plus d'appels async ici — toutes les données sont déjà chargées dans load().
-  // _refresh() est désormais synchrone sauf pour superadmin (dbAllSentinelsGet).
+  // _refresh() ne fait plus d'appel réseau : toutes les données
+  // (dont dbAllSentinelsGet pour superadmin) sont chargées une seule
+  // fois dans load() et tenues à jour localement par les actions.
 
   async function _refresh() {
     const role    = Auth.getProfile()?.role;
@@ -159,7 +173,7 @@ const Dashboard = (() => {
       }));
 
     } else if (role === 'superadmin') {
-      const allRaw = await dbAllSentinelsGet();
+      const allRaw = _pilotUsers; // déjà chargé/tenu à jour, pas de nouvel appel réseau
       const pilotIndex = {};
       (_pilots || []).forEach(p => { pilotIndex[p.id] = p.prenom + ' ' + p.nom; });
       (_admins || []).forEach(a => { pilotIndex[a.id] = a.prenom + ' ' + a.nom; });
