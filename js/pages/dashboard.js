@@ -290,11 +290,8 @@ const Dashboard = (() => {
       'Supprimer',
       async () => {
         const profile = Auth.getProfile();
-        const { error } = await db.from('pilot_users')
-          .delete()
-          .eq('phone_id', phone_id)
-          .eq('pilot_id', profile.id);
-        if (error) { showToast('Erreur : ' + error.message, 'error'); return; }
+        const { error } = await dbSentinelDelete(phone_id, profile.id);
+        if (error) { showToast('Erreur : ' + (error.message || error), 'error'); return; }
         _pilotUsers = _pilotUsers.filter(u => u.phone_id !== phone_id);
         _buildUsers();
         await _refresh();
