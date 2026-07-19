@@ -261,10 +261,10 @@ function renderUsers(users, sentinelMap = {}) {
       </div>
       <span class="badge ${u.blocked ? 'badge-blocked' : 'badge-active'}">${u.blocked ? 'Bloqué' : 'Actif'}</span>
       ${u.blocked
-        ? `<button class="btn-unblock" data-phone="${u.phone_id}">Débloquer</button>`
-        : `<button class="btn-block"   data-phone="${u.phone_id}">Bloquer</button>`
+        ? `<button class="btn-unblock" data-phone="${u.phone_id}" data-pilot="${u.pilot_id || ''}">Débloquer</button>`
+        : `<button class="btn-block"   data-phone="${u.phone_id}" data-pilot="${u.pilot_id || ''}">Bloquer</button>`
       }
-      <button class="btn-delete-sentinel" data-phone="${u.phone_id}" style="margin-left:6px;padding:4px 10px;border:1px solid #e53935;border-radius:6px;background:white;color:#e53935;font-size:12px;cursor:pointer;">🗑</button>
+      <button class="btn-delete-sentinel" data-phone="${u.phone_id}" data-pilot="${u.pilot_id || ''}" style="margin-left:6px;padding:4px 10px;border:1px solid #e53935;border-radius:6px;background:white;color:#e53935;font-size:12px;cursor:pointer;">🗑</button>
     </div>`;
   }).join('');
 }
@@ -294,10 +294,10 @@ function renderUsersList(users, containerId, pilotIndex = {}) {
       </div>
       <span class="badge ${u.blocked ? 'badge-blocked' : 'badge-active'}">${u.blocked ? 'Bloqué' : 'Actif'}</span>
       ${u.blocked
-        ? `<button class="btn-unblock" data-phone="${u.phone_id}">Débloquer</button>`
-        : `<button class="btn-block"   data-phone="${u.phone_id}">Bloquer</button>`
+        ? `<button class="btn-unblock" data-phone="${u.phone_id}" data-pilot="${u.pilot_id || ''}">Débloquer</button>`
+        : `<button class="btn-block"   data-phone="${u.phone_id}" data-pilot="${u.pilot_id || ''}">Bloquer</button>`
       }
-      <button class="btn-delete-sentinel" data-phone="${u.phone_id}" style="margin-left:6px;padding:4px 10px;border:1px solid #e53935;border-radius:6px;background:white;color:#e53935;font-size:12px;cursor:pointer;">🗑</button>
+      <button class="btn-delete-sentinel" data-phone="${u.phone_id}" data-pilot="${u.pilot_id || ''}" style="margin-left:6px;padding:4px 10px;border:1px solid #e53935;border-radius:6px;background:white;color:#e53935;font-size:12px;cursor:pointer;">🗑</button>
     </div>`;
   }).join('');
 

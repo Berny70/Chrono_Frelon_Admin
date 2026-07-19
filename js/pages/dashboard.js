@@ -283,14 +283,19 @@ const Dashboard = (() => {
 
   // ── ACTIONS UTILISATEURS ──────────────────────────────────
 
-  async function deleteSentinel(phone_id) {
+  async function deleteSentinel(phone_id, ownerPilotId) {
     showModal(
       'Supprimer cette sentinelle',
       'Cette sentinelle sera définitivement retirée de votre liste.',
       'Supprimer',
       async () => {
         const profile = Auth.getProfile();
-        const { error } = await dbSentinelDelete(phone_id, profile.id);
+        // Utilise le vrai propriétaire de la sentinelle (transmis par le
+        // bouton) — indispensable quand un superadmin/admin_dept supprime
+        // depuis la vue globale, où la sentinelle appartient à un AUTRE
+        // pilote que la personne connectée.
+        const pilotId = ownerPilotId || profile.id;
+        const { error } = await dbSentinelDelete(phone_id, pilotId);
         if (error) { showToast('Erreur : ' + (error.message || error), 'error'); return; }
         _pilotUsers = _pilotUsers.filter(u => u.phone_id !== phone_id);
         _buildUsers();
@@ -995,9 +1000,9 @@ const Dashboard = (() => {
       const blockBtn   = e.target.closest('.btn-block[data-phone]');
       const unblockBtn = e.target.closest('.btn-unblock[data-phone]');
       const deleteBtn  = e.target.closest('.btn-delete-sentinel[data-phone]');
-      if (blockBtn)   blockUser(blockBtn.dataset.phone);
-      if (unblockBtn) unblockUser(unblockBtn.dataset.phone);
-      if (deleteBtn)  deleteSentinel(deleteBtn.dataset.phone);
+      if (blockBtn)   blockUser(blockBtn.dataset.phone, blockBtn.dataset.pilot);
+      if (unblockBtn) unblockUser(unblockBtn.dataset.phone, unblockBtn.dataset.pilot);
+      if (deleteBtn)  deleteSentinel(deleteBtn.dataset.phone, deleteBtn.dataset.pilot);
     });
 
     document.getElementById('pending-list')?.addEventListener('click', e => {
