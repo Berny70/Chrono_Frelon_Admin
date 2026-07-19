@@ -233,6 +233,29 @@ async function dbSentinelDelete(phone_id, pilotId) {
   return result?.error ? { error: { message: result.error } } : { ok: true };
 }
 
+async function dbDeletedSentinelsGet(pilotId) {
+  const { data, error } = await db.rpc('chassnid_get_deleted_sentinels', {
+    p_token:    _token(),
+    p_pilot_id: pilotId,
+  });
+  if (error) return { error, sentinels: [] };
+  const result = _parse(data);
+  return result?.error
+    ? { error: { message: result.error }, sentinels: [] }
+    : { sentinels: result?.sentinels || [] };
+}
+
+async function dbSentinelRestore(phone_id, pilotId) {
+  const { data, error } = await db.rpc('chassnid_sentinel_restore', {
+    p_token:    _token(),
+    p_phone_id: phone_id,
+    p_pilot_id: pilotId,
+  });
+  if (error) return { error };
+  const result = _parse(data);
+  return result?.error ? { error: { message: result.error } } : { ok: true };
+}
+
 async function dbUpdatePseudo(phone_id, pilotId, pseudo) {
   const { data, error } = await db.rpc('chassnid_update_pseudo', {
     p_token:    _token(),

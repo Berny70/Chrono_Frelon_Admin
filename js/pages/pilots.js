@@ -193,10 +193,18 @@ const Pilots = (() => {
 
   // ── VOIR LES UTILISATEURS D'UN PILOTE ─────────────────────
 
+  let _currentViewPilotId = null;
+
   async function view(pilotId, pilotName) {
+    _currentViewPilotId = pilotId;
     document.getElementById('view-title').textContent = `Sentinelles de ${pilotName}`;
     const list = document.getElementById('view-list');
     list.innerHTML = '<p class="form-hint">Chargement…</p>';
+    // Réinitialise le bloc "sentinelles supprimées" (fermé par défaut à chaque ouverture)
+    const deletedList = document.getElementById('deleted-list');
+    deletedList.style.display = 'none';
+    deletedList.innerHTML = '';
+    document.getElementById('link-view-deleted').textContent = '🗑️ Voir les sentinelles supprimées';
     showOverlay('overlay-view');
 
     const users = await dbPilotUsersGet(pilotId);
@@ -239,7 +247,7 @@ const Pilots = (() => {
         btn.addEventListener('click', () => {
           showModal(
             'Supprimer cette sentinelle',
-            `Supprimer la sentinelle "${btn.dataset.pseudo}" ? Cette action est irréversible.`,
+            `Supprimer la sentinelle "${btn.dataset.pseudo}" ? Ses signalements seront définitivement effacés. Elle pourra être réintégrée plus tard depuis "Sentinelles supprimées" si besoin.`,
             'Supprimer',
             async () => {
               const { error } = await dbSentinelDelete(btn.dataset.phone, btn.dataset.pilot);
@@ -253,6 +261,67 @@ const Pilots = (() => {
         });
       });
     }
+  }
+
+  // ── SENTINELLES SUPPRIMÉES (consultation + réintégration) ───
+
+  async function viewDeleted() {
+    const pilotId = _currentViewPilotId;
+    if (!pilotId) return;
+    const deletedList = document.getElementById('deleted-list');
+    const link = document.getElementById('link-view-deleted');
+
+    // Toggle : si déjà ouvert, on referme
+    if (deletedList.style.display === 'flex') {
+      deletedList.style.display = 'none';
+      link.textContent = '🗑️ Voir les sentinelles supprimées';
+      return;
+    }
+
+    link.textContent = 'Chargement…';
+    const { error, sentinels } = await dbDeletedSentinelsGet(pilotId);
+    if (error) {
+      showToast('Erreur : ' + (error.message || error));
+      link.textContent = '🗑️ Voir les sentinelles supprimées';
+      return;
+    }
+
+    link.textContent = `🗑️ Masquer les sentinelles supprimées (${sentinels.length})`;
+    deletedList.style.display = 'flex';
+
+    if (sentinels.length === 0) {
+      deletedList.innerHTML = '<p class="form-hint">Aucune sentinelle supprimée.</p>';
+      return;
+    }
+
+    deletedList.innerHTML = sentinels.map(s => `
+      <div class="list-item" style="display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid var(--border);opacity:0.7">
+        <div style="flex:1;min-width:0;font-size:13px">
+          ${s.pseudo || s.phone_id.substring(0,8) + '…'}
+          <div style="font-size:11px;color:var(--text-muted)">Supprimée le ${new Date(s.created_at).toLocaleDateString('fr-FR')}</div>
+        </div>
+        <button class="btn-restore-sentinel" data-phone="${s.phone_id}" data-pilot="${pilotId}" data-pseudo="${s.pseudo || s.phone_id.substring(0,8)}"
+          style="background:none;border:1px solid var(--border);border-radius:6px;padding:4px 10px;font-size:12px;cursor:pointer;">↩️ Réintégrer</button>
+      </div>`).join('');
+
+    deletedList.querySelectorAll('.btn-restore-sentinel').forEach(btn => {
+      btn.addEventListener('click', () => {
+        showModal(
+          'Réintégrer cette sentinelle',
+          `Réintégrer "${btn.dataset.pseudo}" ? Elle pourra à nouveau se rattacher et envoyer des signalements.`,
+          'Réintégrer',
+          async () => {
+            const { error } = await dbSentinelRestore(btn.dataset.phone, btn.dataset.pilot);
+            if (error) showToast('Erreur : ' + (error.message || error));
+            else {
+              showToast('Sentinelle réintégrée.');
+              viewDeleted(); // referme
+              view(btn.dataset.pilot, document.getElementById('view-title').textContent.replace('Sentinelles de ', ''));
+            }
+          }
+        );
+      });
+    });
   }
 
   // ── PARAMÈTRES D'UN PILOTE ────────────────────────────────
@@ -326,6 +395,12 @@ const Pilots = (() => {
 
     // Créer
     document.getElementById('btn-create-pilot')?.addEventListener('click', create);
+
+    // Sentinelles supprimées (dans le panneau "Sentinelles de ...")
+    document.getElementById('link-view-deleted')?.addEventListener('click', e => {
+      e.preventDefault();
+      viewDeleted();
+    });
 
     // Filtre par territoire
     document.getElementById('search-pilots')?.addEventListener('input', e => {
