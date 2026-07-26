@@ -225,7 +225,7 @@ const Dashboard = (() => {
       renderUsers(_users, _sentinelMap);
       // "Voir mes sentinelles supprimées" : réservé au pilote lui-même
       // (le superadmin a déjà cet accès via l'onglet Pilotes, par pilote)
-      document.getElementById('my-deleted-sentinels-section').style.display = (role === 'pilot') ? '' : 'none';
+      document.getElementById('link-view-my-deleted').style.display = (role === 'pilot') ? '' : 'none';
     }
 
     if (role === 'superadmin') renderAdmins(_admins);
