@@ -223,6 +223,9 @@ const Dashboard = (() => {
       document.getElementById('my-sentinels-section').style.display     = 'none';
       document.getElementById('pilots-sentinels-section').style.display = 'none';
       renderUsers(_users, _sentinelMap);
+      // "Voir mes sentinelles supprimées" : réservé au pilote lui-même
+      // (le superadmin a déjà cet accès via l'onglet Pilotes, par pilote)
+      document.getElementById('my-deleted-sentinels-section').style.display = (role === 'pilot') ? '' : 'none';
     }
 
     if (role === 'superadmin') renderAdmins(_admins);
@@ -323,6 +326,69 @@ const Dashboard = (() => {
         showToast('Sentinelle supprimée.');
       }
     );
+  }
+
+  // ── SENTINELLES SUPPRIMÉES — vue pilote (auto-service) ────
+
+  async function viewMyDeletedSentinels() {
+    const profile = Auth.getProfile();
+    const listEl = document.getElementById('my-deleted-list');
+    const link = document.getElementById('link-view-my-deleted');
+
+    // Toggle : si déjà ouvert, on referme
+    if (listEl.style.display === 'flex') {
+      listEl.style.display = 'none';
+      link.textContent = '🗑️ Voir mes sentinelles supprimées';
+      return;
+    }
+
+    link.textContent = 'Chargement…';
+    const { error, sentinels } = await dbDeletedSentinelsGet(profile.id);
+    if (error) {
+      showToast('Erreur : ' + (error.message || error));
+      link.textContent = '🗑️ Voir mes sentinelles supprimées';
+      return;
+    }
+
+    link.textContent = `🗑️ Masquer mes sentinelles supprimées (${sentinels.length})`;
+    listEl.style.display = 'flex';
+
+    if (sentinels.length === 0) {
+      listEl.innerHTML = '<p class="form-hint">Aucune sentinelle supprimée.</p>';
+      return;
+    }
+
+    listEl.innerHTML = sentinels.map(s => `
+      <div class="list-item" style="display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid var(--border);opacity:0.7">
+        <div style="flex:1;min-width:0;font-size:13px">
+          ${s.pseudo || s.phone_id.substring(0,8) + '…'}
+          <div style="font-size:11px;color:var(--text-muted)">Supprimée le ${new Date(s.created_at).toLocaleDateString('fr-FR')}</div>
+        </div>
+        <button class="btn-restore-my-sentinel" data-phone="${s.phone_id}" data-pseudo="${s.pseudo || s.phone_id.substring(0,8)}"
+          style="background:none;border:1px solid var(--border);border-radius:6px;padding:4px 10px;font-size:12px;cursor:pointer;">↩️ Réintégrer</button>
+      </div>`).join('');
+
+    listEl.querySelectorAll('.btn-restore-my-sentinel').forEach(btn => {
+      btn.addEventListener('click', () => {
+        showModal(
+          'Réintégrer cette sentinelle',
+          `Réintégrer "${btn.dataset.pseudo}" ? Elle pourra à nouveau se rattacher et envoyer des signalements.`,
+          'Réintégrer',
+          async () => {
+            const { error } = await dbSentinelRestore(btn.dataset.phone, profile.id);
+            if (error) { showToast('Erreur : ' + (error.message || error)); return; }
+            showToast('Sentinelle réintégrée.');
+            viewMyDeletedSentinels(); // referme
+            // _pilotUsers avait été chargée une fois, déjà filtrée sans les
+            // supprimées — il faut la recharger pour que la sentinelle
+            // réintégrée réapparaisse dans la liste principale.
+            _pilotUsers = await dbPilotUsersGet(profile.id);
+            _buildUsers();
+            await _refresh();
+          }
+        );
+      });
+    });
   }
 
   async function blockUser(phone_id) {
@@ -789,6 +855,10 @@ const Dashboard = (() => {
 
     document.getElementById('btn-qrcode-pm')?.addEventListener('click', showQrCodePM);
     document.getElementById('btn-qrcode-vn')?.addEventListener('click', showQrCodeVN);
+    document.getElementById('link-view-my-deleted')?.addEventListener('click', e => {
+      e.preventDefault();
+      viewMyDeletedSentinels();
+    });
     document.getElementById('btn-share-whatsapp-pm')?.addEventListener('click', () => {
       const url = document.getElementById('qrcode-url-pm').textContent;
       window.open(`https://wa.me/?text=${encodeURIComponent('Rejoignez Pot à Mèche : ' + url)}`, '_blank');
