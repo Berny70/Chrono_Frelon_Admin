@@ -184,7 +184,8 @@ const Pilots = (() => {
       `Supprimer ${name} et toutes ses sentinelles rattachées ? Cette action est irréversible.`,
       'Supprimer',
       async () => {
-        await dbProfileDelete(id);
+        const { error } = await dbProfileDelete(id);
+        if (error) { showToast('Erreur : ' + (error.message || error)); return; }
         showToast(`${name} supprimé.`);
         await _refresh();
       }

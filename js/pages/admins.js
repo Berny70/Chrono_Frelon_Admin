@@ -230,10 +230,17 @@ const Admins = (() => {
   async function remove(id, name) {
     showModal(
       'Supprimer cet administrateur',
-      `Supprimer ${name} et tous ses pilotes rattachés ? Cette action est irréversible.`,
+      `Supprimer ${name} ? Cette action est irréversible. Impossible tant qu'il lui reste des pilotes rattachés — il faudra d'abord les migrer ou les supprimer un par un.`,
       'Supprimer',
       async () => {
-        await dbProfileDelete(id);
+        const { error } = await dbProfileDelete(id);
+        if (error) {
+          const msg = /foreign key|constraint/i.test(error.message || '')
+            ? 'Impossible : cet administrateur a encore des pilotes rattachés. Migrez-les ou supprimez-les d\'abord.'
+            : 'Erreur : ' + (error.message || error);
+          showToast(msg);
+          return;
+        }
         showToast(`${name} supprimé.`);
         const admins = await dbAdminsGetAll();
         Dashboard.setAdmins(admins);
