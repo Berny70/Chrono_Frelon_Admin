@@ -181,7 +181,7 @@ const Pilots = (() => {
   async function remove(id, name) {
     showModal(
       'Supprimer ce pilote',
-      `Supprimer ${name} et toutes ses sentinelles rattachées ? Cette action est irréversible.`,
+      `Supprimer ${name} ? Ses sentinelles seront automatiquement transférées vers votre propre compte (rien n'est perdu) avant la suppression.`,
       'Supprimer',
       async () => {
         const { error } = await dbProfileDelete(id);
