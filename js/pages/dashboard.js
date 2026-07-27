@@ -328,12 +328,13 @@ const Dashboard = (() => {
     );
   }
 
-  // ── SENTINELLES SUPPRIMÉES — vue pilote (auto-service) ────
+  // ── SENTINELLES SUPPRIMÉES — auto-service (pilote OU admin_dept
+  // pour ses sentinelles directes) ────────────────────────────
 
-  async function viewMyDeletedSentinels() {
+  async function _toggleMyDeletedSentinels(linkId, listId, onRestored) {
     const profile = Auth.getProfile();
-    const listEl = document.getElementById('my-deleted-list');
-    const link = document.getElementById('link-view-my-deleted');
+    const listEl = document.getElementById(listId);
+    const link = document.getElementById(linkId);
 
     // Toggle : si déjà ouvert, on referme
     if (listEl.style.display === 'flex') {
@@ -378,16 +379,34 @@ const Dashboard = (() => {
             const { error } = await dbSentinelRestore(btn.dataset.phone, profile.id);
             if (error) { showToast('Erreur : ' + (error.message || error)); return; }
             showToast('Sentinelle réintégrée.');
-            viewMyDeletedSentinels(); // referme
-            // _pilotUsers avait été chargée une fois, déjà filtrée sans les
-            // supprimées — il faut la recharger pour que la sentinelle
-            // réintégrée réapparaisse dans la liste principale.
-            _pilotUsers = await dbPilotUsersGet(profile.id);
-            _buildUsers();
-            await _refresh();
+            _toggleMyDeletedSentinels(linkId, listId); // referme
+            await onRestored();
           }
         );
       });
+    });
+  }
+
+  async function viewMyDeletedSentinels() {
+    await _toggleMyDeletedSentinels('link-view-my-deleted', 'my-deleted-list', async () => {
+      // _pilotUsers avait été chargée une fois, déjà filtrée sans les
+      // supprimées — il faut la recharger pour que la sentinelle
+      // réintégrée réapparaisse dans la liste principale.
+      const profile = Auth.getProfile();
+      _pilotUsers = await dbPilotUsersGet(profile.id);
+      _buildUsers();
+      await _refresh();
+    });
+  }
+
+  async function viewMyDeletedSentinelsAdmin() {
+    await _toggleMyDeletedSentinels('link-view-my-deleted-admin', 'my-deleted-list-admin', async () => {
+      // Même chose côté admin_dept : _pilotUsers (ses sentinelles directes)
+      // doit être rechargée pour faire réapparaître la sentinelle réintégrée.
+      const profile = Auth.getProfile();
+      _pilotUsers = await dbPilotUsersGet(profile.id);
+      _buildUsers();
+      await _refresh();
     });
   }
 
@@ -858,6 +877,10 @@ const Dashboard = (() => {
     document.getElementById('link-view-my-deleted')?.addEventListener('click', e => {
       e.preventDefault();
       viewMyDeletedSentinels();
+    });
+    document.getElementById('link-view-my-deleted-admin')?.addEventListener('click', e => {
+      e.preventDefault();
+      viewMyDeletedSentinelsAdmin();
     });
     document.getElementById('btn-share-whatsapp-pm')?.addEventListener('click', () => {
       const url = document.getElementById('qrcode-url-pm').textContent;

@@ -299,7 +299,11 @@
 
       <!-- Sous-groupe : mes sentinelles directes (admin_dept uniquement) -->
       <div id="my-sentinels-section" style="display:none">
-        <h3 class="section-subtitle">Mes sentinelles</h3>
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <h3 class="section-subtitle">Mes sentinelles</h3>
+          <a href="#" id="link-view-my-deleted-admin" style="font-size:13px;color:var(--text-muted);text-decoration:underline;white-space:nowrap">🗑️ Voir mes sentinelles supprimées</a>
+        </div>
+        <div id="my-deleted-list-admin" style="display:none;flex-direction:column;gap:8px;margin-bottom:12px"></div>
         <div class="list-container" id="my-sentinels-list">
           <div class="loading"><div class="spinner"></div></div>
         </div>
