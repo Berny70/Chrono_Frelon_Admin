@@ -4,7 +4,13 @@
 // CSS override pour les icônes nids
 (function() {
   const style = document.createElement('style');
-  style.textContent = '.nest-div-icon { background: none !important; border: none !important; }';
+  style.textContent = '.nest-div-icon { background: none !important; border: none !important; }' +
+    // Pendant Mesurer / Point supposé : les cônes et points de signalement
+    // ne doivent plus intercepter le clic (sinon impossible de cliquer
+    // pile à leur intersection, qui est justement l'endroit recherché).
+    '.leaflet-container.tool-active .leaflet-interactive { pointer-events: none !important; }' +
+    '.leaflet-container.tool-active .leaflet-marker-icon.guess-marker,' +
+    '.leaflet-container.tool-active .leaflet-marker-icon.guess-marker * { pointer-events: auto !important; }';
   document.head.appendChild(style);
 })();
 
@@ -579,11 +585,13 @@ function _toggleMeasure() {
     _map.on('click', _onMeasureClick);
     _map.on('mousemove', _onMeasureMouseMove);
     _map.getContainer().style.cursor = 'crosshair';
+    _map.getContainer().classList.add('tool-active');
   } else {
     if (btn) { btn.style.background = '#fff'; btn.style.color = '#333'; }
     _map.off('click', _onMeasureClick);
     _map.off('mousemove', _onMeasureMouseMove);
     _map.getContainer().style.cursor = '';
+    _map.getContainer().classList.remove('tool-active');
     _clearMeasure();
     // Restaure le clic d'ajout de nid s'il était autorisé
     if (_canAddNestPermission) _map.on('click', _onMapClickAddNest);
@@ -647,10 +655,12 @@ function _toggleGuess() {
     _map.off('click', _onMapClickAddNest);
     _map.on('click', _onGuessClick);
     _map.getContainer().style.cursor = 'crosshair';
+    _map.getContainer().classList.add('tool-active');
   } else {
     if (btn) { btn.style.background = '#fff'; btn.style.color = '#333'; }
     _map.off('click', _onGuessClick);
     _map.getContainer().style.cursor = '';
+    _map.getContainer().classList.remove('tool-active');
     if (_guessMarker) { _map.removeLayer(_guessMarker); _guessMarker = null; }
     if (_canAddNestPermission) _map.on('click', _onMapClickAddNest);
   }
@@ -666,7 +676,7 @@ function _onGuessClick(e) {
 
   _guessMarker = L.marker(e.latlng, {
     icon: L.divIcon({
-      className: '',
+      className: 'guess-marker',
       html: '<div style="font-size:28px;line-height:1;transform:translate(-50%,-100%)">📍</div>',
       iconSize: [0, 0],
     })
