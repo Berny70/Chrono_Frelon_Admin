@@ -20,6 +20,8 @@ let _measureActive  = false;
 let _measurePoints   = [];   // [L.LatLng, ...] — points déjà posés
 let _measureLayers   = [];   // marqueurs + segments affichés
 let _measureTooltip  = null; // affichage flottant de la distance en cours
+let _guessActive = false;
+let _guessMarker = null;
 
 // ── FONDS DE CARTE ────────────────────────────────────────────
 
@@ -61,6 +63,14 @@ function _addBasemapControl() {
         font-weight:600;cursor:pointer;text-align:left">
         📏 Mesurer
       </button>` +
+      `<button id="btn-toggle-guess" style="
+        width:100%;margin-bottom:6px;padding:6px 10px;
+        background:#fff;color:#333;
+        border:1px solid var(--border);border-radius:8px;
+        font-family:'DM Sans',sans-serif;font-size:13px;
+        font-weight:600;cursor:pointer;text-align:left">
+        📍 Point supposé
+      </button>` +
       Object.entries(BASEMAPS).map(([key, bm]) =>
         `<button class="basemap-btn${key === (localStorage.getItem('chassnid_basemap') || 'osm') ? ' basemap-btn--active' : ''}" data-basemap="${key}">${bm.label}</button>`
       ).join('');
@@ -70,6 +80,7 @@ function _addBasemapControl() {
       if (bm) _applyBasemap(bm.dataset.basemap);
       if (e.target.closest('#btn-toggle-nests')) _toggleNests();
       if (e.target.closest('#btn-toggle-measure')) _toggleMeasure();
+      if (e.target.closest('#btn-toggle-guess')) _toggleGuess();
     });
     return div;
   };
@@ -561,6 +572,7 @@ function _toggleMeasure() {
   const btn = document.getElementById('btn-toggle-measure');
 
   if (_measureActive) {
+    if (_guessActive) _toggleGuess(); // modes exclusifs
     if (btn) { btn.style.background = '#1e88e5'; btn.style.color = '#fff'; }
     // Le clic de mesure prend le pas sur l'ajout de nid tant qu'actif
     _map.off('click', _onMapClickAddNest);
@@ -618,4 +630,56 @@ function _onMeasureMouseMove(e) {
   } else {
     _measureTooltip.setLatLng(e.latlng).setContent(_formatDistance(total));
   }
+}
+
+// ── POINT SUPPOSÉ (nid non confirmé) ───────────────────────────
+// Outil ponctuel, rien n'est enregistré en base : place un repère,
+// affiche ses coordonnées et un lien direct vers Google Maps pour s'y
+// rendre sur le terrain.
+
+function _toggleGuess() {
+  _guessActive = !_guessActive;
+  const btn = document.getElementById('btn-toggle-guess');
+
+  if (_guessActive) {
+    if (_measureActive) _toggleMeasure(); // modes exclusifs
+    if (btn) { btn.style.background = '#e53935'; btn.style.color = '#fff'; }
+    _map.off('click', _onMapClickAddNest);
+    _map.on('click', _onGuessClick);
+    _map.getContainer().style.cursor = 'crosshair';
+  } else {
+    if (btn) { btn.style.background = '#fff'; btn.style.color = '#333'; }
+    _map.off('click', _onGuessClick);
+    _map.getContainer().style.cursor = '';
+    if (_guessMarker) { _map.removeLayer(_guessMarker); _guessMarker = null; }
+    if (_canAddNestPermission) _map.on('click', _onMapClickAddNest);
+  }
+}
+
+function _onGuessClick(e) {
+  const { lat, lng } = e.latlng;
+  const latStr = lat.toFixed(5);
+  const lngStr = lng.toFixed(5);
+  const gmapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${latStr},${lngStr}`;
+
+  if (_guessMarker) _map.removeLayer(_guessMarker);
+
+  _guessMarker = L.marker(e.latlng, {
+    icon: L.divIcon({
+      className: '',
+      html: '<div style="font-size:28px;line-height:1;transform:translate(-50%,-100%)">📍</div>',
+      iconSize: [0, 0],
+    })
+  }).addTo(_map);
+
+  _guessMarker.bindPopup(`
+    <div style="font-size:13px;line-height:1.6">
+      <b>📍 Point supposé</b><br>
+      ${latStr}, ${lngStr}<br>
+      <a href="${gmapsUrl}" target="_blank" rel="noopener"
+         style="display:inline-block;margin-top:6px;padding:6px 10px;background:#1e88e5;color:#fff;border-radius:6px;text-decoration:none;font-weight:600">
+        🧭 Ouvrir dans Google Maps
+      </a>
+    </div>
+  `, { maxWidth: 220 }).openPopup();
 }
