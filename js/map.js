@@ -78,6 +78,7 @@ function mapInit(signals, blockedPhones, sentinelMap, nests, canAddNest) {
     const saved = localStorage.getItem('chassnid_basemap') || 'osm';
     _applyBasemap(saved);
     _addBasemapControl();
+    L.control.scale({ metric: true, imperial: false, position: 'bottomleft' }).addTo(_map);
     window._leafletMap = _map; // exposé pour leaflet-image
   }
 
