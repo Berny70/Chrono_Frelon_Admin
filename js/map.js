@@ -16,6 +16,10 @@ let _nests       = [];
 let _nestLayers  = [];
 let _nestsVisible = true;
 let _canAddNestPermission = false;
+let _measureActive  = false;
+let _measurePoints   = [];   // [L.LatLng, ...] — points déjà posés
+let _measureLayers   = [];   // marqueurs + segments affichés
+let _measureTooltip  = null; // affichage flottant de la distance en cours
 
 // ── FONDS DE CARTE ────────────────────────────────────────────
 
@@ -49,6 +53,14 @@ function _addBasemapControl() {
         font-weight:600;cursor:pointer;text-align:left">
         🪺 Nids ${_nestsVisible ? 'visibles' : 'masqués'}
       </button>` +
+      `<button id="btn-toggle-measure" style="
+        width:100%;margin-bottom:6px;padding:6px 10px;
+        background:#fff;color:#333;
+        border:1px solid var(--border);border-radius:8px;
+        font-family:'DM Sans',sans-serif;font-size:13px;
+        font-weight:600;cursor:pointer;text-align:left">
+        📏 Mesurer
+      </button>` +
       Object.entries(BASEMAPS).map(([key, bm]) =>
         `<button class="basemap-btn${key === (localStorage.getItem('chassnid_basemap') || 'osm') ? ' basemap-btn--active' : ''}" data-basemap="${key}">${bm.label}</button>`
       ).join('');
@@ -57,6 +69,7 @@ function _addBasemapControl() {
       const bm = e.target.closest('.basemap-btn');
       if (bm) _applyBasemap(bm.dataset.basemap);
       if (e.target.closest('#btn-toggle-nests')) _toggleNests();
+      if (e.target.closest('#btn-toggle-measure')) _toggleMeasure();
     });
     return div;
   };
@@ -534,4 +547,73 @@ function _toggleNests() {
     if (_nestsVisible) l.addTo(_map);
     else _map.removeLayer(l);
   });
+}
+
+// ── OUTIL DE MESURE DE DISTANCE ────────────────────────────────
+// Clic = pose un point ; déplacement de la souris = distance en direct
+// depuis le dernier point posé ; nouveau clic = fixe le segment et
+// permet d'enchaîner (mesure cumulée sur plusieurs segments).
+
+function _toggleMeasure() {
+  _measureActive = !_measureActive;
+  const btn = document.getElementById('btn-toggle-measure');
+
+  if (_measureActive) {
+    if (btn) { btn.style.background = '#1e88e5'; btn.style.color = '#fff'; }
+    // Le clic de mesure prend le pas sur l'ajout de nid tant qu'actif
+    _map.off('click', _onMapClickAddNest);
+    _map.on('click', _onMeasureClick);
+    _map.on('mousemove', _onMeasureMouseMove);
+    _map.getContainer().style.cursor = 'crosshair';
+  } else {
+    if (btn) { btn.style.background = '#fff'; btn.style.color = '#333'; }
+    _map.off('click', _onMeasureClick);
+    _map.off('mousemove', _onMeasureMouseMove);
+    _map.getContainer().style.cursor = '';
+    _clearMeasure();
+    // Restaure le clic d'ajout de nid s'il était autorisé
+    if (_canAddNestPermission) _map.on('click', _onMapClickAddNest);
+  }
+}
+
+function _clearMeasure() {
+  _measurePoints = [];
+  _measureLayers.forEach(l => _map.removeLayer(l));
+  _measureLayers = [];
+  if (_measureTooltip) { _map.removeLayer(_measureTooltip); _measureTooltip = null; }
+}
+
+function _formatDistance(meters) {
+  return meters < 1000 ? `${Math.round(meters)} m` : `${(meters / 1000).toFixed(2)} km`;
+}
+
+function _onMeasureClick(e) {
+  // Double-clic ou clic sur le dernier point : termine la mesure en cours
+  if (_measurePoints.length > 0) {
+    const marker = L.circleMarker(e.latlng, { radius: 5, color: '#1e88e5', fillColor: '#1e88e5', fillOpacity: 1 }).addTo(_map);
+    const line   = L.polyline([_measurePoints[_measurePoints.length - 1], e.latlng], { color: '#1e88e5', weight: 3, dashArray: '6 4' }).addTo(_map);
+    _measureLayers.push(marker, line);
+  } else {
+    const marker = L.circleMarker(e.latlng, { radius: 5, color: '#1e88e5', fillColor: '#1e88e5', fillOpacity: 1 }).addTo(_map);
+    _measureLayers.push(marker);
+  }
+  _measurePoints.push(e.latlng);
+}
+
+function _onMeasureMouseMove(e) {
+  if (_measurePoints.length === 0) return;
+
+  const last  = _measurePoints[_measurePoints.length - 1];
+  const total = _measurePoints.reduce((sum, p, i) =>
+    i === 0 ? 0 : sum + _map.distance(_measurePoints[i - 1], p), 0
+  ) + _map.distance(last, e.latlng);
+
+  if (!_measureTooltip) {
+    _measureTooltip = L.tooltip({ permanent: true, direction: 'right', offset: [10, 0], className: 'measure-tooltip' })
+      .setLatLng(e.latlng)
+      .setContent(_formatDistance(total))
+      .addTo(_map);
+  } else {
+    _measureTooltip.setLatLng(e.latlng).setContent(_formatDistance(total));
+  }
 }
