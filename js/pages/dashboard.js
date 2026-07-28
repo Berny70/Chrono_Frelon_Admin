@@ -16,6 +16,7 @@ const Dashboard = (() => {
   let _groupedSentinels = []; // [{ pilot, users }] — pour admin_dept, chargé une seule fois
   let _nests = [];
   let _phoneToPilotId = {};   // phone_id → pilot_id réel (superadmin/admin_dept)
+  let _searchOrigin = null;   // { lat, lon } — remplace la position enregistrée si défini
 
   // ── CONSTRUCTION DU MAP phone_id → {pseudo, pilote} ──────
 
@@ -243,33 +244,66 @@ const Dashboard = (() => {
   // ── CHANGEMENT DE RAYON ────────────────────────────────────
 
   async function onRadiusChange(km) {
-    const profile = Auth.getProfile();
     _radius = km;
+    await _refetchByRadius();
+  }
+
+  // Point de départ effectif : la position personnalisée (carte) si
+  // définie, sinon la position enregistrée du profil.
+  function _effectiveOrigin() {
+    if (_searchOrigin) return _searchOrigin;
+    const profile = Auth.getProfile();
+    return (profile.lat && profile.lon) ? { lat: profile.lat, lon: profile.lon } : null;
+  }
+
+  async function _refetchByRadius() {
+    const profile = Auth.getProfile();
+    const origin = _effectiveOrigin();
     setLoading('signals-list');
     setLoading('users-list');
 
     if (profile.role === 'superadmin') {
       _signals = await dbSignalsGetAll();
+    } else if (origin) {
+      _signals = await dbSignalsGetAll(origin.lat, origin.lon, _radius);
     } else {
       _signals = await dbSignalsGetAll(profile.lat, profile.lon, _radius);
     }
 
     // Filtrer aussi les nids par rayon (distance haversine)
-    if (profile.lat && profile.lon) {
+    if (origin) {
       const allNests = await dbNestsGetAll();
       const R = 6371;
       _nests = allNests.filter(n => {
         if (!n.lat || !n.lon) return false;
-        const dLat = (n.lat - profile.lat) * Math.PI / 180;
-        const dLon = (n.lon - profile.lon) * Math.PI / 180;
-        const a = Math.sin(dLat/2)**2 + Math.cos(profile.lat*Math.PI/180) * Math.cos(n.lat*Math.PI/180) * Math.sin(dLon/2)**2;
-        return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)) <= km;
+        const dLat = (n.lat - origin.lat) * Math.PI / 180;
+        const dLon = (n.lon - origin.lon) * Math.PI / 180;
+        const a = Math.sin(dLat/2)**2 + Math.cos(origin.lat*Math.PI/180) * Math.cos(n.lat*Math.PI/180) * Math.sin(dLon/2)**2;
+        return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)) <= _radius;
       });
     }
 
     _blockedPhones = await dbBlockedGetAll();
     _buildUsers();
     await _refresh();
+  }
+
+  // Utilise le centre actuel de la carte comme nouveau point de départ
+  async function searchHere() {
+    const center = mapGetCenter();
+    if (!center) { showToast('Carte non disponible.'); return; }
+    _searchOrigin = { lat: center.lat, lon: center.lng };
+    document.getElementById('btn-search-reset').style.display = '';
+    showToast(`Recherche centrée ici (${_radius} km).`);
+    await _refetchByRadius();
+  }
+
+  // Revient à la position enregistrée du profil
+  async function resetSearchOrigin() {
+    _searchOrigin = null;
+    document.getElementById('btn-search-reset').style.display = 'none';
+    showToast('Retour à votre position enregistrée.');
+    await _refetchByRadius();
   }
 
   function onDateFilterChange(value) {
@@ -882,6 +916,8 @@ const Dashboard = (() => {
       e.preventDefault();
       viewMyDeletedSentinelsAdmin();
     });
+    document.getElementById('btn-search-here')?.addEventListener('click', searchHere);
+    document.getElementById('btn-search-reset')?.addEventListener('click', resetSearchOrigin);
     document.getElementById('btn-share-whatsapp-pm')?.addEventListener('click', () => {
       const url = document.getElementById('qrcode-url-pm').textContent;
       window.open(`https://wa.me/?text=${encodeURIComponent('Rejoignez Pot à Mèche : ' + url)}`, '_blank');

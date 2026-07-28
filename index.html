@@ -206,6 +206,13 @@
           </select>
         </div>
         <div class="stat-item stat-item--radius">
+          <label class="stat-label">Centre</label>
+          <div style="display:flex;gap:4px;align-items:center">
+            <button id="btn-search-here" title="Utiliser le centre actuel de la carte comme point de départ" style="padding:4px 8px;border:1px solid var(--border);border-radius:6px;background:white;font-size:12px;cursor:pointer;white-space:nowrap">🔍 Ici</button>
+            <button id="btn-search-reset" title="Revenir à ma position enregistrée" style="display:none;padding:4px 8px;border:1px solid var(--border);border-radius:6px;background:white;font-size:12px;cursor:pointer;">↺</button>
+          </div>
+        </div>
+        <div class="stat-item stat-item--radius">
           <label class="stat-label">Période</label>
           <select id="date-filter-map" class="radius-select">
             <option value="7">1 semaine</option>
