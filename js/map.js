@@ -178,7 +178,9 @@ function _drawSignals(signals, blockedPhones, sentinelMap) {
     if (isBlocked) return;
 
     // Fuseau directionnel (secteur angulaire ±5° autour de la direction)
-    const fuseauLength = (s.trait_length_m || CONFIG.DEFAULT_TRAIT_LENGTH_M);
+    // Priorité à la distance propre du signalement (mesurée par la
+    // sentinelle, ex. via Chrono Frelon) sur le réglage par défaut du pilote.
+    const fuseauLength = s.distance || s.trait_length_m || CONFIG.DEFAULT_TRAIT_LENGTH_M;
     const fuseauPoints = _buildFuseau(s.lat, s.lon, s.direction || 0, fuseauLength, 5);
 
     const fuseau = L.polygon(fuseauPoints, {
