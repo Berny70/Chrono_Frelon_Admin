@@ -234,6 +234,7 @@ function renderSignals(signals, blockedSet, sentinelMap = {}) {
           ${(s.destination || s.frequentation) ? `<div class="signal-tags">${s.destination ? '🌿 ' + s.destination : ''} ${s.frequentation ? '· 🐝 ' + s.frequentation : ''}</div>` : ''}
           <div class="signal-phone">${label} ${pilotLabel}</div>
         </div>
+        <button class="btn-locate" data-signal-id="${s.id}" title="Voir sur la carte" style="background:none;border:1px solid var(--border);border-radius:6px;padding:4px 8px;margin-right:4px;cursor:pointer;font-size:14px;">📍</button>
         <button class="btn-delete" data-signal-id="${s.id}">🗑</button>
       </div>`;
   }).join('');

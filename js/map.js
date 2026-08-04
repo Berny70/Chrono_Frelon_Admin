@@ -422,10 +422,33 @@ function mapGetCenter() {
   return _map.getCenter();
 }
 
+// Centre la carte sur un signalement précis et ouvre son popup
+// (utilisé depuis la liste des signalements — bouton 📍)
+function mapFocusSignal(signalId) {
+  if (!_map) return;
+  const layer = _layers.find(l => l._signalId === signalId);
+  if (!layer) { showToast?.("Signalement introuvable sur la carte (hors filtre actuel ?)."); return; }
+  const latlng = layer.getLatLng ? layer.getLatLng() : layer.getBounds().getCenter();
+  _map.setView(latlng, Math.max(_map.getZoom(), 16));
+  setTimeout(() => layer.openPopup(), 300); // laisse le temps au recentrage
+}
+
+// Centre la carte sur un nid précis et ouvre son popup
+// (utilisé depuis la liste des nids — bouton 📍)
+function mapFocusNest(nestId) {
+  if (!_map) return;
+  const marker = _nestLayers.find(l => l._nestId === nestId);
+  if (!marker) { showToast?.("Nid introuvable sur la carte (hors filtre actuel ?)."); return; }
+  if (!_nestsVisible) _toggleNests(); // s'assure que le nid est visible
+  _map.setView(marker.getLatLng(), Math.max(_map.getZoom(), 16));
+  setTimeout(() => marker.openPopup(), 300);
+}
+
 function _drawNests(nests) {
   nests.forEach(n => {
     const icon   = _getNestIcon(n.annee, n.type);
     const marker = L.marker([n.lat, n.lon], { icon });
+    marker._nestId = n.id;
     if (_nestsVisible) marker.addTo(_map);
     const date     = n.found_at ? new Date(n.found_at).toLocaleDateString('fr-FR') : '—';
     const pilote = n.pilot_nom || n.declarant || '—';

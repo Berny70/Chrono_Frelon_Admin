@@ -850,16 +850,28 @@ const Dashboard = (() => {
               📍 ${gps}
             </a>
           </div>
+          <div style="display:flex;flex-direction:column;gap:4px;flex-shrink:0">
+            <button class="btn-locate-nest" data-nest-id="${n.id}" title="Voir sur la carte"
+              style="padding:6px 10px;border-radius:6px;background:none;border:1px solid var(--border);font-size:12px;cursor:pointer">
+              📍
+            </button>
           ${Auth.getProfile()?.id === n.pilot_id || Auth.getProfile()?.role === 'superadmin' ? `
           <button class="btn-delete-nest" data-nest-id="${n.id}"
-            style="padding:6px 10px;border-radius:6px;background:#c0392b;color:#fff;border:none;font-size:12px;cursor:pointer;flex-shrink:0">
+            style="padding:6px 10px;border-radius:6px;background:#c0392b;color:#fff;border:none;font-size:12px;cursor:pointer">
             🗑
           </button>` : ''}
+          </div>
         </div>`;
     }).join('');
 
     // Délégation suppression au niveau de la liste (évite la perte des listeners après renderNests)
     list.addEventListener('click', e => {
+      const locateBtn = e.target.closest('.btn-locate-nest[data-nest-id]');
+      if (locateBtn) {
+        switchTab('map');
+        mapFocusNest(locateBtn.dataset.nestId);
+        return;
+      }
       const btn = e.target.closest('.btn-delete-nest[data-nest-id]');
       if (!btn) return;
       const nestId = btn.dataset.nestId;
@@ -1141,8 +1153,13 @@ const Dashboard = (() => {
     });
 
     document.getElementById('signals-list')?.addEventListener('click', e => {
-      const btn = e.target.closest('[data-signal-id]');
-      if (btn) deleteSignal(parseInt(btn.dataset.signalId));
+      const locateBtn = e.target.closest('.btn-locate[data-signal-id]');
+      const deleteBtn = e.target.closest('.btn-delete[data-signal-id]');
+      if (locateBtn) {
+        switchTab('map');
+        mapFocusSignal(parseInt(locateBtn.dataset.signalId));
+      }
+      if (deleteBtn) deleteSignal(parseInt(deleteBtn.dataset.signalId));
     });
 
     document.getElementById('users-list')?.addEventListener('click', e => {
