@@ -536,31 +536,26 @@ function _openNestCreateModal(lat, lng) {
     async () => {
       const foundAt = document.getElementById('nest-date-input')?.value || today;
       const nestType = document.querySelector('input[name="nest-type"]:checked')?.value || 'secondaire';
-      const { ok, error } = await dbNestAdd(lat, lng, foundAt, nestType);
+      const { ok, id, error } = await dbNestAdd(lat, lng, foundAt, nestType);
       if (error) {
         showToast('Erreur : ' + (error.message || error));
       } else {
         showToast('Nid enregistré !');
-        // Recharger les nids avec filtre rayon
-        const allNests = await dbNestsGetAll();
+        // Ajoute directement le nid tout juste créé, sans repasser par un
+        // refetch+filtre par rayon : ce filtre se base sur la position
+        // ENREGISTRÉE du profil, pas sur l'endroit où l'on vient de
+        // cliquer (ex: après un "🔍 Ici" recentré ailleurs) — le nid
+        // pouvait donc être exclu à tort et ne jamais s'afficher tant
+        // qu'on ne rechargeait pas la page.
         const profile = Auth.getProfile();
-        let filtered = allNests;
-        if (profile?.lat && profile?.lon) {
-          const R = 6371, radius = (typeof Dashboard !== 'undefined' && Dashboard.getRadius) ? Dashboard.getRadius() : 10;
-          filtered = allNests.filter(n => {
-            if (!n.lat || !n.lon) return false;
-            const dLat = (n.lat - profile.lat) * Math.PI / 180;
-            const dLon = (n.lon - profile.lon) * Math.PI / 180;
-            const a = Math.sin(dLat/2)**2 + Math.cos(profile.lat*Math.PI/180) * Math.cos(n.lat*Math.PI/180) * Math.sin(dLon/2)**2;
-            return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)) <= radius;
-          });
-        }
-        _clearNestLayers();
-        _nests = filtered;
-        _drawNests(filtered);
-        Dashboard.setNests(filtered);   // sync dashboard._nests
-        Dashboard.renderNests(filtered);
-        _setupNestClick(_canAddNestPermission);
+        const newNest = {
+          id, lat, lon: lng, found_at: foundAt, type: nestType,
+          pilot_id: profile?.id, pilot_nom: profile ? `${profile.prenom} ${profile.nom}` : '',
+        };
+        _nests = [..._nests, newNest];
+        _drawNests([newNest]);
+        Dashboard.setNests(_nests);
+        Dashboard.renderNests(_nests);
       }
     }
   );
