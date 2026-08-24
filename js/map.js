@@ -77,6 +77,14 @@ function _addBasemapControl() {
         font-weight:600;cursor:pointer;text-align:left">
         📍 Point supposé
       </button>` +
+      `<button id="btn-toggle-addnest" style="
+        width:100%;margin-bottom:6px;padding:6px 10px;
+        background:#fff;color:#333;
+        border:1px solid var(--border);border-radius:8px;
+        font-family:'DM Sans',sans-serif;font-size:13px;
+        font-weight:600;cursor:pointer;text-align:left">
+        ➕ Ajouter un nid
+      </button>` +
       Object.entries(BASEMAPS).map(([key, bm]) =>
         `<button class="basemap-btn${key === (localStorage.getItem('chassnid_basemap') || 'osm') ? ' basemap-btn--active' : ''}" data-basemap="${key}">${bm.label}</button>`
       ).join('');
@@ -87,6 +95,7 @@ function _addBasemapControl() {
       if (e.target.closest('#btn-toggle-nests')) _toggleNests();
       if (e.target.closest('#btn-toggle-measure')) _toggleMeasure();
       if (e.target.closest('#btn-toggle-guess')) _toggleGuess();
+      if (e.target.closest('#btn-toggle-addnest')) _toggleAddNest();
     });
     return div;
   };
@@ -179,12 +188,20 @@ function _drawSignals(signals, blockedPhones, sentinelMap) {
           ${(sentinelMap && sentinelMap[s.phone_id]?.pseudo) ? '🏷️ ' + sentinelMap[s.phone_id].pseudo : s.phone_id?.substring(0,8) + '…'}
         </div>
         <button onclick="mapDeleteSignal(${s.id})" style="
-          width:100%;padding:6px;
+          width:100%;padding:6px;margin-bottom:4px;
           background:#c0392b;color:#fff;
           border:none;border-radius:6px;
           font-family:'DM Sans',sans-serif;font-size:12px;
           font-weight:600;cursor:pointer">
           🗑 Supprimer
+        </button>
+        <button onclick="mapCreateNestAt(${s.lat}, ${s.lon})" style="
+          width:100%;padding:6px;
+          background:#7b3f00;color:#fff;
+          border:none;border-radius:6px;
+          font-family:'DM Sans',sans-serif;font-size:12px;
+          font-weight:600;cursor:pointer">
+          🪺 Créer un nid ici
         </button>
       </div>`;
 
@@ -497,8 +514,15 @@ function _onMapClickAddNest(e) {
     showToast('Passez en mode "🪺 Nids visibles" pour ajouter un nid (afin de voir les nids déjà déclarés à cet endroit).');
     return;
   }
+  _openNestCreateModal(e.latlng.lat, e.latlng.lng);
+}
 
-  const { lat, lng } = e.latlng;
+// Ouvre le formulaire de création de nid à une position donnée.
+// Utilisé à la fois par le clic direct sur la carte et par le bouton
+// "Créer un nid ici" dans le popup d'un signalement (les cônes de
+// signalement interceptent le clic normal, donc ce 2e chemin est
+// indispensable pour créer un nid pile à l'emplacement d'un signalement).
+function _openNestCreateModal(lat, lng) {
   const today = new Date().toISOString().split('T')[0];
 
   showModal(
@@ -542,11 +566,60 @@ function _onMapClickAddNest(e) {
   );
 }
 
+// Point d'entrée global appelé depuis le bouton du popup de signalement
+function mapCreateNestAt(lat, lng) {
+  _map.closePopup();
+  if (!_nestsVisible) {
+    showToast('Passez en mode "🪺 Nids visibles" pour ajouter un nid (afin de voir les nids déjà déclarés à cet endroit).');
+    return;
+  }
+  if (!_canAddNestPermission) {
+    showToast('Vous n\'avez pas le droit de créer un nid.');
+    return;
+  }
+  _openNestCreateModal(lat, lng);
+}
+
+// Mémorise la permission (n'attache plus le clic automatiquement —
+// c'est désormais le bouton bascule "➕ Ajouter un nid" qui gère ça,
+// voir _toggleAddNest ci-dessous).
 function _setupNestClick(canAdd) {
   _canAddNestPermission = canAdd;
-  _map.off('click', _onMapClickAddNest);
-  if (canAdd) {
+}
+
+// ── AJOUTER UN NID (bouton bascule) ────────────────────────────
+// Même principe que Mesurer / Point supposé : le temps que ce mode est
+// actif, les cônes/points de signalement ne bloquent plus le clic
+// (classe tool-active), ce qui permet de créer un nid pile à
+// l'intersection de plusieurs signalements — l'endroit le plus utile.
+
+let _addNestActive = false;
+
+function _toggleAddNest() {
+  if (!_canAddNestPermission) {
+    showToast('Vous n\'avez pas le droit de créer un nid.');
+    return;
+  }
+  _addNestActive = !_addNestActive;
+  const btn = document.getElementById('btn-toggle-addnest');
+
+  if (_addNestActive) {
+    if (_measureActive) _toggleMeasure(); // modes exclusifs
+    if (_guessActive) _toggleGuess();
+    if (!_nestsVisible) {
+      showToast('Passez en mode "🪺 Nids visibles" pour ajouter un nid (afin de voir les nids déjà déclarés à cet endroit).');
+      _addNestActive = false;
+      return;
+    }
+    if (btn) { btn.style.background = '#7b3f00'; btn.style.color = '#fff'; }
     _map.on('click', _onMapClickAddNest);
+    _map.getContainer().style.cursor = 'crosshair';
+    _map.getContainer().classList.add('tool-active');
+  } else {
+    if (btn) { btn.style.background = '#fff'; btn.style.color = '#333'; }
+    _map.off('click', _onMapClickAddNest);
+    _map.getContainer().style.cursor = '';
+    _map.getContainer().classList.remove('tool-active');
   }
 }
 
@@ -589,6 +662,11 @@ function _toggleNests() {
     if (_nestsVisible) l.addTo(_map);
     else _map.removeLayer(l);
   });
+
+  // Si on masque les nids pendant que "Ajouter un nid" est actif, on
+  // désactive proprement ce mode (sinon le bouton reste en surbrillance
+  // sans effet, le clic ne faisant plus qu'afficher un avertissement).
+  if (!_nestsVisible && _addNestActive) _toggleAddNest();
 }
 
 // ── OUTIL DE MESURE DE DISTANCE ────────────────────────────────
