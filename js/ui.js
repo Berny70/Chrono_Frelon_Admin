@@ -411,6 +411,7 @@ function renderPilots(pilots) {
           <div class="user-phone" style="font-family:'DM Sans',sans-serif">${p.prenom} ${p.nom}${isBlocked ? ' <span style="color:#c0392b;font-size:11px">· Bloqué</span>' : ''}</div>
           <div class="user-meta">${p.email}</div>
           <div class="user-meta">📍 ${p.secteur || '—'} · ${p.departement || '—'} ${p.lat ? '<span style="color:#2d6a4f;font-size:10px">✅ GPS</span>' : '<span style="color:#e67e22;font-size:10px">⚠️ pas de GPS</span>'}</div>
+          <div class="user-meta">🔑 Code : ${p.code_sentinelle || '—'}</div>
           <div class="user-meta" style="font-size:11px">Créé le ${new Date(p.created_at).toLocaleDateString('fr-FR')}</div>
         </div>
         <div style="display:flex;gap:6px;flex-shrink:0;flex-wrap:wrap;justify-content:flex-end">
