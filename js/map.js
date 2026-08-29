@@ -20,7 +20,7 @@ let _convergence = null;
 let _currentBasemap = null;
 let _nests       = [];
 let _nestLayers  = [];
-let _nestsVisible = true;
+let _nestsVisible = false;
 let _canAddNestPermission = false;
 let _measureActive  = false;
 let _measurePoints   = [];   // [L.LatLng, ...] — points déjà posés
@@ -631,11 +631,11 @@ function mapDeleteNest(id) {
         return;
       }
       _nests = _nests.filter(n => n.id !== id);
+      Dashboard.setNests(_nests);      // sync AVANT applyNestFilters (sinon filtre sur donnée périmée)
       _clearNestLayers();
-      _drawNests(_nests);
+      _drawNests((typeof Dashboard !== 'undefined' && Dashboard.applyNestFilters) ? Dashboard.applyNestFilters() : _nests);
       _setupNestClick(_canAddNestPermission);
       Dashboard.renderNests(_nests);   // sync liste après suppression depuis la carte
-      Dashboard.setNests(_nests);      // sync _nests dashboard pour éviter retour du fantôme
       showToast('Nid supprimé.');
     }
   );

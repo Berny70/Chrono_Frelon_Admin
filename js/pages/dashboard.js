@@ -10,7 +10,7 @@ const Dashboard = (() => {
   let _pilotUsers    = [];
   let _blockedPhones = new Set();
   let _radius        = CONFIG.DEFAULT_RADIUS_KM;
-  let _dateFilterDays = 'all';
+  let _dateFilterDays = '14';
   let _allSentinels  = [];   // [{ phone_id, pseudo, pilote_nom }]
   let _sentinelMap   = {};   // phone_id → { pseudo, pilote }
   let _groupedSentinels = []; // [{ pilot, users }] — pour admin_dept, chargé une seule fois
@@ -207,7 +207,13 @@ const Dashboard = (() => {
     renderSignals(filteredSignals, _blockedPhones, _sentinelMap);
     updateStats(filteredSignals, _users);
     const canAddNest = ['pilot', 'admin_dept', 'superadmin'].includes(role);
+    // renderNests() doit tourner AVANT mapInit : c'est lui qui peuple le
+    // sélecteur d'année (et sélectionne l'année en cours par défaut) —
+    // sans ça, _applyNestFilters() ne trouverait aucune valeur et la
+    // carte afficherait tous les nids de toutes les années sans filtre.
+    renderNests(_nests);
     mapInit(filteredSignals, _blockedPhones, _sentinelMap, _nests, canAddNest);
+    mapFilterNests(_applyNestFilters()); // applique le filtre année sans altérer l'état interne de map.js
 
     if (role === 'admin_dept') {
       document.getElementById('pilot-sentinels-section').style.display  = 'none';
@@ -237,8 +243,6 @@ const Dashboard = (() => {
       const btn = document.getElementById('btn-bulk-delete');
       if (btn) btn.style.display = 'block';
     }
-
-    renderNests(_nests);
   }
 
   // ── CHANGEMENT DE RAYON ────────────────────────────────────
@@ -891,6 +895,7 @@ const Dashboard = (() => {
           Dashboard.setNests(_nests);
           renderNests();
           mapInit(_applyDateFilter(_signals), _blockedPhones, _sentinelMap, _nests, true);
+          mapFilterNests(_applyNestFilters());
           showToast('Nid supprimé.');
         }
       );
@@ -1190,6 +1195,7 @@ const Dashboard = (() => {
     validatePending,
     rejectPending,
     renderNests,
+    applyNestFilters: () => _applyNestFilters(),
     generateCodeVN,
     shareCodeVN,
     filterNestsByRadius,

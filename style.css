@@ -36,6 +36,8 @@ body {
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
   padding-bottom: env(safe-area-inset-bottom);
+  text-size-adjust: 100%;
+  -webkit-text-size-adjust: 100%; /* empêche l'agrandissement auto du texte sur mobile (Safari notamment) */
 }
 
 h1, h2, h3, h4 { font-family: 'Playfair Display', serif; font-weight: 700; }
@@ -494,8 +496,25 @@ h1, h2, h3, h4 { font-family: 'Playfair Display', serif; font-weight: 700; }
   flex-shrink: 0;
   overflow-x: auto;
   scrollbar-width: none;
+  text-size-adjust: 100%;
+  -webkit-text-size-adjust: 100%; /* empêche Safari/Chrome mobile d'agrandir automatiquement le texte */
+  position: relative;
 }
 .nav-tabs::-webkit-scrollbar { display: none; }
+.nav-tabs::after {
+  /* Indice visuel qu'il y a d'autres onglets à faire défiler (la barre
+     de scroll est volontairement masquée, sans ça rien ne le signale) */
+  content: '';
+  position: sticky;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 24px;
+  margin-left: -24px;
+  flex-shrink: 0;
+  background: linear-gradient(to right, transparent, var(--forest-mid));
+  pointer-events: none;
+}
 
 .nav-tab {
   padding: 10px 16px;
