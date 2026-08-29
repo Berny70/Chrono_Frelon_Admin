@@ -372,6 +372,7 @@ function renderAdmins(admins) {
           <div class="user-phone" style="font-family:'DM Sans',sans-serif">${a.prenom} ${a.nom}${isBlocked ? ' <span style="color:#c0392b;font-size:11px">· Bloqué</span>' : ''}</div>
           <div class="user-meta">${a.email}</div>
           <div class="user-meta">📍 ${a.secteur || '—'} · ${a.departement || '—'}</div>
+          <div class="user-meta">🔑 Code : ${a.code_sentinelle || '—'}</div>
           <div class="user-meta" style="font-size:11px">Créé le ${new Date(a.created_at).toLocaleDateString('fr-FR')}</div>
         </div>
         <div style="display:flex;gap:6px;flex-shrink:0;flex-wrap:wrap;justify-content:flex-end">
