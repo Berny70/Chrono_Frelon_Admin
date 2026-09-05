@@ -135,7 +135,14 @@ const Dashboard = (() => {
         blocked:  u.blocked,
       }));
     } else {
-      const phones = [...new Set(_signals.map(s => s.phone_id).filter(Boolean))];
+      // Base = tous les rattachements connus (pilot_users), pas
+      // seulement les phone_id ayant déjà un signalement — sinon une
+      // sentinelle qui vient de se rattacher mais n'a encore rien
+      // envoyé restait invisible dans cette vue globale (signalé par
+      // un admin + un pilote ne retrouvant pas des sentinelles connues).
+      const attachedPhones = Object.keys(_phoneToPilotId);
+      const signalPhones = _signals.map(s => s.phone_id).filter(Boolean);
+      const phones = [...new Set([...attachedPhones, ...signalPhones])];
       _users = phones.map(phone => ({
         phone_id: phone,
         count:    _signals.filter(s => s.phone_id === phone).length,
