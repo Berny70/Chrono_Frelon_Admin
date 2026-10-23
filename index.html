@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#0f1f0f">
+  <meta name="description" content="ChassNid — Réseau Piste-Frelon">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>ChassNid</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha384-sHL9NAb7lN7rfvG5lfHpm643Xkcjzp4jFvuavGOndn6pjVqS6ny56CAt3nsEVT4H" crossorigin="anonymous">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ══ SCREEN LOGIN ══════════════════════════════════════════ -->
+<div id="screen-login" class="screen active">
+  <div class="login-bg">
+    <div class="login-card">
+      <div class="login-header">
+        <div class="login-logo">
+          <svg width="48" height="48" viewBox="0 0 48 48" aria-hidden="true">
+            <circle cx="24" cy="24" r="24" fill="#0f1f0f"/>
+            <ellipse cx="24" cy="24" rx="10" ry="6" fill="#d4820a" transform="rotate(-20 24 24)"/>
+            <circle cx="24" cy="24" r="4.5" fill="#f0a832"/>
+            <path d="M21 15 Q24 10 27 15" stroke="#f0a832" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+            <path d="M19 33 Q24 38 29 33" stroke="#f0a832" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div>
+          <h1 class="login-title">ChassNid</h1>
+          <p class="login-subtitle">Réseau Piste-Frelon</p>
+        </div>
+      </div>
+
+      <div class="login-version" id="login-version"></div>
+
+      <div class="login-form">
+        <div class="form-group">
+          <label class="form-label">Adresse email</label>
+          <input type="email" id="login-email" class="form-input"
+            placeholder="admin@exemple.fr" autocomplete="email" autocapitalize="none">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Code PIN</label>
+          <div class="pin-display" id="pin-login-display">
+            <span class="pin-dot"></span><span class="pin-dot"></span>
+            <span class="pin-dot"></span><span class="pin-dot"></span>
+            <span class="pin-dot"></span><span class="pin-dot"></span>
+          </div>
+        </div>
+
+        <div class="pin-keyboard">
+          <button class="pin-key" data-digit="1">1</button>
+          <button class="pin-key" data-digit="2">2</button>
+          <button class="pin-key" data-digit="3">3</button>
+          <button class="pin-key" data-digit="4">4</button>
+          <button class="pin-key" data-digit="5">5</button>
+          <button class="pin-key" data-digit="6">6</button>
+          <button class="pin-key" data-digit="7">7</button>
+          <button class="pin-key" data-digit="8">8</button>
+          <button class="pin-key" data-digit="9">9</button>
+          <button class="pin-key pin-key--empty" disabled></button>
+          <button class="pin-key" data-digit="0">0</button>
+          <button class="pin-key pin-key--del" id="pin-del">⌫</button>
+        </div>
+
+        <div class="auth-message" id="login-msg"></div>
+
+        <button class="btn-primary" id="btn-login">Se connecter</button>
+
+        <button class="btn-link" id="btn-forgot">Code PIN oublié ?</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SCREEN RESET ══════════════════════════════════════════ -->
+<div id="screen-reset" class="screen">
+  <div class="login-bg">
+    <div class="login-card">
+      <div class="login-header">
+        <div class="login-logo">
+          <svg width="48" height="48" viewBox="0 0 48 48" aria-hidden="true">
+            <circle cx="24" cy="24" r="24" fill="#0f1f0f"/>
+            <ellipse cx="24" cy="24" rx="10" ry="6" fill="#d4820a" transform="rotate(-20 24 24)"/>
+            <circle cx="24" cy="24" r="4.5" fill="#f0a832"/>
+          </svg>
+        </div>
+        <div>
+          <h1 class="login-title">ChassNid</h1>
+          <p class="login-subtitle">PIN oublié</p>
+        </div>
+      </div>
+      <p class="reset-info">Contactez votre administrateur pour réinitialiser votre PIN à 000000.</p>
+      <div style="text-align:center;margin-top:8px;font-size:13px;color:var(--text-muted)">
+        Coordinateur national :<br>
+        <strong>Bernard BARROIS</strong><br>
+        bc.barrois@gmail.com<br>
+        06 28 13 62 47
+      </div>
+      <button class="btn-secondary" id="btn-back-login" style="margin-top:24px">← Retour connexion</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SCREEN DASHBOARD ══════════════════════════════════════ -->
+<div id="screen-dashboard" class="screen">
+
+  <!-- Topbar -->
+  <header class="topbar">
+    <div class="topbar-left">
+      <svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true">
+        <circle cx="15" cy="15" r="15" fill="rgba(255,255,255,0.12)"/>
+        <ellipse cx="15" cy="15" rx="6.5" ry="4" fill="#f0a832" transform="rotate(-20 15 15)"/>
+        <circle cx="15" cy="15" r="3" fill="#fff"/>
+      </svg>
+      <div class="topbar-info">
+        <div class="topbar-title">ChassNid</div>
+        <div class="topbar-sub" id="topbar-sub">—</div>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <span id="topbar-version" style="font-size:10px;opacity:0.5;margin-right:4px"></span>
+      <!-- QR Code Pot à Mèche -->
+      <button class="topbar-btn" id="btn-qrcode-pm" title="QR Code Pot à Mèche" style="display:none">
+        <div style="width:18px;height:18px;border-radius:50%;background:#1b2d3e;display:flex;align-items:center;justify-content:center;font-size:11px;line-height:1;">⏱</div>
+      </button>
+      <!-- QR Code VigieNid -->
+      <button class="topbar-btn" id="btn-qrcode-vn" title="QR Code VigieNid" style="display:none">
+        <div style="width:18px;height:18px;border-radius:4px;background:#2d5a27;display:flex;align-items:center;justify-content:center;font-size:11px;line-height:1;">👁</div>
+      </button>
+      <!-- Profil -->
+      <button class="topbar-btn" id="btn-profile" title="Mon profil">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
+        </svg>
+      </button>
+      <!-- Aide -->
+      <button class="topbar-btn" id="btn-aide" title="Aide">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/>
+          <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+          <circle cx="12" cy="17" r=".5" fill="currentColor"/>
+        </svg>
+      </button>
+      <!-- Déconnexion -->
+      <button class="topbar-btn" id="btn-logout" title="Déconnexion">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/>
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- Navigation -->
+  <nav class="nav-tabs" id="nav-tabs">
+    <button class="nav-tab active" data-tab="map">Carte</button>
+    <button class="nav-tab" data-tab="signals">Signalements</button>
+    <button class="nav-tab" data-tab="nests">Nids 🪺</button>
+    <button class="nav-tab" data-tab="users">Sentinelles</button>
+    <button class="nav-tab" data-tab="admins" id="tab-btn-admins" style="display:none">Mes admins</button>
+    <button class="nav-tab" data-tab="pilots" id="tab-btn-pilots" style="display:none">Mes pilotes</button>
+    <button class="nav-tab" data-tab="pending" id="tab-btn-pending" style="display:none">
+      En attente
+      <span class="badge-tab" id="pending-badge" style="display:none">0</span>
+    </button>
+  </nav>
+
+  <!-- Contenu -->
+  <main class="dashboard-content">
+
+    <!-- Carte -->
+    <div id="tab-map" class="tab-panel active">
+      <div id="map"></div>
+
+      <div class="map-stats">
+        <div class="stat-item">
+          <div class="stat-value" id="stat-total">—</div>
+          <div class="stat-label">Signalements</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value" id="stat-today">—</div>
+          <div class="stat-label">Aujourd'hui</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value" id="stat-users">—</div>
+          <div class="stat-label">Sentinelles</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value" id="stat-blocked">—</div>
+          <div class="stat-label">Bloqués</div>
+        </div>
+        <div class="stat-item stat-item--radius">
+          <label class="stat-label">Rayon</label>
+          <select id="radius-select" class="radius-select">
+            <option value="all" selected>Tous (France)</option>
+            <option value="10">10 km</option>
+            <option value="25">25 km</option>
+            <option value="50" >50 km</option>
+            <option value="100">100 km</option>
+          </select>
+        </div>
+        <div class="stat-item stat-item--radius">
+          <label class="stat-label">Centre</label>
+          <div style="display:flex;gap:4px;align-items:center">
+            <button id="btn-search-here" title="Utiliser le centre actuel de la carte comme point de départ" style="padding:4px 8px;border:1px solid var(--border);border-radius:6px;background:white;font-size:12px;cursor:pointer;white-space:nowrap">🔍 Ici</button>
+            <button id="btn-search-reset" title="Revenir à ma position enregistrée" style="display:none;padding:4px 8px;border:1px solid var(--border);border-radius:6px;background:white;font-size:12px;cursor:pointer;">↺</button>
+          </div>
+        </div>
+        <div class="stat-item stat-item--radius">
+          <label class="stat-label">Période</label>
+          <select id="date-filter-map" class="radius-select">
+            <option value="7">1 semaine</option>
+            <option value="14">2 semaines</option>
+            <option value="all" selected>Tout</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Signalements -->
+    <div id="tab-signals" class="tab-panel">
+      <div class="tab-header">
+        <h2 class="tab-title">Signalements</h2>
+        <div style="display:flex;gap:8px;align-items:center">
+          <select id="date-filter-signals" class="radius-select">
+            <option value="7">1 semaine</option>
+            <option value="14">2 semaines</option>
+            <option value="all" selected>Tout</option>
+          </select>
+          <input type="search" id="search-signals" class="search-input" placeholder="Rechercher…">
+          <button id="btn-export-csv" title="Exporter en CSV" style="padding:6px 10px;border-radius:6px;background:var(--green);color:#fff;border:none;font-size:13px;cursor:pointer;white-space:nowrap;">📥 CSV</button>
+          <button id="btn-bulk-delete" title="Suppression en masse" style="display:none;padding:6px 10px;border-radius:6px;background:#c0392b;color:#fff;border:none;font-size:13px;cursor:pointer;white-space:nowrap;">🗑 Masse</button>
+        </div>
+      </div>
+      <div class="list-container" id="signals-list">
+        <div class="loading"><div class="spinner"></div></div>
+      </div>
+    </div>
+
+    <!-- Overlay suppression en masse -->
+    <div id="overlay-bulk-delete" class="overlay">
+      <div class="panel" style="max-width:480px;width:100%">
+        <h3 style="margin:0 0 16px;font-size:18px;">🗑 Suppression en masse</h3>
+        <p style="font-size:13px;color:var(--text-muted);margin:0 0 20px;">Combinez un ou plusieurs filtres. Seuls les signalements correspondant à <strong>tous</strong> les critères renseignés seront supprimés.</p>
+
+        <div style="display:flex;flex-direction:column;gap:14px;margin-bottom:24px;">
+          <div>
+            <label style="font-size:13px;font-weight:600;display:block;margin-bottom:4px;">Pseudo sentinelle</label>
+            <input id="bulk-pseudo" type="text" placeholder="ex : Michel-38560" style="width:100%;padding:8px 10px;border-radius:6px;border:1px solid var(--border);font-size:13px;box-sizing:border-box;">
+          </div>
+          <div>
+            <label style="font-size:13px;font-weight:600;display:block;margin-bottom:4px;">Avant cette date</label>
+            <input id="bulk-date" type="date" style="width:100%;padding:8px 10px;border-radius:6px;border:1px solid var(--border);font-size:13px;box-sizing:border-box;">
+          </div>
+          <div>
+            <label style="font-size:13px;font-weight:600;display:block;margin-bottom:4px;">Dans un rayon (km) autour du centre de la carte</label>
+            <input id="bulk-radius" type="number" min="0.1" max="200" step="0.5" placeholder="ex : 5" style="width:100%;padding:8px 10px;border-radius:6px;border:1px solid var(--border);font-size:13px;box-sizing:border-box;">
+          </div>
+        </div>
+
+        <div id="bulk-preview" style="font-size:13px;color:var(--text-muted);margin-bottom:16px;min-height:20px;"></div>
+
+        <div style="display:flex;gap:10px;justify-content:flex-end;">
+          <button id="btn-bulk-preview" style="padding:8px 16px;border-radius:6px;background:var(--surface);border:1px solid var(--border);font-size:13px;cursor:pointer;">🔍 Prévisualiser</button>
+          <button id="btn-bulk-cancel" style="padding:8px 16px;border-radius:6px;background:var(--surface);border:1px solid var(--border);font-size:13px;cursor:pointer;">Annuler</button>
+          <button id="btn-bulk-confirm" style="padding:8px 16px;border-radius:6px;background:#c0392b;color:#fff;border:none;font-size:13px;cursor:pointer;" disabled>Supprimer</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Nids trouvés -->
+    <div id="tab-nests" class="tab-panel">
+      <div class="tab-header">
+        <h2 class="tab-title">Nids trouvés 🪺</h2>
+        <div style="display:flex;gap:8px;align-items:center">
+          <select id="year-filter-nests" class="radius-select">
+            <option value="all">Toutes années</option>
+            <option value="2026">2026</option>
+            <option value="2025">2025</option>
+            <option value="2024">2024</option>
+          </select>
+          <input type="search" id="search-nests" class="search-input" placeholder="Pilote…">
+        </div>
+      </div>
+      <div class="list-container" id="nests-list">
+        <div class="loading"><div class="spinner"></div></div>
+      </div>
+    </div>
+
+    <!-- Sentinelles -->
+    <div id="tab-users" class="tab-panel">
+      <div class="tab-header">
+        <h2 class="tab-title">Sentinelles</h2>
+        <div style="display:flex;gap:12px;align-items:center">
+          <a href="#" id="link-view-my-deleted" style="display:none;font-size:13px;color:var(--text-muted);text-decoration:underline;white-space:nowrap">🗑️ Voir mes sentinelles supprimées</a>
+          <input type="search" id="search-users" class="search-input" placeholder="Rechercher…">
+        </div>
+      </div>
+      <div id="my-deleted-list" style="display:none;flex-direction:column;gap:8px;margin-bottom:12px"></div>
+
+      <!-- Sous-groupe : mes sentinelles directes (admin_dept uniquement) -->
+      <div id="my-sentinels-section" style="display:none">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <h3 class="section-subtitle">Mes sentinelles</h3>
+          <a href="#" id="link-view-my-deleted-admin" style="font-size:13px;color:var(--text-muted);text-decoration:underline;white-space:nowrap">🗑️ Voir mes sentinelles supprimées</a>
+        </div>
+        <div id="my-deleted-list-admin" style="display:none;flex-direction:column;gap:8px;margin-bottom:12px"></div>
+        <div class="list-container" id="my-sentinels-list">
+          <div class="loading"><div class="spinner"></div></div>
+        </div>
+      </div>
+
+      <!-- Sous-groupe : sentinelles des pilotes -->
+      <div id="pilots-sentinels-section" style="display:none">
+        <h3 class="section-subtitle">Sentinelles de mes pilotes</h3>
+        <div id="pilots-sentinels-list"></div>
+      </div>
+
+      <!-- Vue pilote (liste simple) -->
+      <div id="pilot-sentinels-section">
+        <div class="list-container" id="users-list">
+          <div class="loading"><div class="spinner"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Admins départementaux -->
+    <div id="tab-admins" class="tab-panel">
+      <div class="tab-header">
+        <h2 class="tab-title">Administrateurs</h2>
+        <button class="btn-add" id="btn-new-admin">+ Nouvel admin</button>
+      </div>
+      <div class="filter-bar" id="filter-admins" style="display:none">
+        <input type="search" id="search-admins" class="search-input" placeholder="Filtrer par territoire…">
+      </div>
+      <div class="list-container" id="admins-list">
+        <div class="loading"><div class="spinner"></div></div>
+      </div>
+    </div>
+
+    <!-- Pilotes -->
+    <div id="tab-pilots" class="tab-panel">
+      <div class="tab-header">
+        <h2 class="tab-title">Mes pilotes</h2>
+        <button class="btn-add" id="btn-new-pilot">+ Nouveau pilote</button>
+      </div>
+      <div class="filter-bar">
+        <input type="search" id="search-pilots" class="search-input" placeholder="Filtrer par territoire…">
+      </div>
+      <div class="list-container" id="pilots-list">
+        <div class="loading"><div class="spinner"></div></div>
+      </div>
+    </div>
+
+    <!-- En attente -->
+    <div id="tab-pending" class="tab-panel">
+      <div class="tab-header">
+        <h2 class="tab-title">Demandes en attente</h2>
+      </div>
+      <div class="list-container" id="pending-list">
+        <div class="loading"><div class="spinner"></div></div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- ══ PANNEAU PROFIL ════════════════════════════════════════ -->
+<div class="overlay" id="overlay-profile">
+  <div class="panel">
+    <div class="panel-header">
+      <h3 class="panel-title">Mon profil</h3>
+      <button class="panel-close" data-close="overlay-profile">✕</button>
+    </div>
+    <div id="profile-info" class="profile-info"></div>
+    <hr class="divider">
+    <h4 class="panel-subtitle">Changer mon PIN</h4>
+    <div class="pin-display" id="pin-prof1-display">
+      <span class="pin-dot"></span><span class="pin-dot"></span>
+      <span class="pin-dot"></span><span class="pin-dot"></span>
+      <span class="pin-dot"></span><span class="pin-dot"></span>
+    </div>
+    <p class="pin-confirm-label">Confirmer</p>
+    <div class="pin-display" id="pin-prof2-display">
+      <span class="pin-dot"></span><span class="pin-dot"></span>
+      <span class="pin-dot"></span><span class="pin-dot"></span>
+      <span class="pin-dot"></span><span class="pin-dot"></span>
+    </div>
+    <div class="pin-keyboard">
+      <button class="pin-key" data-digit="1" data-ctx="prof">1</button>
+      <button class="pin-key" data-digit="2" data-ctx="prof">2</button>
+      <button class="pin-key" data-digit="3" data-ctx="prof">3</button>
+      <button class="pin-key" data-digit="4" data-ctx="prof">4</button>
+      <button class="pin-key" data-digit="5" data-ctx="prof">5</button>
+      <button class="pin-key" data-digit="6" data-ctx="prof">6</button>
+      <button class="pin-key" data-digit="7" data-ctx="prof">7</button>
+      <button class="pin-key" data-digit="8" data-ctx="prof">8</button>
+      <button class="pin-key" data-digit="9" data-ctx="prof">9</button>
+      <button class="pin-key pin-key--empty" disabled></button>
+      <button class="pin-key" data-digit="0" data-ctx="prof">0</button>
+      <button class="pin-key pin-key--del" data-ctx="prof">⌫</button>
+    </div>
+    <div class="auth-message" id="profile-msg"></div>
+    <div class="panel-actions">
+      <button class="btn-cancel" data-close="overlay-profile">Fermer</button>
+      <button class="btn-primary" id="btn-save-pin">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ PANNEAU CRÉATION ADMIN ════════════════════════════════ -->
+<div class="overlay" id="overlay-new-admin">
+  <div class="panel">
+    <div class="panel-header">
+      <h3 class="panel-title">Nouvel administrateur</h3>
+      <button class="panel-close" data-close="overlay-new-admin">✕</button>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Prénom</label>
+        <input type="text" id="admin-prenom" class="form-input" placeholder="Jean">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Nom</label>
+        <input type="text" id="admin-nom" class="form-input" placeholder="Martin">
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Email</label>
+      <input type="email" id="admin-email" class="form-input" placeholder="jean.martin@gmail.com">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Département</label>
+      <input type="text" id="admin-dept" class="form-input" placeholder="Isère (38)">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Territoire / Comcom</label>
+      <input type="text" id="admin-secteur" class="form-input" placeholder="Grenoble Alpes Métropole">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Pseudo sentinelle <span style="color:#999;font-weight:400">(optionnel)</span></label>
+      <input type="text" id="admin-pseudo" class="form-input" placeholder="Pseudo affiché sur la carte">
+    </div>
+    <p class="form-hint">PIN provisoire : <strong>000000</strong> — à changer à la première connexion.</p>
+    <div class="auth-message" id="new-admin-msg"></div>
+    <div class="panel-actions">
+      <button class="btn-cancel" data-close="overlay-new-admin">Annuler</button>
+      <button class="btn-primary" id="btn-create-admin">Créer</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ PANNEAU CRÉATION PILOTE ═══════════════════════════════ -->
+<div class="overlay" id="overlay-new-pilot">
+  <div class="panel">
+    <div class="panel-header">
+      <h3 class="panel-title">Nouveau pilote</h3>
+      <button class="panel-close" data-close="overlay-new-pilot">✕</button>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Prénom</label>
+        <input type="text" id="pilot-prenom" class="form-input" placeholder="Marie">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Nom</label>
+        <input type="text" id="pilot-nom" class="form-input" placeholder="Dupont">
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Email</label>
+      <input type="email" id="pilot-email" class="form-input" placeholder="marie.dupont@gmail.com">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Territoire / secteur <span style="color:var(--danger)">*</span></label>
+      <input type="text" id="pilot-secteur" class="form-input" placeholder="Comcom Thann-Cernay">
+      <p class="form-hint" style="margin-top:4px">⚠ Non modifiable après création. Supprimer et recréer si nécessaire.</p>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Pseudo sentinelle <span style="color:#999;font-weight:400">(optionnel)</span></label>
+      <input type="text" id="pilot-pseudo" class="form-input" placeholder="Pseudo affiché sur la carte">
+    </div>
+    <p class="form-hint">PIN provisoire : <strong>000000</strong> — à changer à la première connexion.</p>
+    <div class="auth-message" id="new-pilot-msg"></div>
+    <div class="panel-actions">
+      <button class="btn-cancel" data-close="overlay-new-pilot">Annuler</button>
+      <button class="btn-primary" id="btn-create-pilot">Créer</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ PANNEAU QR CODE — POT À MÈCHE ═══════════════════════════ -->
+<div class="overlay" id="overlay-qrcode-pm">
+  <div class="panel" style="text-align:center;max-width:340px">
+    <div class="panel-header">
+      <h3 class="panel-title">QR Code Pot à Mèche</h3>
+      <button class="panel-close" data-close="overlay-qrcode-pm">✕</button>
+    </div>
+    <p class="qr-desc">Faites scanner ce QR Code par vos sentinelles pour Pot à Mèche.</p>
+
+    <div style="display:flex;flex-direction:column;align-items:center;gap:10px;margin:16px 0;">
+      <div style="width:44px;height:44px;border-radius:50%;background:#1b2d3e;display:flex;align-items:center;justify-content:center;font-size:24px;box-shadow:0 2px 6px rgba(0,0,0,0.3);">⏱</div>
+      <div style="font-weight:700;font-size:14px;color:#1b2d3e;">Pot à Mèche</div>
+      <div style="position:relative;border:3px solid #1b2d3e;border-radius:8px;padding:8px;background:#fff;">
+        <div id="qrcode-container-pm"></div>
+        <img src="icon_pm.jpg" alt="" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:42px;height:42px;border-radius:50%;border:3px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,0.4);">
+      </div>
+      <div id="qrcode-url-pm" style="font-size:10px;color:#666;word-break:break-all;max-width:220px;"></div>
+      <div style="display:flex;gap:8px;">
+        <button class="btn-whatsapp" id="btn-share-whatsapp-pm" style="font-size:13px;padding:8px 14px;">📲 Partager</button>
+        <button class="btn-primary" id="btn-copy-qr-pm" style="font-size:13px;padding:8px 14px;">📋 Copier</button>
+      </div>
+    </div>
+
+    <div class="panel-actions" style="justify-content:center;">
+      <button class="btn-cancel" data-close="overlay-qrcode-pm">Fermer</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ PANNEAU QR CODE — VIGIENID ═══════════════════════════════ -->
+<div class="overlay" id="overlay-qrcode-vn">
+  <div class="panel" style="text-align:center;max-width:340px">
+    <div class="panel-header">
+      <h3 class="panel-title">QR Code VigieNid</h3>
+      <button class="panel-close" data-close="overlay-qrcode-vn">✕</button>
+    </div>
+    <p class="qr-desc">Faites scanner ce QR Code par vos sentinelles pour VigieNid.</p>
+
+    <div style="display:flex;flex-direction:column;align-items:center;gap:10px;margin:16px 0;">
+      <div style="width:44px;height:44px;border-radius:6px;background:#2d5a27;display:flex;align-items:center;justify-content:center;font-size:24px;box-shadow:0 2px 6px rgba(0,0,0,0.3);">👁</div>
+      <div style="font-weight:700;font-size:14px;color:#2d5a27;">VigieNid</div>
+      <div style="position:relative;border:3px solid #2d5a27;border-radius:8px;padding:8px;background:#fff;">
+        <div id="qrcode-container-vn"></div>
+        <img src="icon_vn.png" alt="" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:42px;height:42px;border-radius:50%;border:3px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,0.4);">
+      </div>
+      <div id="qrcode-url-vn" style="font-size:10px;color:#666;word-break:break-all;max-width:220px;"></div>
+      <div style="display:flex;gap:8px;">
+        <button class="btn-whatsapp" id="btn-share-whatsapp-vn" style="font-size:13px;padding:8px 14px;">📲 Partager</button>
+        <button class="btn-primary" id="btn-copy-qr-vn" style="font-size:13px;padding:8px 14px;">📋 Copier</button>
+      </div>
+
+      <div style="margin-top:16px;border-top:1px solid #e0e0e0;padding-top:16px;">
+        <p style="font-size:12px;color:#666;margin-bottom:10px;">Si le QR Code ne fonctionne pas sur iOS :</p>
+        <button class="btn-primary" id="btn-gen-code-vn" onclick="Dashboard.generateCodeVN()" style="font-size:14px;padding:10px 20px;background:#2d5a27;">🔑 Voir mon code permanent</button>
+        <div id="code-vn-display" style="display:none;margin-top:12px;">
+          <div style="font-size:48px;font-weight:900;letter-spacing:12px;color:#2d5a27;font-family:monospace;" id="code-vn-value"></div>
+          <div style="font-size:11px;color:#999;margin-top:4px;">Code permanent</div>
+          <button id="btn-share-code-vn" onclick="Dashboard.shareCodeVN()" style="margin-top:10px;background:#25D366;color:white;border:none;border-radius:10px;padding:10px 20px;font-size:14px;font-weight:600;cursor:pointer;display:none;">
+            📲 Envoyer par WhatsApp
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel-actions" style="justify-content:center;">
+      <button class="btn-cancel" data-close="overlay-qrcode-vn">Fermer</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ PANNEAU AIDE ══════════════════════════════════════════ -->
+<div class="overlay" id="overlay-aide">
+  <div class="panel panel--wide">
+    <div class="panel-header">
+      <h3 class="panel-title">Aide — ChassNid</h3>
+      <button class="panel-close" data-close="overlay-aide">✕</button>
+    </div>
+    <div class="faq">
+      <div class="faq-item">
+        <button class="faq-q">▶ Comment distribuer Chrono-Frelon ?</button>
+        <div class="faq-a">Affichez votre QR Code (icône ▦ en haut). Chaque participant le scanne et Chrono-Frelon s'installe automatiquement, rattaché à votre secteur.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q">▶ Comment lire la carte ?</button>
+        <div class="faq-a">Chaque trait = une observation. Le point est la position de l'observateur, la ligne indique la direction de vol du frelon. Le cercle orange est la zone probable du nid.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q">▶ Après la destruction d'un nid ?</button>
+        <div class="faq-a">Supprimez les signalements de la zone dans l'onglet Signalements pour ne pas induire de nouvelles recherches inutiles.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q">▶ J'ai oublié mon PIN</button>
+        <div class="faq-a">Contactez votre administrateur — il peut réinitialiser votre PIN à 000000 depuis ChassNid. Coordinateur : Bernard BARROIS — 06 28 13 62 47</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q">▶ Créer un pilote (admin départemental)</button>
+        <div class="faq-a">Onglet "Mes pilotes" → "+ Nouveau pilote". Le territoire saisi est définitif — en cas d'erreur, supprimer et recréer le pilote.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q">▶ Filtrer la liste de pilotes par territoire</button>
+        <div class="faq-a">Utilisez le champ de recherche en haut de l'onglet "Mes pilotes" — il filtre en temps réel par le champ territoire de chaque pilote.</div>
+      </div>
+    </div>
+    <div class="aide-contact">
+      <strong>Coordinateur national</strong><br>
+      Bernard BARROIS — bc.barrois@gmail.com — 06 28 13 62 47
+    </div>
+    <div class="panel-actions" style="justify-content:center">
+      <button class="btn-cancel" data-close="overlay-aide">Fermer</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ PANNEAU PARAMÈTRES PILOTE ══════════════════════════════ -->
+<div class="overlay" id="overlay-params">
+  <div class="panel">
+    <div class="panel-header">
+      <h3 class="panel-title" id="params-title">Paramètres</h3>
+      <button class="panel-close" data-close="overlay-params">✕</button>
+    </div>
+
+    <div class="form-group" style="margin-bottom:24px">
+      <label class="form-label">Longueur des traits
+        <span id="params-trait-val" style="float:right;color:var(--accent);font-weight:600">500 m</span>
+      </label>
+      <input type="range" id="params-trait" min="100" max="3000" step="100" value="500"
+             style="width:100%;margin-top:8px;accent-color:var(--primary)">
+      <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text-muted);margin-top:4px">
+        <span>100 m</span><span>3 000 m</span>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Durée de validité des signalements
+        <span id="params-validity-val" style="float:right;color:var(--accent);font-weight:600">30 jours</span>
+      </label>
+      <input type="range" id="params-validity" min="1" max="90" step="1" value="30"
+             style="width:100%;margin-top:8px;accent-color:var(--primary)">
+      <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text-muted);margin-top:4px">
+        <span>1 jour</span><span>90 jours</span>
+      </div>
+    </div>
+
+    <div class="auth-message" id="params-msg"></div>
+    <div class="panel-actions">
+      <button class="btn-cancel" data-close="overlay-params">Annuler</button>
+      <button class="btn-primary" id="btn-params-save">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ PANNEAU NOUVELLE SENTINELLE ════════════════════════════ -->
+<div class="overlay" id="overlay-view">
+  <div class="panel">
+    <div class="panel-header">
+      <h3 class="panel-title" id="view-title">Sous-fifres</h3>
+      <button class="panel-close" data-close="overlay-view">✕</button>
+    </div>
+    <div id="view-list" style="display:flex;flex-direction:column;gap:10px;margin-top:8px"></div>
+    <div style="margin-top:16px;border-top:1px solid var(--border);padding-top:12px">
+      <a href="#" id="link-view-deleted" style="font-size:13px;color:var(--text-muted);text-decoration:underline">🗑️ Voir les sentinelles supprimées</a>
+      <div id="deleted-list" style="display:none;flex-direction:column;gap:8px;margin-top:10px"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ PANNEAU MIGRATION ══════════════════════════════════════ -->
+<div class="overlay" id="overlay-migrate">
+  <div class="panel">
+    <div class="panel-header">
+      <h3 class="panel-title" id="migrate-title">Migrer</h3>
+      <button class="panel-close" data-close="overlay-migrate">✕</button>
+    </div>
+    <p class="form-hint" id="migrate-desc" style="margin-bottom:16px"></p>
+    <div style="display:flex;gap:8px;margin-bottom:16px">
+      <button class="btn-secondary" id="migrate-mode-existing" style="flex:1;font-size:13px">Personne existante</button>
+      <button class="btn-secondary" id="migrate-mode-new" style="flex:1;font-size:13px">Nouveau compte</button>
+    </div>
+    <div id="migrate-section-existing">
+      <div class="form-group">
+        <label class="form-label">Choisir le remplaçant</label>
+        <select id="migrate-select" class="form-input">
+          <option value="">— Sélectionner —</option>
+        </select>
+      </div>
+    </div>
+    <div id="migrate-section-new" style="display:none">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Prénom</label>
+          <input type="text" id="migrate-prenom" class="form-input" placeholder="Jean">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Nom</label>
+          <input type="text" id="migrate-nom" class="form-input" placeholder="Martin">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Email</label>
+        <input type="email" id="migrate-email" class="form-input" placeholder="jean.martin@gmail.com">
+      </div>
+      <div class="form-group" id="migrate-dept-group">
+        <label class="form-label">Département</label>
+        <input type="text" id="migrate-dept" class="form-input" placeholder="Isère (38)">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Territoire / secteur</label>
+        <input type="text" id="migrate-secteur" class="form-input" placeholder="ex : Grenoble Alpes Métropole">
+      </div>
+      <p class="form-hint">PIN provisoire : <strong>000000</strong></p>
+    </div>
+    <div class="auth-message" id="migrate-msg"></div>
+    <div class="panel-actions">
+      <button class="btn-cancel" data-close="overlay-migrate">Annuler</button>
+      <button class="btn-primary" id="btn-migrate-confirm">Migrer</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODAL CONFIRMATION ════════════════════════════════════ -->
+<div class="overlay" id="overlay-modal">
+  <div class="panel panel--sm">
+    <h3 class="modal-title" id="modal-title"></h3>
+    <p class="modal-text" id="modal-text"></p>
+    <div class="panel-actions">
+      <button class="btn-cancel" data-close="overlay-modal">Annuler</button>
+      <button class="btn-danger" id="modal-ok"></button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODAL MESSAGE À ENVOYER ══════════════════════════════ -->
+<div class="overlay" id="overlay-message">
+  <div class="panel">
+    <div class="panel-header">
+      <h3 class="panel-title" id="message-title"></h3>
+      <button class="panel-close" data-close="overlay-message">✕</button>
+    </div>
+    <p style="font-size:13px;color:var(--text-muted);margin-bottom:10px">Copiez ce message et envoyez-le à la personne :</p>
+    <textarea id="message-content" class="message-textarea" readonly></textarea>
+    <div class="panel-actions">
+      <button class="btn-cancel" data-close="overlay-message">Fermer</button>
+      <button class="btn-primary" id="btn-copy-message">📋 Copier</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ TOAST ════════════════════════════════════════════════ -->
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<!-- ══ SCRIPTS ══════════════════════════════════════════════ -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha384-cxOPjt7s7Iz04uaHJceBmS+qpjv2JkIHNVcuOrM+YHwZOmJGBXI00mdUXEq65HTH" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@supabase/supabase-js@2.110.3/dist/umd/supabase.js" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" integrity="sha384-3zSEDfvllQohrq0PHL1fOXJuC/jSOO34H46t6UQfobFOmxE5BpjjaIJY5F2/bMnU" crossorigin="anonymous"></script>
+<script src="js/config.js?v=1.4.12"></script>
+<script src="js/db.js?v=1.4.12"></script>
+<script src="js/auth.js?v=1.4.12"></script>
+<script src="js/ui.js?v=1.4.12"></script>
+<script src="js/map.js?v=1.4.12"></script>
+<script src="js/pages/login.js?v=1.4.12"></script>
+<script src="js/pages/dashboard.js?v=1.4.12"></script>
+<script src="js/pages/admins.js?v=1.4.12"></script>
+<script src="js/pages/pilots.js?v=1.4.12"></script>
+<script src="js/pages/signals.js?v=1.4.12"></script>
+<script src="js/app.js?v=1.4.12"></script>
+<script>
+  // Service Worker désactivé intentionnellement
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.getRegistrations().then(regs => regs.forEach(r => r.unregister()));
+  }
+</script>
+
+
+
+<div class="overlay" id="overlay-geolocate-pilot">
+  <div class="panel" style="max-width:340px">
+    <div class="panel-header">
+      <h3 class="panel-title">📍 Géolocaliser le pilote</h3>
+      <button class="panel-close" data-close="overlay-geolocate-pilot">✕</button>
+    </div>
+    <div style="padding:16px;display:flex;flex-direction:column;gap:12px;">
+      <input type="hidden" id="geo-pilot-id">
+      <div>
+        <label style="font-size:12px;color:var(--text-muted);">Commune</label>
+        <input type="text" id="geo-commune" placeholder="ex: Mulhouse" class="field" style="width:100%;margin-top:4px;">
+      </div>
+      <div>
+        <label style="font-size:12px;color:var(--text-muted);">Département</label>
+        <input type="text" id="geo-departement" placeholder="ex: Haut-Rhin" class="field" style="width:100%;margin-top:4px;">
+      </div>
+      <div id="geo-msg" style="font-size:12px;color:var(--text-muted);"></div>
+      <button class="btn-primary" id="btn-geo-validate" onclick="Pilots.geolocatePilotManuel()">📍 Valider la localisation</button>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
