@@ -100,8 +100,8 @@ function _addBasemapControl() {
       ).join('') +
       `</div>` +
       `<button class="outils-poignee" id="btn-outils-poignee" aria-controls="outils-panneau"
-         aria-expanded="${ouvert}" title="${ouvert ? 'Ranger les outils' : 'Afficher les outils'}">
-         <span class="outils-fleche">${ouvert ? '›' : '‹'}</span> 🧰 Outils
+         aria-expanded="${ouvert}" title="${ouvert ? 'Ranger les choix' : 'Afficher les choix'}">
+         <span class="outils-fleche">${ouvert ? '›' : '‹'}</span> 🧰 Choix
        </button>`;
     L.DomEvent.disableClickPropagation(div);
     L.DomEvent.disableScrollPropagation(div);
@@ -110,7 +110,7 @@ function _addBasemapControl() {
       if (poignee) {
         const o = div.classList.toggle('outils-tiroir--ouvert');
         poignee.setAttribute('aria-expanded', o);
-        poignee.title = o ? 'Ranger les outils' : 'Afficher les outils';
+        poignee.title = o ? 'Ranger les choix' : 'Afficher les choix';
         poignee.querySelector('.outils-fleche').textContent = o ? '›' : '‹';
         try { localStorage.setItem('chassnid_outils_ouverts', o ? '1' : '0'); } catch { /* sans importance */ }
         return;
