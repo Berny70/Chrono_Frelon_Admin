@@ -101,7 +101,7 @@ function _addBasemapControl() {
       `</div>` +
       `<button class="outils-poignee" id="btn-outils-poignee" aria-controls="outils-panneau"
          aria-expanded="${ouvert}" title="${ouvert ? 'Ranger les choix' : 'Afficher les choix'}">
-         <span class="outils-fleche">${ouvert ? '›' : '‹'}</span> 🧰 Choix
+         <span class="outils-fleche">${ouvert ? '›' : '‹'}</span> ⚙️ Choix
        </button>`;
     L.DomEvent.disableClickPropagation(div);
     L.DomEvent.disableScrollPropagation(div);
