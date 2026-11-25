@@ -67,9 +67,10 @@ LANGUAGE sql
 STABLE
 SECURITY DEFINER
 AS $function$
+  -- même contrôle que chassnid_verify2 : jeton connu, compte actif
+  -- (validity_days règle la validité des signalements, pas la session)
   SELECT * FROM public.admin_profiles
-  WHERE session_token = p_token::uuid
-    AND session_created_at + (validity_days || ' days')::interval > now()
+  WHERE session_token::text = p_token
     AND role IN ('superadmin', 'admin_dept', 'pilot')
   LIMIT 1;
 $function$;
