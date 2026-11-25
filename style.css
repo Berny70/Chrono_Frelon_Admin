@@ -363,6 +363,42 @@ h1, h2, h3, h4 { font-family: 'Playfair Display', serif; font-weight: 700; }
   white-space: nowrap;
 }
 .basemap-btn:hover { background: rgba(212,130,10,0.25); border-color: var(--accent); color: #fff; }
+
+/* Tiroir coulissant des outils de la carte (en bas à droite) */
+.outils-tiroir { align-items: flex-end; }
+.outils-panneau {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  transform: translateX(calc(100% + 12px));
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: transform 0.25s ease, opacity 0.2s ease, visibility 0s linear 0.25s;
+}
+.outils-tiroir--ouvert .outils-panneau {
+  transform: none;
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transition: transform 0.25s ease, opacity 0.2s ease, visibility 0s;
+}
+.outils-tiroir:not(.outils-tiroir--ouvert) .outils-panneau { position: absolute; bottom: 40px; right: 0; }
+.outils-poignee {
+  align-self: flex-end;
+  padding: 6px 12px;
+  background: rgba(15,31,15,0.88);
+  color: #f0a832;
+  border: 1.5px solid rgba(240,168,50,0.45);
+  border-radius: 18px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  backdrop-filter: blur(4px);
+}
+.outils-fleche { display: inline-block; width: 0.7em; font-size: 16px; line-height: 1; }
 .basemap-btn--active { background: rgba(212,130,10,0.35); border-color: var(--accent); color: #f0a832; font-weight: 600; }
 
 .btn-whatsapp {

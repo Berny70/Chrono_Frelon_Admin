@@ -54,8 +54,15 @@ function _applyBasemap(key) {
 function _addBasemapControl() {
   const ctrl = L.control({ position: 'bottomright' });
   ctrl.onAdd = () => {
-    const div = L.DomUtil.create('div', 'basemap-control');
+    // Tiroir coulissant : la poignée reste visible, les outils se rangent
+    // à droite pour libérer la carte (état gardé sur l'appareil ; fermé par
+    // défaut sur téléphone).
+    let ouvert;
+    try { ouvert = localStorage.getItem('chassnid_outils_ouverts'); } catch { ouvert = null; }
+    ouvert = ouvert === null ? window.innerWidth >= 700 : ouvert === '1';
+    const div = L.DomUtil.create('div', 'basemap-control outils-tiroir' + (ouvert ? ' outils-tiroir--ouvert' : ''));
     div.innerHTML =
+      `<div class="outils-panneau" id="outils-panneau">` +
       `<button id="btn-toggle-nests" style="
         width:100%;margin-bottom:6px;padding:6px 10px;
         background:#7b3f00;color:#fff;
@@ -90,9 +97,24 @@ function _addBasemapControl() {
       </button>` +
       Object.entries(BASEMAPS).map(([key, bm]) =>
         `<button class="basemap-btn${key === (localStorage.getItem('chassnid_basemap') || 'osm') ? ' basemap-btn--active' : ''}" data-basemap="${key}">${bm.label}</button>`
-      ).join('');
+      ).join('') +
+      `</div>` +
+      `<button class="outils-poignee" id="btn-outils-poignee" aria-controls="outils-panneau"
+         aria-expanded="${ouvert}" title="${ouvert ? 'Ranger les choix' : 'Afficher les choix'}">
+         <span class="outils-fleche">${ouvert ? '›' : '‹'}</span> ⚙️ Choix
+       </button>`;
     L.DomEvent.disableClickPropagation(div);
+    L.DomEvent.disableScrollPropagation(div);
     div.addEventListener('click', e => {
+      const poignee = e.target.closest('#btn-outils-poignee');
+      if (poignee) {
+        const o = div.classList.toggle('outils-tiroir--ouvert');
+        poignee.setAttribute('aria-expanded', o);
+        poignee.title = o ? 'Ranger les choix' : 'Afficher les choix';
+        poignee.querySelector('.outils-fleche').textContent = o ? '›' : '‹';
+        try { localStorage.setItem('chassnid_outils_ouverts', o ? '1' : '0'); } catch { /* sans importance */ }
+        return;
+      }
       const bm = e.target.closest('.basemap-btn');
       if (bm) _applyBasemap(bm.dataset.basemap);
       if (e.target.closest('#btn-toggle-nests')) _toggleNests();
