@@ -10,6 +10,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   Admins.init();
   Pilots.init();
   Signals.init();
+  VigieChrono.init();
   _initMigrateOverlay();
 
   // ── VÉRIFICATION DE SESSION AU DÉMARRAGE ──────────────────

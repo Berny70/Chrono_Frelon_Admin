@@ -361,3 +361,38 @@ async function dbNestDelete(nestId) {
   const result = _parse(data);
   return result?.error ? { error: { message: result.error } } : { ok: true };
 }
+
+// ── VIGIECHRONO (bornes) ──────────────────────────────────────
+// Tables vc_sites / vc_events, accessibles seulement par les
+// fonctions chassnid_vc_* (voir sql/vigiechrono.sql).
+
+async function _vcRpc(name, params) {
+  const { data, error } = await db.rpc(name, { p_token: _token(), ...params });
+  if (error) return { error };
+  const result = _parse(data);
+  return result?.error ? { error: { message: result.error } } : result;
+}
+
+async function dbVcSites() {
+  const r = await _vcRpc('chassnid_vc_sites', {});
+  return r.error ? r : { sites: r.sites || [] };
+}
+
+async function dbVcSiteCreate({ borne, nom, lat, lon, annee, cap = null }) {
+  return _vcRpc('chassnid_vc_site_create', {
+    p_borne: borne, p_nom: nom, p_lat: lat, p_lon: lon, p_annee: annee, p_cap: cap,
+  });
+}
+
+async function dbVcSiteDelete(siteId) {
+  return _vcRpc('chassnid_vc_site_delete', { p_site_id: siteId });
+}
+
+async function dbVcImport(siteId, rows) {
+  return _vcRpc('chassnid_vc_import', { p_site_id: siteId, p_rows: rows });
+}
+
+async function dbVcEvents(siteId) {
+  const r = await _vcRpc('chassnid_vc_events', { p_site_id: siteId });
+  return r.error ? r : { events: r.events || [] };
+}
