@@ -163,6 +163,7 @@
     <button class="nav-tab active" data-tab="map">Carte</button>
     <button class="nav-tab" data-tab="signals">Signalements</button>
     <button class="nav-tab" data-tab="nests">Nids 🪺</button>
+    <button class="nav-tab" data-tab="vigiechrono">VigieChrono ⏱</button>
     <button class="nav-tab" data-tab="users">Sentinelles</button>
     <button class="nav-tab" data-tab="admins" id="tab-btn-admins" style="display:none">Mes admins</button>
     <button class="nav-tab" data-tab="pilots" id="tab-btn-pilots" style="display:none">Mes pilotes</button>
@@ -291,6 +292,43 @@
       </div>
       <div class="list-container" id="nests-list">
         <div class="loading"><div class="spinner"></div></div>
+      </div>
+    </div>
+
+    <!-- VigieChrono -->
+    <div id="tab-vigiechrono" class="tab-panel">
+      <div id="vc-liste">
+        <div class="tab-header">
+          <h2 class="tab-title">Bornes VigieChrono ⏱</h2>
+          <div style="display:flex;gap:8px;align-items:center">
+            <select id="vc-year-filter" class="radius-select">
+              <option value="all">Toutes années</option>
+            </select>
+            <button class="btn-add" id="btn-vc-releve">📲 Relever une borne</button>
+          </div>
+        </div>
+        <p class="form-hint vc-aide">Branchez le téléphone sur la prise USB-C de la borne : elle apparaît comme une clé USB « VigieChrono ». Touchez « Relever une borne » et choisissez le fichier <strong>resultats.csv</strong> sur cette clé.</p>
+        <input type="file" id="vc-file" accept=".csv,text/csv,text/plain" style="display:none">
+        <div class="list-container" id="vc-sites-list">
+          <div class="loading"><div class="spinner"></div></div>
+        </div>
+      </div>
+
+      <div id="vc-chrono" style="display:none">
+        <div class="tab-header">
+          <div>
+            <h2 class="tab-title" id="vc-chrono-titre">—</h2>
+            <div class="vc-site-ligne" id="vc-chrono-sous-titre"></div>
+          </div>
+          <button class="btn-cancel" id="btn-vc-retour" style="width:auto;padding:8px 14px">← Bornes</button>
+        </div>
+        <div class="vc-params">
+          <label>Vitesse de vol <span><input type="number" id="vc-p-vitesse" min="0.5" max="15" step="0.1" inputmode="decimal"> m/s</span></label>
+          <label>Temps au nid <span><input type="number" id="vc-p-tnid" min="0" max="900" step="5" inputmode="decimal"> s</span></label>
+          <label>Écart toléré <span><input type="number" id="vc-p-ecart" min="1" max="200" step="5" inputmode="decimal"> % de la médiane</span></label>
+          <button class="btn-link" id="btn-vc-defauts" style="align-self:end">Valeurs par défaut</button>
+        </div>
+        <div id="vc-chrono-resultats"></div>
       </div>
     </div>
 
@@ -715,6 +753,48 @@
   </div>
 </div>
 
+<!-- ══ RELEVÉ D'UNE BORNE VIGIECHRONO ════════════════════════ -->
+<div class="overlay" id="overlay-vc-import">
+  <div class="panel panel--wide">
+    <div class="panel-header">
+      <h3 class="panel-title">Relevé de borne ⏱</h3>
+      <button class="panel-close" data-close="overlay-vc-import">✕</button>
+    </div>
+    <div id="vc-import-resume"></div>
+    <div class="form-group">
+      <label class="form-label">Lieu d'observation</label>
+      <select id="vc-import-site" class="form-input"></select>
+    </div>
+    <div id="vc-new-site">
+      <div class="form-group">
+        <label class="form-label">Numéro de la borne</label>
+        <input type="text" id="vc-new-borne" class="form-input" placeholder="ex : VC-0001" autocapitalize="characters">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Nom du lieu</label>
+        <input type="text" id="vc-new-nom" class="form-input" placeholder="ex : Rucher Chenebier" maxlength="60">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Position (degrés décimaux)</label>
+        <div style="display:flex;gap:8px">
+          <input type="text" id="vc-new-lat" class="form-input" placeholder="latitude" inputmode="decimal">
+          <input type="text" id="vc-new-lon" class="form-input" placeholder="longitude" inputmode="decimal">
+        </div>
+        <button class="btn-link" id="btn-vc-gps" style="margin-top:6px">📍 Position du téléphone</button>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Année</label>
+        <input type="number" id="vc-new-annee" class="form-input" min="2021" max="2099">
+      </div>
+    </div>
+    <div class="auth-message" id="vc-import-msg"></div>
+    <div class="panel-actions">
+      <button class="btn-cancel" data-close="overlay-vc-import">Annuler</button>
+      <button class="btn-primary" id="btn-vc-import">Importer</button>
+    </div>
+  </div>
+</div>
+
 <!-- ══ MODAL CONFIRMATION ════════════════════════════════════ -->
 <div class="overlay" id="overlay-modal">
   <div class="panel panel--sm">
@@ -760,6 +840,8 @@
 <script src="js/pages/admins.js?v=1.4.13"></script>
 <script src="js/pages/pilots.js?v=1.4.13"></script>
 <script src="js/pages/signals.js?v=1.4.13"></script>
+<script src="js/vc_calc.js?v=1.5.0"></script>
+<script src="js/pages/vigiechrono.js?v=1.5.0"></script>
 <script src="js/app.js?v=1.4.13"></script>
 <script>
   // Service Worker désactivé intentionnellement

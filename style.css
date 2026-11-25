@@ -980,3 +980,33 @@ h1, h2, h3, h4 { font-family: 'Playfair Display', serif; font-weight: 700; }
   padding-bottom: 6px;
   border-bottom: 1px solid var(--border);
 }
+
+/* ── VIGIECHRONO ────────────────────────────────────────────── */
+.vc-aide { padding: 10px 16px 0; margin: 0; }
+.vc-site { display: flex; align-items: flex-start; gap: 12px; padding: 12px 16px; border-bottom: 1px solid var(--border); background: #fff; }
+.vc-site-icon { font-size: 26px; line-height: 1; flex-shrink: 0; }
+.vc-site-nom { font-weight: 600; font-size: 14px; margin-bottom: 2px; }
+.vc-site-ligne { font-size: 12.5px; color: var(--text-muted); }
+.vc-site-actions { display: flex; flex-direction: column; gap: 6px; flex-shrink: 0; }
+.vc-chip { display: inline-block; font-size: 11px; font-weight: 500; padding: 1px 7px; border-radius: 10px; background: var(--amber-pale); color: var(--amber); margin-left: 4px; }
+.vc-btn { padding: 6px 12px; border-radius: 6px; border: 1px solid var(--border); background: #fff; font-size: 13px; cursor: pointer; font-family: inherit; }
+.vc-btn:hover { background: var(--cream); }
+.vc-btn--danger { background: var(--danger); color: #fff; border: none; }
+.vc-resume { font-size: 13px; background: var(--cream); border-radius: 10px; padding: 10px 12px; margin-bottom: 16px; display: flex; flex-direction: column; gap: 3px; }
+.vc-alerte { color: #8a4b00; }
+.vc-params { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px 16px; padding: 12px 16px; background: var(--bg2); border-bottom: 1px solid var(--border); }
+.vc-params label { font-size: 12px; color: var(--text-muted); display: flex; flex-direction: column; gap: 4px; }
+.vc-params label span { display: flex; align-items: center; gap: 6px; color: var(--text); font-size: 13px; }
+.vc-params input { width: 72px; padding: 6px 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px; font-family: inherit; }
+#vc-chrono-resultats { padding: 12px 16px 24px; display: flex; flex-direction: column; gap: 12px; }
+.vc-carte { background: #fff; border: 1px solid var(--border); border-radius: var(--radius); padding: 12px 14px; }
+.vc-carte-entete { display: flex; align-items: center; gap: 8px; font-size: 14px; }
+.vc-carte-n { margin-left: auto; font-size: 12px; color: var(--text-muted); }
+.vc-pastille { width: 14px; height: 14px; border-radius: 50%; display: inline-block; }
+.vc-distance { font-size: 20px; color: var(--forest); margin: 8px 0 2px; }
+.vc-carte-detail { font-size: 12.5px; color: var(--text-muted); margin-bottom: 6px; }
+.vc-graphe { width: 100%; height: auto; display: block; }
+.vc-note { margin: 0; }
+@media (max-width: 520px) {
+  #tab-vigiechrono .tab-header { flex-wrap: wrap; gap: 8px; }
+}
