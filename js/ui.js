@@ -135,7 +135,7 @@ function initDateFilterSelectors(onChange) {
     const el = document.getElementById(id);
     if (!el) return;
     el.addEventListener('change', () => {
-      const val = el.value === 'all' ? 'all' : parseInt(el.value);
+      const val = (el.value === 'all' || el.value === 'annee') ? el.value : parseInt(el.value);
       // Synchroniser les deux sélecteurs
       ['date-filter-map', 'date-filter-signals'].forEach(otherId => {
         const other = document.getElementById(otherId);
