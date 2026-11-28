@@ -208,6 +208,10 @@ const Dashboard = (() => {
 
   function _applyDateFilter(signals) {
     if (_dateFilterDays === 'all') return signals;
+    if (_dateFilterDays === 'annee') {
+      const an = new Date().getFullYear();
+      return signals.filter(s => new Date(s.created_at).getFullYear() === an);
+    }
     const cutoff = Date.now() - (_dateFilterDays * 24 * 60 * 60 * 1000);
     return signals.filter(s => new Date(s.created_at).getTime() >= cutoff);
   }
@@ -272,6 +276,7 @@ const Dashboard = (() => {
     renderNests(_nests);
     mapInit(filteredSignals, _blockedPhones, _sentinelMap, _nests, canAddNest);
     mapFilterNests(_applyNestFilters()); // applique le filtre année sans altérer l'état interne de map.js
+    if (typeof Bilan !== 'undefined' && document.getElementById('tab-bilan')?.classList.contains('active')) Bilan.render();
 
     if (role === 'admin_dept') {
       document.getElementById('pilot-sentinels-section').style.display  = 'none';
@@ -371,6 +376,8 @@ const Dashboard = (() => {
 
   function onDateFilterChange(value) {
     _dateFilterDays = value;
+    // les notes des zones suivent alors la période choisie (et plus l'année du Bilan)
+    if (typeof mapBilanSuivrePeriode === 'function') mapBilanSuivrePeriode();
     _refresh();
   }
 
@@ -1266,6 +1273,13 @@ const Dashboard = (() => {
     getRadius: () => _radius,
     loadMoreSignals,
     setNests: (nests) => { _nests = nests; },
+    // Données du bilan d'efficacité (onglet Bilan, notes des zones)
+    getBilanData: () => ({
+      signals: _signals,
+      nests: _nests,
+      bloques: _blockedPhones,
+      longueurDefaut: Auth.getProfile()?.trait_length_m || CONFIG.DEFAULT_TRAIT_LENGTH_M,
+    }),
   };
 
 })();

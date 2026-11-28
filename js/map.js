@@ -30,6 +30,11 @@ let _guessActive = false;
 let _guessMarker = null;
 let _ignRouteLayer = null;
 let _lastSignals = [];
+let _lastBlocked = new Set();
+let _bilanActive = false;
+let _bilanAnnee  = null;   // année demandée depuis l'onglet Bilan (null = période affichée)
+let _bilanLayers = [];
+let _bilanLegende = null;
 let _suggestLayers = [];
 
 // ── FONDS DE CARTE ────────────────────────────────────────────
@@ -95,6 +100,14 @@ function _addBasemapControl() {
         font-weight:600;cursor:pointer;text-align:left">
         ➕ Ajouter un nid
       </button>` +
+      `<button id="btn-toggle-bilan" style="
+        width:100%;margin-bottom:6px;padding:6px 10px;
+        background:#fff;color:#333;
+        border:1px solid var(--border);border-radius:8px;
+        font-family:'DM Sans',sans-serif;font-size:13px;
+        font-weight:600;cursor:pointer;text-align:left">
+        📊 Notes des zones
+      </button>` +
       Object.entries(BASEMAPS).map(([key, bm]) =>
         `<button class="basemap-btn${key === (localStorage.getItem('chassnid_basemap') || 'osm') ? ' basemap-btn--active' : ''}" data-basemap="${key}">${bm.label}</button>`
       ).join('') +
@@ -121,6 +134,7 @@ function _addBasemapControl() {
       if (e.target.closest('#btn-toggle-measure')) _toggleMeasure();
       if (e.target.closest('#btn-toggle-guess')) _toggleGuess();
       if (e.target.closest('#btn-toggle-addnest')) _toggleAddNest();
+      if (e.target.closest('#btn-toggle-bilan')) _toggleBilan();
     });
     return div;
   };
@@ -144,6 +158,9 @@ function mapInit(signals, blockedPhones, sentinelMap, nests, canAddNest) {
     _addBasemapControl();
     L.control.scale({ metric: true, imperial: false, position: 'bottomleft' }).addTo(_map);
     window._leafletMap = _map; // exposé pour leaflet-image
+    // Carrés du bilan : sous les cônes, pour que ceux-ci restent cliquables
+    _map.createPane('bilanPane').style.zIndex = 350;
+    _map.on('zoomend', _majEtiquettesBilan);
   }
 
   _lastSignals = signals || [];
@@ -153,6 +170,8 @@ function mapInit(signals, blockedPhones, sentinelMap, nests, canAddNest) {
   _nests = nests || [];
   _drawNests(_nests);
   _setupNestClick(canAddNest);
+  _lastBlocked = blockedPhones || new Set();
+  if (_bilanActive) _drawBilan();
 
   // Ne recentrer que lors de la première initialisation
   if (isFirstInit) {
@@ -996,4 +1015,141 @@ function mapSuggestSecond(signalId) {
 
   _map.fitBounds(sector.getBounds().extend(cands[0].pt).extend(cands[1].pt), { padding: [40, 40] });
   showToast('Postes A et B suggérés — touchez un poste pour le temps de marche.');
+}
+
+
+// ── NOTES DES ZONES (bilan d'efficacité) ──────────────────────
+// Carrés de 1 km colorés selon leur note 0–100 : part des signalements
+// qui pointent dans le carré et ont mené à un nid (voir bilan_calc.js).
+// Calculé sur les signalements affichés (filtre de période) et les nids.
+
+function _clearBilan() {
+  _bilanLayers.forEach(l => _map.removeLayer(l));
+  _bilanLayers = [];
+  if (_bilanLegende) { _bilanLegende.remove(); _bilanLegende = null; }
+}
+
+function _majEtiquettesBilan() {
+  if (!_map) return;
+  _map.getContainer().classList.toggle('bilan-etiquettes-masquees', _map.getZoom() < 13);
+}
+
+function _drawBilan() {
+  if (!_map || typeof BilanCalc === 'undefined') return;
+  _clearBilan();
+  const p = (typeof Bilan !== 'undefined') ? Bilan.params() : BilanCalc.DEFAUTS;
+  const longueur = (typeof Auth !== 'undefined' && Auth.getProfile()?.trait_length_m) || CONFIG.DEFAULT_TRAIT_LENGTH_M;
+
+  let signals = _lastSignals || [];
+  if (_bilanAnnee) {
+    // demandé depuis l'onglet Bilan : toute l'année, quel que soit le filtre de période
+    const tous = (typeof Dashboard !== 'undefined' && Dashboard.getBilanData) ? Dashboard.getBilanData().signals : signals;
+    signals = tous.filter(s => new Date(s.created_at).getFullYear() === _bilanAnnee);
+  }
+  // nids utiles : trouvés pendant la période affichée (+ délai)
+  const temps = signals.map(s => new Date(s.created_at).getTime()).filter(Number.isFinite);
+  const debut = temps.length ? Math.min(...temps) : 0;
+  const fin   = temps.length ? Math.max(...temps) + (p.delaiJours + 1) * 86400000 : 0;
+  const nests = (_nests || []).filter(n => {
+    if (_bilanAnnee) return n.found_at && new Date(n.found_at).getFullYear() === _bilanAnnee;
+    const t = n.found_at ? new Date(n.found_at).getTime() : NaN;
+    return Number.isFinite(t) && t >= debut - 86400000 && t <= fin;
+  });
+
+  const ev = BilanCalc.evaluer(signals, nests, p, { bloques: _lastBlocked, longueurDefaut: longueur });
+  const zs = BilanCalc.zones(ev, _bilanAnnee ? { annee: _bilanAnnee } : {});
+
+  zs.forEach(z => {
+    const coul = BilanCalc.couleurNote(z.note);
+    const juges = z.justes + z.faux;
+    const rect = L.rectangle(z.limites, {
+      pane: 'bilanPane', color: coul, weight: 1.5, opacity: 0.9,
+      fillColor: coul, fillOpacity: z.note == null ? 0.12 : 0.30,
+    }).addTo(_map);
+    rect.bindPopup(
+      `<div style="font-family:'DM Sans',sans-serif;font-size:12px;min-width:170px">
+        <div style="font-weight:700;font-size:14px;margin-bottom:4px">
+          Note : ${z.note == null ? '—' : z.note + ' / 100'}</div>
+        <div>${juges ? `${z.justes} signalement${z.justes > 1 ? 's' : ''} juste${z.justes > 1 ? 's' : ''} sur ${juges}` : 'Aucun signalement jugé'}</div>
+        ${z.attente ? `<div>⏳ ${z.attente} en attente (moins de ${p.delaiJours} j)</div>` : ''}
+        <div>🪺 ${z.nids ? `${z.nids} nid${z.nids > 1 ? 's' : ''} trouvé${z.nids > 1 ? 's' : ''} dans ce carré (${z.nidsSignales} signalé${z.nidsSignales > 1 ? 's' : ''})` : 'aucun nid trouvé dans ce carré'}</div>
+        ${z.note == null && juges < p.minSignaux ? `<div style="color:#888;margin-top:4px">Pas de note : moins de ${p.minSignaux} signalements jugés.</div>` : ''}
+      </div>`, { maxWidth: 240 });
+    rect._zoneId = z.id;
+    _bilanLayers.push(rect);
+    if (z.note != null) {
+      const et = L.marker(z.centre, {
+        interactive: false, keyboard: false,
+        icon: L.divIcon({ className: 'bilan-etiquette', html: `<span style="background:${coul}">${z.note}</span>`, iconSize: [34, 20], iconAnchor: [17, 10] }),
+      }).addTo(_map);
+      _bilanLayers.push(et);
+    }
+  });
+
+  const ctrl = L.control({ position: 'topright' });
+  ctrl.onAdd = () => {
+    const d = L.DomUtil.create('div', 'bilan-legende');
+    d.innerHTML = `<strong>📊 Notes des zones${_bilanAnnee ? ' ' + _bilanAnnee : ''}</strong>
+      <div class="bilan-degrade"></div>
+      <div class="bilan-graduation"><span>0</span><span>50</span><span>100</span></div>
+      <div class="bilan-legende-pied">carrés de 1 km · gris = pas assez de relevés</div>`;
+    L.DomEvent.disableClickPropagation(d);
+    return d;
+  };
+  _bilanLegende = ctrl.addTo(_map);
+  _majEtiquettesBilan();
+}
+
+function _majBoutonBilan() {
+  const btn = document.getElementById('btn-toggle-bilan');
+  if (!btn) return;
+  btn.style.background = _bilanActive ? '#2d6a4f' : '#fff';
+  btn.style.color      = _bilanActive ? '#fff' : '#333';
+}
+
+function _toggleBilan() {
+  _bilanActive = !_bilanActive;
+  _bilanAnnee = null;
+  if (_bilanActive) _drawBilan(); else _clearBilan();
+  _majBoutonBilan();
+  if (_bilanActive) {
+    const n = _bilanLayers.filter(l => l._zoneId).length;
+    showToast(n ? `${n} carré${n > 1 ? 's' : ''} de 1 km évalué${n > 1 ? 's' : ''}.` : 'Aucun signalement à évaluer pour cette période.');
+  }
+}
+
+// Appelé depuis l'onglet Bilan : affiche les notes d'une année
+// et, si zoneId est donné, centre la carte sur ce carré.
+function mapShowBilan(zoneId, annee) {
+  if (!_map) return;
+  _bilanActive = true;
+  _bilanAnnee = annee || null;
+  mapInvalidate();
+  _drawBilan();
+  _majBoutonBilan();
+  const carres = _bilanLayers.filter(l => l._zoneId);
+  // la carte vient de redevenir visible : attendre qu'elle ait repris sa taille
+  setTimeout(() => _cadrerBilan(carres, zoneId), 120);
+}
+
+function _cadrerBilan(carres, zoneId) {
+  _map.invalidateSize();
+  if (zoneId) {
+    const r = carres.find(l => l._zoneId === zoneId);
+    if (r) {
+      _map.fitBounds(r.getBounds(), { maxZoom: 15, padding: [40, 40] });
+      setTimeout(() => r.openPopup(), 300);
+    }
+  } else if (carres.length) {
+    _map.fitBounds(L.featureGroup(carres).getBounds(), { maxZoom: 14, padding: [30, 30] });
+  }
+}
+
+function mapBilanSuivrePeriode() {
+  _bilanAnnee = null;
+}
+
+// Réglages du bilan modifiés : redessiner si les notes sont affichées
+function mapRefreshBilan() {
+  if (_bilanActive) _drawBilan();
 }

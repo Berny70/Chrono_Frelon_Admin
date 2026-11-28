@@ -1046,3 +1046,43 @@ h1, h2, h3, h4 { font-family: 'Playfair Display', serif; font-weight: 700; }
 @media (max-width: 520px) {
   #tab-vigiechrono .tab-header { flex-wrap: wrap; gap: 8px; }
 }
+
+/* ── Bilan d'efficacité ───────────────────────────────────── */
+.bl-reglages > summary { cursor: pointer; padding: 10px 16px; font-size: 13px; font-weight: 600; background: var(--cream); border-bottom: 1px solid var(--border); }
+#bilan-contenu { padding: 14px 16px 24px; }
+.bl-cartes { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin-bottom: 10px; }
+.bl-carte { background: #fff; border: 1px solid var(--border); border-radius: var(--radius); padding: 12px 14px; }
+.bl-carte--indice { background: var(--forest-light); color: #fff; border-color: var(--forest-light); }
+.bl-carte--indice .bl-libelle { color: rgba(255,255,255,.85); }
+.bl-chiffre { font-size: 26px; font-weight: 700; line-height: 1.1; }
+.bl-chiffre small { font-size: 13px; font-weight: 500; opacity: .8; margin-left: 2px; }
+.bl-libelle { font-size: 12.5px; color: var(--text-muted); margin-top: 4px; }
+.bl-libelle small { font-size: 11.5px; }
+.bl-aide { font-size: 12.5px; color: var(--text-muted); margin: 6px 0 12px; }
+.bl-titre { font-size: 15px; margin: 18px 0 8px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.bl-voir-tout { margin-left: auto; font-size: 12px; padding: 4px 10px; }
+.bl-tableau-boite { overflow-x: auto; background: #fff; border: 1px solid var(--border); border-radius: var(--radius); }
+.bl-tableau { width: 100%; border-collapse: collapse; font-size: 13px; white-space: nowrap; }
+.bl-tableau th { text-align: left; font-size: 11.5px; color: var(--text-muted); font-weight: 600; padding: 8px 10px; border-bottom: 1px solid var(--border); background: var(--cream); }
+.bl-tableau td { padding: 8px 10px; border-bottom: 1px solid var(--border); }
+.bl-tableau td small { color: var(--text-muted); font-size: 11.5px; }
+.bl-tableau tr[data-annee] { cursor: pointer; }
+.bl-tableau tr:last-child td { border-bottom: none; }
+.bl-ligne-active td { background: var(--cream); }
+.bl-note { display: inline-flex; align-items: center; justify-content: center; min-width: 34px; height: 24px; padding: 0 6px; border-radius: 12px; color: #fff; font-weight: 700; font-size: 13px; flex-shrink: 0; }
+.bl-zone { display: flex; align-items: center; gap: 10px; padding: 10px 12px; background: #fff; border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 6px; }
+.bl-zone-texte { flex: 1; min-width: 0; }
+.bl-zone-nom { font-weight: 600; font-size: 13.5px; }
+.bl-zone-ligne { font-size: 12px; color: var(--text-muted); }
+.bl-autres { margin-top: 10px; font-size: 13px; }
+.bl-autres > summary { cursor: pointer; color: var(--text-muted); padding: 6px 0; }
+.bl-explication ul { margin: 6px 0 0; padding-left: 18px; color: var(--text-muted); font-size: 12.5px; line-height: 1.5; }
+
+/* Notes des zones sur la carte */
+.bilan-etiquette { background: none !important; border: none !important; }
+.bilan-etiquette span { display: inline-block; min-width: 30px; text-align: center; padding: 2px 5px; border-radius: 10px; color: #fff; font: 700 12px 'DM Sans', sans-serif; box-shadow: 0 1px 3px rgba(0,0,0,.35); }
+.bilan-etiquettes-masquees .bilan-etiquette { display: none; }
+.bilan-legende { background: rgba(255,255,255,.95); border-radius: 8px; padding: 6px 10px; font: 12px 'DM Sans', sans-serif; box-shadow: 0 1px 5px rgba(0,0,0,.25); max-width: 190px; }
+.bilan-degrade { height: 8px; border-radius: 4px; margin-top: 5px; background: linear-gradient(to right, hsl(0,70%,42%), hsl(60,70%,42%), hsl(120,70%,42%)); }
+.bilan-graduation { display: flex; justify-content: space-between; font-size: 11px; color: #555; }
+.bilan-legende-pied { font-size: 10.5px; color: #777; margin-top: 2px; }
